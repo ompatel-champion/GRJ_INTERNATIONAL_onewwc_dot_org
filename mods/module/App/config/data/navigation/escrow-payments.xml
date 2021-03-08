@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- MOD:- ESCROW PAYMENTS -->
+
+<config>
+    <navigation>
+        <pages>
+            <sale_invoices_filter>
+                <pages>
+                    <filter_escrow_transactions>
+                        <label>Escrow Transactions</label>
+                        <params>
+                            <filter>escrow</filter>
+                        </params>
+                        <filter>true</filter>
+                    </filter_escrow_transactions>
+                </pages>
+            </sale_invoices_filter>
+        </pages>
+    </navigation>
+
+</config>

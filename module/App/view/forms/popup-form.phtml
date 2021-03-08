@@ -1,0 +1,36 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.04]
+ */
+echo $this->script()->displayHeaderCode(); ?>
+
+<?php echo $this->actionMessages()->setMessages($this->messages)->render(); ?>
+
+<form id="popup-form"
+      class="form-horizontal"
+      method="<?php echo $this->form->getMethod(); ?>" action="<?php echo $this->form->getAction(); ?>">
+
+    <?php echo $this->form->hiddenElements; ?>
+
+    <?php
+    /* @var \Cube\Form\Element $element */
+    foreach ($this->form->getElements() as $element) { ?>
+        <?php if (!$element->isHidden()) { ?>
+            <?php echo $this->partial('partials/form-element-vertical.phtml', array('element' => $element)); ?>
+        <?php } ?>
+    <?php } ?>
+</form>
+
+<!-- include jquery because this is a bootbox popup -->
+<?php
+$this->script()->addBodyCode('<script type="text/javascript" src="' . $this->baseUrl . '/js/functions.js"></script>')
+    ->addBodyCode('<script type="text/javascript">
+        $("#popup-form").formAsync({
+            wrapper: ".bootbox-body",
+            submitElementValue: "' . $this->_('Please wait...') . '"
+        });
+    </script>');
+
+echo $this->script()->displayBodyCode();
+?>
+

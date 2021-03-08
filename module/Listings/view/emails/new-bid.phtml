@@ -1,0 +1,49 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.02]
+ */
+
+$listing = $this->data['listing'];
+?>
+
+<p>
+    <?php echo sprintf(
+        $this->_('A new bid has been placed on your auction listed on %s.'),
+        $this->siteName); ?>
+</p>
+
+<div class="my-4">
+    <?php echo $this->listing($listing, 'partials/listing-list.phtml')
+        ->setDisplaySeller()
+        ->setDisplayEnhanced()
+        ->render(array(
+            'email'    => true,
+            'sitePath' => $this->sitePath,
+        )); ?>
+</div>
+
+<dl class="dl-lg dl-indented">
+    <dt>
+        <?php echo $this->_('Bidder:'); ?>
+    </dt>
+    <dd>
+        <?php echo $this->data['bidder']['username']; ?>
+    </dd>
+    <dt>
+        <?php echo $this->_('Bid amount:'); ?>
+    </dt>
+    <dd>
+        <span class="text-info"><?php echo $this->amount($this->data['bidAmount'], $this->data['listing']['currency']); ?></span>
+    </dd>
+    <dt>
+        <?php echo $this->_('High bid:'); ?>
+    </dt>
+    <dd>
+        <span class="text-success"><?php echo $this->amount($this->data['listing']->currentBid(true), $this->data['listing']['currency']); ?></span>
+    </dd>
+</dl>
+<p>
+    <?php echo $this->_('Best regards'); ?> <br>
+    <?php echo $this->siteName; ?>
+</p>
+

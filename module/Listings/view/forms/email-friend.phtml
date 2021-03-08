@@ -1,0 +1,45 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.03]
+ */
+
+/** @var \Ppb\Db\Table\Row\User $seller */
+$seller = $listing->findParentRow('\Ppb\Db\Table\Users');
+$this->userDetails($seller);
+
+$headlineButtons = null;
+
+$headlineButtons .= '<a class="btn btn-outline-secondary" '
+    . 'href="' . $this->url($listing->link()) . '">'
+    . $this->_('Return to Listing') . '</a>';
+
+$this->setGlobal('headlineButtons', $headlineButtons);
+?>
+
+<form action="<?php echo $this->form->getAction(); ?>" method="<?php echo $this->form->getMethod(); ?>"
+      class="form-horizontal">
+
+    <?php echo $this->listing($listing, 'partials/listing-list.phtml')
+        ->setDisplayEnhanced()
+        ->setDisplaySeller()
+        ->render(); ?>
+    <div class="mt-3 pt-3 border-top">
+        <?php
+        echo $this->actionMessages()->setMessages($this->messages)->render();
+        $this->messages = null;
+        ?>
+
+        <?php echo $this->form->hiddenElements; ?>
+
+        <?php
+        /* @var \Cube\Form\Element $element */
+        foreach ($this->form->getElements() as $element) { ?>
+            <?php if (!$element->isHidden()) {
+                $partial = ($partial = $element->getPartial()) ? $partial : 'partials/form-element.phtml';
+                ?>
+                <?php echo $this->partial($partial, array('element' => $element)); ?>
+            <?php } ?>
+        <?php } ?>
+    </div>
+</form>
+

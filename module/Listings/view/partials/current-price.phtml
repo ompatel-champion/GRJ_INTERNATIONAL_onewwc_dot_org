@@ -1,0 +1,32 @@
+<?php
+/**
+ * @version 8.2 [rev.8.2.01]
+ */
+/* @var \Ppb\Db\Table\Row\Listing $listing */
+
+$class = (isset($class)) ? $class : array();
+$id = (isset($id)) ? $id : null;
+
+if (!isset($currentBid)) {
+    $currentBid = ($listing->isAuction()) ? $listing->currentBid(true) : $listing['buyout_price'];
+}
+
+$class[] = 'current-price-' . $listing['id'];
+
+if ($currentBid > 0) {
+    if ($listing->isClassified()) {
+        $class[] = 'text-classified';
+    }
+    else if ($listing->isProduct()) {
+        $class[] = 'text-buyout';
+    }
+    else if ($currentBid < $listing['reserve_price']) {
+        $class[] = 'text-under-reserve';
+    }
+    else if ($currentBid >= $listing['reserve_price']) {
+        $class[] = 'text-over-reserve';
+    } ?>
+    <span class="<?php echo implode(' ', $class); ?>" <?php echo ($id) ? 'id="' . $id . '"' : ''; ?>>
+        <?php echo $this->amount($currentBid, $listing['currency']); ?>
+    </span>
+<?php } ?>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+MOD:- CURRENCY SELECTOR
+-->
+<config>
+    <navigation>
+        <pages>
+            <main_navigation>
+                <pages>
+                    <settings>
+                        <pages>
+                            <site_settings>
+                                <pages>
+                                    <currency_selector>
+                                        <label>Currency Selector [ Mod ]</label>
+                                        <uri>admin/settings/currency_selector</uri>
+                                    </currency_selector>
+                                </pages>
+                            </site_settings>
+                        </pages>
+                    </settings>
+                </pages>
+            </main_navigation>
+        </pages>
+    </navigation>
+</config>

@@ -1,0 +1,15 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.01]
+ */
+
+$params = $this->request()->getRequest()->getParams();
+
+$params['table'] = 'relational.Categories.Members';
+?>
+
+<p>
+    <?php echo $this->_('Create and use additional store categories. Once created, they will be available in the "Select Categories" field in the Store Setup page."'); ?>
+</p>
+<?php echo $this->action('index', 'tables', 'admin', $params); ?>
+

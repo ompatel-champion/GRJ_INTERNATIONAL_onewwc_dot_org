@@ -1,0 +1,102 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.04]
+ */
+?>
+
+<div class="table-responsive">
+    <table class="table table-hover">
+        <caption>
+            <?php echo sprintf(
+                $this->pluralize(
+                    $count = $this->paginator->getPages()->totalItemCount,
+                    $this->_('<strong>%s</strong> visitor within the last %s minutes (<strong>%s online</strong>).'),
+                    $this->_('<strong>%s</strong> visitors within the last %s minutes (<strong>%s online</strong>).')
+                ), $count, \Ppb\Service\Cron::ONLINE_USERS_STATS_PURGE, $this->statistics()->countOnlineUsers(array('minutes' => 3))); ?>
+
+            <?php if ($this->paginator->getPages()->totalItemCount > 1) { ?>
+                <?php echo sprintf(
+                    $this->_('Showing results <strong>%s</strong> to <strong>%s</strong>'),
+                    $this->paginator->getPages()->firstItemNumber,
+                    $this->paginator->getPages()->lastItemNumber); ?>
+            <?php } ?>
+        </caption>
+        <?php if ($this->paginator->getPages()->totalItemCount) { ?>
+            <thead class="thead-light">
+            <tr>
+                <th class="size-small"><?php echo $this->_('User / IP'); ?></th>
+                <th><?php echo $this->_('Active Page'); ?></th>
+                <th class="size-medium"><?php echo $this->_('Browser'); ?></th>
+                <th class="size-mini"><?php echo $this->_('Language'); ?></th>
+                <th class="size-mini"><?php echo $this->_('Duration'); ?></th>
+                <th class="size-small"><?php echo $this->_('Last Activity'); ?></th>
+            </tr>
+            </thead>
+        <?php } ?>
+        <tbody>
+        <?php
+        /** @var \Cube\Db\Table\Row $stat */
+        foreach ($this->paginator as $stat) {
+            $link = $this->url($stat['request_uri'], null, false, null, false);
+            $user = $stat->findParentRow('\Ppb\Db\Table\Users');
+            $active = (strtotime($stat['updated_at']) > (time() - 180)) ? 'class="table-light"' : '';
+            ?>
+            <tr <?php echo $active; ?>>
+                <td>
+                    <div class="mb-1">
+                        <?php echo $this->fieldDisplay($user, '<a href="' . $this->url(array('controller' => 'users', 'action' => 'browse', 'username' => $user['username'], 'view' => 'site'),
+                                null, false, null, true, false) . '">' . $this->userDetails($user)->display() . '</a>', '<em>' . $this->_('Guest') . '</em>'); ?></div>
+                    <div>
+                        <small>
+                            <a href="http://db-ip.com/<?= $stat['remote_addr']; ?>"
+                               target="_blank"><?php echo $stat['remote_addr']; ?></a>
+                        </small>
+                    </div>
+                </td>
+                <td>
+                    <div>
+                        <a href="<?php echo $link; ?>" target="_blank">
+                            <?php echo $stat['request_uri']; ?>
+                        </a>
+                    </div>
+
+                    <div>
+                        <small><?php echo $stat['page_title']; ?></small>
+                    </div>
+
+                    <?php if (!empty($stat['http_referrer'])) { ?>
+                        <div>
+                            <small><em><?php echo $stat['http_referrer']; ?></em></small>
+                        </div>
+                    <?php } ?>
+                </td>
+                <td>
+                    <small>
+                        <abbr title="<?php echo $stat['http_user_agent']; ?>"><?php echo substr($stat['http_user_agent'], 0, 60) . ' ... '; ?></abbr>
+                    </small>
+                </td>
+                <td>
+                    <small>
+                        <?php echo $stat['http_accept_language']; ?>
+                    </small>
+                </td>
+                <td>
+                    <?php
+                    $start = new \DateTime($stat['created_at']);
+                    $updatedAt = ($stat['updated_at'] == $stat['created_at']) ? date('Y-m-d H:i:s', strtotime($stat['updated_at']) + 1) : $stat['updated_at'];
+
+                    $interval = $start->diff(new \DateTime($updatedAt));
+                    echo $interval->format($this->_('%im %Ss'));
+                    ?>
+                </td>
+                <td>
+                    <small><?php echo $this->timeAgo($stat['updated_at']); ?></small>
+                </td>
+            </tr>
+        <?php } ?>
+        </tbody>
+    </table>
+</div>
+
+<?php echo $this->pagination($this->paginator, 'sliding', 'partials/pagination.phtml'); ?>
+

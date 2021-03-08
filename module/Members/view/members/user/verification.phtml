@@ -1,0 +1,91 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.02]
+ */
+/** @var \Ppb\Db\Table\Row\User $user */
+?>
+
+<div class="mb-5">
+    <?php
+    if ($user->isVerified()) {
+        $description = $this->_('Verified');
+        if ($user['user_verified_next_payment'] > 0) {
+            $description .= ' ' . $this->_('until') . ' ' . $this->date($user['user_verified_next_payment'],
+                    true);
+        }
+        ?>
+        <p class="lead">
+            <?php echo $this->_('Current Status:'); ?>
+            <strong class="text-success"><?php echo $description; ?></strong>
+        </p>
+    <?php }
+    else { ?>
+        <div class="d-lg-flex justify-content-between mb-4">
+            <p class="lead">
+                <?php echo $this->_('Current Status:'); ?>
+                <strong class="text-danger"><?php echo $this->_('Not Verified'); ?></strong>
+            </p>
+            <?php if ($this->settings['user_verification_fee'] > 0) { ?>
+                <div class=" alert alert-secondary text-right">
+                    <?php echo $this->_('Verification Fee:'); ?>
+                    <strong><?php echo $this->amount($this->settings['user_verification_fee']); ?></strong>
+
+                    <?php if ($this->settings['user_verification_recurring']) { ?>
+                        <?php echo sprintf($this->_('- recurring every %s days'), $this->settings['user_verification_recurring']); ?>
+                        <?php if ($user->userPaymentMode() == 'account') { ?>
+                            <br>
+                            <small>
+                                <?php echo $this->_('The fee amount will be credited to your account'); ?>
+                            </small>
+                        <?php } ?>
+                    <?php } ?>
+                </div>
+            <?php } ?>
+        </div>
+
+        <div class="h5 mb-3">
+            <?php echo $this->_("Verify your account to make the most of the site's features."); ?>
+        </div>
+    <?php } ?>
+
+    <div class="h6">
+        <em><?php echo $this->_('Benefits of verification:'); ?></em>
+    </div>
+
+    <dl class="dl-indented mt-1 mb-3">
+        <dd>
+            <?php echo $this->_('Confirmation of your verified status will be displayed next to your profile and username in all areas'); ?>
+        </dd>
+
+        <?php if ($user->isSeller()) { ?>
+            <dt>
+                <?php echo $this->_('Sellers'); ?>
+            </dt>
+            <dd>
+                <?php echo $this->_('Potential buyers are notified that you are a verified seller'); ?>
+            </dd>
+            <?php if ($this->settings['seller_verification_mandatory']) { ?>
+                <dd>
+                    <?php echo $this->_('Selling items requires verification'); ?>
+                </dd>
+            <?php } ?>
+        <?php } ?>
+
+        <?php if ($user->isBuyer()) { ?>
+            <dt>
+                <?php echo $this->_('Buyers'); ?>
+            </dt>
+            <dd>
+                <?php echo $this->_('Sellers are provided additional evidence regarding your identity'); ?>
+            </dd>
+            <?php if ($this->settings['buyer_verification_mandatory']) { ?>
+                <dd>
+                    <?php echo $this->_('Purchasing items requires verification'); ?>
+                </dd>
+            <?php } ?>
+        <?php } ?>
+    </dl>
+</div>
+
+<?php echo $this->form; ?>
+

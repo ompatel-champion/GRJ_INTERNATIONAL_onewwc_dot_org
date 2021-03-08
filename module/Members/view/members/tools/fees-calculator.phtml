@@ -1,0 +1,28 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.01]
+ */
+/** @var array $listingFees */
+/** @var \Ppb\Service\Fees\ListingSetup $listingSetupService */
+
+if ($listingFees !== false) { ?>
+    <div class="mb-4 p-3 bg-light">
+        <h5 class="subtitle">
+            <?php echo $this->_('Listing Setup Fees'); ?>
+        </h5>
+
+        <dl class="row dl-lg mb-0">
+            <?php if (count($listingFees) > 0) { ?>
+                <?php foreach ($listingFees as $row) { ?>
+                    <dt class="col-3 col-sm-2"><?php echo $this->_($row['name']); ?></dt>
+                    <dd class="col-9 col-sm-10"><?php echo $this->amount($row['amount']); ?></dd>
+                <?php } ?>
+            <?php } ?>
+            <dt class="col-3 col-sm-2 fees-total"><?php echo $this->_('Total'); ?></dt>
+            <dd class="col-9 col-sm-10 fees-total"><?php echo $this->amount($listingSetupService->getTotalAmount()); ?>
+            </dd>
+        </dl>
+    </div>
+<?php } ?>
+
+<?php echo $this->form; ?>

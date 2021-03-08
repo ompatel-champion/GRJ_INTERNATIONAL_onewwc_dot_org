@@ -1,0 +1,319 @@
+<?php
+/**
+ * @version 8.2 [rev.8.2.01]
+ */
+/**
+ * MOD:- PICKUP LOCATIONS
+ */
+/** @var \Ppb\Db\Table\Row\User $user */
+
+$this->statistics()->setUser($user);
+
+if (!$user->accountSuspended() && $user->countUnpaidInvoices() > 0) { ?>
+    <div class="alert alert-danger">
+        <?php echo sprintf($this->_('You have unpaid purchases, please <a href="%s">click here</a> to make payment.'),
+            $this->url(array('module' => 'members', 'controller' => 'invoices', 'action' => 'browse', 'type' => 'bought', 'filter' => 'unpaid'))); ?>
+    </div>
+<?php } ?>
+
+<div class="card-columns mb-4">
+    <div class="card">
+        <div class="card-header">
+            <div><?php echo $this->_('Account Details'); ?></div>
+        </div>
+
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+                <?php echo $this->userDetails($user)->status(true); ?>
+            </li>
+
+            <?php if (!$user->accountSuspended()) { ?>
+            <!-- ## -- START :: ADD -- [ MOD:- PICKUP LOCATIONS ] -->
+            <li class="list-group-item">
+                <?php echo $this->userDetails()->displayClosestPickupLocation(); ?>
+            </li>
+            <!-- ## -- END :: ADD -- [ MOD:- PICKUP LOCATIONS ] -->
+
+            <?php if ($user->isVerified() === false) { ?>
+                <li class="list-group-item">
+                    <p class="card-text text-danger"> <?php echo $this->_("Verify your account to make the most of the site's features."); ?></p>
+
+                    <a class="btn btn-danger btn-block"
+                       href="<?php echo $this->url(array('module' => 'members', 'controller' => 'user', 'action' => 'verification')); ?>">
+                        <?php echo $this->_('Get Verified'); ?>
+                    </a>
+                </li>
+            <?php } ?>
+
+            <?php if ($user->canRequestSellingPrivileges(true) === true) { ?>
+                <li class="list-group-item">
+                    <?php if ($user->canRequestSellingPrivileges() === true) { ?>
+                        <p class="card-text"> <?php echo $this->_("Click below to apply for selling privileges."); ?></p>
+
+                        <a class="btn btn-warning btn-block"
+                           href="<?php echo $this->url(array('module' => 'members', 'controller' => 'summary', 'action' => 'request-selling-privileges')); ?>">
+                            <?php echo $this->_('Request Selling Privileges'); ?>
+                        </a>
+                    <?php }
+                    else { ?>
+                        <p class="card-text text-primary"> <?php echo $this->_("Your request for selling privileges is currently pending."); ?></p>
+                    <?php } ?>
+                </li>
+            <?php } ?>
+            <?php } ?>
+
+            <?php if ($user->userPaymentMode() == 'account') { ?>
+                <?php if ($user['balance'] <= 0) { ?>
+                    <li class="list-group-item">
+                        <form action="<?php echo $this->url(array('module' => 'app', 'controller' => 'payment', 'action' => 'credit-balance')); ?>"
+                              method="get">
+
+                            <div class="form-label-group mb-1">
+                                <?php
+                                $placeholder = sprintf($this->_('Amount [%s]'), $this->settings['currency']);
+
+                                echo $this->formElement('\\Ppb\\Form\\Element\\LocalizedNumeric', 'amount')
+                                    ->setAttributes(array(
+                                        'id'          => 'credit-amount',
+                                        'class'       => 'form-control',
+                                        'placeholder' => $placeholder,
+                                        'required'    => 'required',
+                                    ))
+                                    ->render();
+                                ?>
+                                <label for="credit-amount"><?php echo $placeholder; ?></label>
+                            </div>
+                            <?php if ($this->settings['min_invoice_value'] > 0) { ?>
+                                <div class="mb-2">
+                                    <small>
+                                        <?php echo $this->_('Minimum Required:'); ?>
+                                        <span class="au-minimum-bid"><?php echo $this->amount($this->settings['min_invoice_value']); ?></span>
+                                    </small>
+                                </div>
+                            <?php } ?>
+                            <?php echo
+                            $this->formElement('submit', 'submit', $this->_('Credit Account'))
+                                ->setAttributes(array('class' => 'btn btn-success btn-block'))
+                                ->render();
+                            ?>
+                        </form>
+                    </li>
+                <?php } ?>
+
+                <!-- ## -- REMOVE -- [ MOD:- SELLERS CREDIT ] -->
+                <?php /*if ($user['balance'] > $this->settings['min_invoice_value'] && $user['balance'] > 0) { ?>
+                    <li class="list-group-item">
+                        <a class="btn btn-outline-success btn-block"
+                           href="<?php echo $this->url(array('module' => 'app', 'controller' => 'payment', 'action' => 'credit-balance')); ?>">
+                            <?php echo $this->_('Clear Account Balance'); ?>
+                        </a>
+                    </li>
+                <?php }*/ ?>
+                <!-- ## -- ./REMOVE -- [ MOD:- SELLERS CREDIT ] -->
+
+                <!-- ## -- START :: ADD -- [ MOD:- SELLERS CREDIT ] -->
+                <?php if ($user['balance'] <= 0) { ?>
+                    <?php if (
+                        $this->settings['enable_sellers_credit'] &&
+                        ((-1) * $user['balance']) >= $this->settings['sellers_credit_minimum_withdrawal_limit']
+                    ) {
+                        ?>
+                        <li class="list-group-item">
+                            <form action="<?php echo $this->url(array('module' => 'members', 'controller' => 'account', 'action' => 'balance-withdrawals')); ?>"
+                                  method="post">
+
+                                <div class="form-label-group mb-1">
+                                    <?php
+                                    $placeholder = sprintf($this->_('Amount [%s]'), $this->settings['currency']);
+
+                                    echo $this->formElement('\\Ppb\\Form\\Element\\LocalizedNumeric', 'amount')
+                                        ->setAttributes(array(
+                                            'id'          => 'request-withdrawal',
+                                            'class'       => 'form-control',
+                                            'placeholder' => $placeholder,
+                                            'required'    => 'required',
+                                        ))
+                                        ->render();
+                                    ?>
+                                    <label for="request-withdrawal"><?php echo $placeholder; ?></label>
+                                </div>
+                                <?php if ($this->settings['sellers_credit_minimum_withdrawal_limit'] > 0) { ?>
+                                    <div class="mb-2">
+                                        <small>
+                                            <?php echo $this->_('Minimum Required:'); ?>
+                                            <span><?php echo $this->amount($this->settings['sellers_credit_minimum_withdrawal_limit']); ?></span>
+                                        </small>
+                                    </div>
+                                <?php } ?>
+                                <?php echo $this->formElement('submit', 'submit', $this->_('Request Withdrawal'))
+                                    ->setAttributes(array(
+                                        'class' => 'btn btn-orange btn-block',
+                                    ))
+                                    ->render();
+                                ?>
+                            </form>
+                        </li>
+                    <?php } ?>
+                <?php } ?>
+                <!-- ## -- END :: ADD -- [ MOD:- SELLERS CREDIT ] -->
+
+            <?php } ?>
+        </ul>
+    </div>
+
+    <?php if (!$user->accountSuspended()) { ?>
+
+    <div class="card">
+        <div class="card-header d-flex justify-content-between">
+            <div><?php echo $this->_('Wish List'); ?></div>
+            <a href="<?php echo $this->url(array('module' => 'members', 'controller' => 'tools', 'action' => 'watched-items')); ?>"
+               class="text-secondary" title="<?php echo $this->_('Wish List'); ?>">
+                <span data-feather="chevrons-right"></span></a>
+        </div>
+
+        <div class="card-body">
+            <p class="card-text">
+                <?php
+                $paginator = $this->listings()->fetchPaginator(array('filter' => array('active', 'wish-list')), Ppb\Service\Listings::SELECT_SIMPLE)->getPaginator();
+
+                echo sprintf(
+                    $this->pluralize(
+                        $count = $paginator->getPages()->totalItemCount,
+                        $this->_('%s listing in your wish list.'),
+                        $this->_('%s listings in your wish list.')
+                    ), $count); ?>
+            </p>
+        </div>
+    </div>
+
+    <?php if ($this->settings['enable_reputation']) { ?>
+        <div class="card">
+            <div class="card-header d-flex justify-content-between">
+                <div><?php echo $this->_('Feedback'); ?></div>
+                <a href="<?php echo $this->url(array('module' => 'members', 'controller' => 'reputation', 'action' => 'browse', 'filter' => 'received')); ?>"
+                   class="text-secondary" title="<?php echo $this->_('Feedback Received'); ?>">
+                    <span data-feather="chevrons-right"></span></a>
+            </div>
+
+            <div class="card-body">
+                <h5 class="card-title">
+                    <?php echo sprintf(
+                        $this->pluralize(
+                            $count = $this->statistics()->countFeedback(),
+                            $this->_('%s Review Received'),
+                            $this->_('%s Reviews Received')
+                        ), $count); ?>
+                </h5>
+                <p class="card-text">
+                    <a href="<?php echo $this->url(array('module' => 'members', 'controller' => 'reputation', 'action' => 'browse', 'filter' => 'pending')); ?>">
+                        <?php
+                        echo sprintf(
+                            $this->pluralize(
+                                $count = $this->statistics()->countFeedback('pending'),
+                                $this->_('%s listing awaiting your feedback.'),
+                                $this->_('%s listings awaiting your feedback.')
+                            ), $count); ?>
+                    </a>
+                </p>
+            </div>
+        </div>
+    <?php } ?>
+
+    <?php if ($this->settings['enable_stores']) { ?>
+        <div class="card">
+            <div class="card-header d-flex justify-content-between">
+                <div><?php echo $this->_('Store'); ?></div>
+                <a href="<?php echo $this->url(array('module' => 'members', 'controller' => 'store', 'action' => 'setup')); ?>"
+                   class="text-secondary" title="<?php echo $this->_('Store Setup'); ?>">
+                    <span data-feather="chevrons-right"></span></a>
+            </div>
+
+            <div class="card-body">
+                <?php echo $this->partial('partials/store-information.phtml', array('user' => $user)); ?>
+            </div>
+        </div>
+    <?php } ?>
+    <?php } ?>
+</div>
+
+<?php
+$summaryTabs = array();
+
+if ($this->settings['enable_messaging']) {
+    $summaryTabs[] = array(
+        'tabId'   => 'unreadMessages',
+        'title'   => $this->_('Unread Messages'),
+        'content' => $this->action('browse', 'messaging', 'members', array('summary' => true)),
+        'btn'     => '<a href="' . $this->url(array('module' => 'members', 'controller' => 'messaging', 'action' => 'browse', 'filter' => 'received')) . '"
+                   class="btn btn-outline-secondary">' . $this->_('View All Messages') . '</a>',
+    );
+}
+if (!$user->accountSuspended()) {
+
+if ($user->isBuyer()) {
+    if ($this->settings['enable_auctions']) {
+        $summaryTabs[] = array(
+            'tabId'   => 'currentBids',
+            'title'   => $this->_('Current Bids'),
+            'content' => $this->action('bids', 'buying', 'members', array('summary' => true)),
+            'btn'     => '<a href="' . $this->url(array('module' => 'members', 'controller' => 'buying', 'action' => 'bids')) . '"
+                   class="btn btn-outline-secondary">' . $this->_('View All') . '</a>',
+        );
+    }
+
+    $summaryTabs[] = array(
+        'tabId'   => 'purchases',
+        'title'   => $this->_('Purchases'),
+        'content' => $this->action('browse', 'invoices', 'members', array('summary' => true, 'type' => 'bought')),
+        'btn'     => '<a href="' . $this->url(array('module' => 'members', 'controller' => 'invoices', 'action' => 'browse', 'type' => 'bought')) . '"
+                   class="btn btn-outline-secondary">' . $this->_('View All') . '</a>',
+    );
+}
+
+if ($user->isSeller()) {
+    $summaryTabs[] = array(
+        'tabId'   => 'sales',
+        'title'   => $this->_('My Sales'),
+        'content' => $this->action('browse', 'invoices', 'members', array('summary' => true, 'type' => 'sold')),
+        'btn'     => '<a href="' . $this->url(array('module' => 'members', 'controller' => 'invoices', 'action' => 'browse', 'type' => 'sold')) . '"
+                   class="btn btn-outline-secondary">' . $this->_('View All') . '</a>',
+    );
+}
+}
+?>
+
+<?php if (count($summaryTabs) > 1) {
+    $activeSummaryTab = 'active'; ?>
+    <ul class="nav nav-pills pb-2 mb-4 border-bottom no-print <?php echo $activeSummaryTab; ?>"
+        role="tablist">
+        <?php foreach ($summaryTabs as $summaryTab) {
+            ?>
+            <li class="nav-item">
+                <a class="nav-link <?php echo $activeSummaryTab; ?>"
+                   href="#<?php echo $summaryTab['tabId']; ?>"
+                   data-toggle="tab"
+                   role="tab"><?php echo $summaryTab['title']; ?></a>
+            </li>
+            <?php
+            $activeSummaryTab = '';
+        } ?>
+    </ul>
+<?php } ?>
+
+<div class="tab-content">
+    <?php $activeSummaryTab = 'active'; ?>
+    <?php foreach ($summaryTabs as $summaryTab) { ?>
+        <div class="tab-pane <?php echo $activeSummaryTab; ?>"
+             id="<?php echo $summaryTab['tabId']; ?>">
+
+            <div class="text-right mb-3">
+                <?php echo $summaryTab['btn']; ?>
+            </div>
+
+            <?php echo $summaryTab['content']; ?>
+        </div>
+        <?php $activeSummaryTab = null; ?>
+        <?php
+    } ?>
+</div>
+

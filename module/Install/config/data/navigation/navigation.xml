@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- @version 8.0 [rev.8.0.01] -->
+<config>
+    <navigation>
+        <label>Installer Navigation</label>
+        <uri>install/index/index</uri>
+        <pages>
+            <install>
+                <label>Install Software</label>
+                <module>install</module>
+                <controller>index</controller>
+                <action>index</action>
+                <icon>settings</icon>
+                <resource>Index</resource>
+                <privilege>Index</privilege>
+            </install>
+            <upgrade_db>
+                <label>Upgrade DB</label>
+                <module>install</module>
+                <controller>index</controller>
+                <action>upgrade</action>
+                <icon>database</icon>
+                <resource>Index</resource>
+                <privilege>Upgrade</privilege>
+            </upgrade_db>
+            <activate_license>
+                <label>Activate License</label>
+                <module>install</module>
+                <controller>index</controller>
+                <action>activate-license</action>
+                <icon>battery-charging</icon>
+                <resource>Index</resource>
+                <privilege>ActivateLicense</privilege>
+            </activate_license>
+            <mods_sql>
+                <label>Mods SQL</label>
+                <module>install</module>
+                <controller>index</controller>
+                <action>mods</action>
+                <icon>upload</icon>
+                <resource>Index</resource>
+                <privilege>Mods</privilege>
+            </mods_sql>
+            <!--<v6x_importer>-->
+                <!--<label>v6.x Importer</label>-->
+                <!--<module>install</module>-->
+                <!--<controller>index</controller>-->
+                <!--<action>importer</action>-->
+                <!--<icon>shopping-bag</icon>-->
+            <!--</v6x_importer>-->
+        </pages>
+    </navigation>
+</config>

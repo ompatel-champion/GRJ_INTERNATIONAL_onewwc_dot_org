@@ -1,0 +1,81 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.03]
+ */
+
+/* @var \Ppb\Db\Table\Row\ContentSection $section */
+/* @var \Ppb\Db\Table\Row\ContentEntry|null $entry */
+/* @var \Ppb\Navigation\Page\ContentSection $currentPage */
+/* @var \Cube\Paginator $paginator */
+/* @var bool $inAdmin */
+
+$headlineButtons = null;
+
+if ($inAdmin) {
+    if ($sectionEntryStatus = $this->sectionEntryStatus($section, $entry)) {
+        $headlineButtons = '<div class="mb-1 text-right">' . $sectionEntryStatus . '</div>';
+    }
+}
+?>
+
+<?php
+if ($currentPage) {
+    echo $this->navigation()
+        ->setContainer($currentPage)
+        ->setPartial('navigation/breadcrumbs.phtml')->setMinDepth(0)->breadcrumbs(array(
+            'home' => array(
+                'params' => array('module' => 'app', 'controller' => 'index', 'action' => 'index'),
+                'label'  => $this->_('Home'),
+            )));
+}
+?>
+
+<?php
+echo $this->navigation()->setPartial('navigation/headline.phtml')->headline(array(
+    'headline'        => $section['name'],
+    'headlineButtons' => $headlineButtons,
+));
+?>
+
+<?php if ($entry) { ?>
+    <?php echo $this->renderHtml($entry['content'], true); ?>
+<?php } ?>
+
+<?php
+/** @var \Ppb\Db\Table\Row\ContentEntry $post */
+foreach ($this->paginator as $post) { ?>
+    <div class="media mb-3">
+        <a href="<?php echo $this->url($post->link()); ?>">
+            <?php
+            echo $this->thumbnail($post->getData('image_path'), 256, true, array(
+                'alt'   => $post->getData('title'),
+                'class' => 'mr-3 img-lg')); ?>
+        </a>
+
+        <div class="media-body">
+            <div class="d-flex justify-content-between">
+                <h3 class="h5">
+                    <a href="<?php echo $this->url($post->link()); ?>">
+                        <?php echo $post->getData('title'); ?>
+                    </a>
+                </h3>
+
+                <?php if ($inAdmin) { ?>
+                    <!-- ADMIN FLAGS -->
+                    <?php
+                    if ($sectionEntryStatus = $this->sectionEntryStatus($section, $post)) {
+                        echo '<div class="mb-1">' . $sectionEntryStatus . '</div>';
+                    }
+                    ?>
+                    <!-- /ADMIN FLAGS -->
+                <?php } ?>
+            </div>
+
+            <?php echo $this->renderHtml($post['short_description'], true); ?>
+        </div>
+    </div>
+<?php } ?>
+
+<?php if ($this->paginator->getPages()->totalItemCount) { ?>
+    <?php echo $this->pagination($this->paginator, 'sliding', 'partials/pagination.phtml'); ?>
+<?php } ?>

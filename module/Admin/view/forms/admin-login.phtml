@@ -1,0 +1,32 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.03]
+ */
+
+/** @var \Cube\Form\Element\Text $username */
+$username = $this->form->getElement('username');
+
+/** @var \Cube\Form\Element\Password $password */
+$password = $this->form->getElement('password');
+?>
+
+<div class="login-form">
+    <form action="<?php echo $this->form->getAction(); ?>" method="<?php echo $this->form->getMethod(); ?>"
+          class="form-sign-in">
+        <?php echo $this->form->hiddenElements; ?>
+
+        <?php echo $this->actionMessages()->setMessages($this->messages)->render(); ?>
+
+        <div class="form-label-group my-2">
+            <?php echo $username->render(); ?>
+            <label for="<?php echo $username->getAttribute('id'); ?>"><?php echo $username->getLabel(); ?></label>
+        </div>
+
+        <div class="form-label-group mb-2">
+            <?php echo $password->render(); ?>
+            <label for="<?php echo $password->getAttribute('id'); ?>"><?php echo $password->getLabel(); ?></label>
+        </div>
+
+        <?php echo $this->form->submit; ?>
+    </form>
+</div>

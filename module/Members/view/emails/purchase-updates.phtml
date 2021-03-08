@@ -1,0 +1,54 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.01]
+ */
+
+/** @var \Ppb\Db\Table\Row\Sale $sale */
+$sale = $this->data['sale'];
+?>
+<p>
+    <?php echo sprintf(
+        $this->_('The seller has updated your order on %s. Please see details below:'),
+        $this->siteName); ?>
+</p>
+
+<?php echo $this->partial('partials/sale.phtml', array(
+    'sale'             => $sale,
+    'email'            => true,
+    'postageDesc'      => true,
+    'caption'          => true,
+    'displayDownloads' => true,
+    'isBuyer'          => true,
+    'type'             => 'bought')); ?>
+
+<dl class="dl-lg dl-indented mt-3">
+    <dt>
+        <?php echo $this->_('Payment Status:'); ?>
+    </dt>
+    <dd>
+        <?php echo $this->saleOptions($sale, true)->paymentStatus(false); ?>
+    </dd>
+    <?php if ($sale->hasPostage()) { ?>
+        <dt>
+            <?php echo $this->_('Shipping Status:'); ?>
+        </dt>
+        <dd>
+            <?php echo $this->saleOptions()->shippingStatus(false); ?>
+        </dd>
+        <?php if (!empty($sale['tracking_link'])) { ?>
+            <dt>
+                <?php echo $this->_('Track Package:'); ?>
+            </dt>
+            <dd>
+                <a href="<?php echo $sale['tracking_link']; ?>"
+                   target="_blank"><?php echo $sale['tracking_link']; ?></a>
+            </dd>
+        <?php } ?>
+    <?php } ?>
+</dl>
+
+<p>
+    <?php echo $this->_('Best regards'); ?> <br>
+    <?php echo $this->siteName; ?>
+</p>
+

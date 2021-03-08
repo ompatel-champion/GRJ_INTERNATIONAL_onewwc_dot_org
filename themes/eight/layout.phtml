@@ -1,0 +1,185 @@
+<?php
+/**
+ * @version 8.2 [rev.8.2.02]
+ */
+
+/** @var \Cube\Controller\Request $request */
+$request = $this->request()->getRequest();
+$module = $request->getModule();
+$controller = $request->getController();
+$action = $request->getAction();
+
+$indexPage = ($module == 'App' && $controller == 'Index' && $action == 'Index') ? true : false;
+$browsePage = ($module == 'Listings' && $controller == 'Browse' && $action == 'Index') ? true : false;
+$cmsPage = ($module == 'App' && $controller == 'Cms' && $action == 'Index') ? true : false;
+$listingDetailsPage = ($module == 'Listings' && $controller == 'Listing' && $action == 'Details') ? true : false;
+
+$parentId = $request->getParam('parent_id');
+
+$this->setGlobal('themeFolder', $this->baseUrl . '/' . $this->themesFolder . '/' . 'eight');
+$this->setGlobal('indexPage', $indexPage);
+$this->setGlobal('browsePage', $browsePage);
+
+$headerType = (isset($this->settings['eight_theme_header_type'])) ? $this->settings['eight_theme_header_type'] : 'header.one';
+$footerType = (isset($this->settings['eight_theme_footer_type'])) ? $this->settings['eight_theme_footer_type'] : 'footer.one';
+$colorTheme = (isset($this->settings['eight_theme_color_theme'])) ? $this->settings['eight_theme_color_theme'] : 'theme-blue';
+?>
+<!DOCTYPE html>
+
+<html dir="<?php echo $htmlDir = $this->htmlDir(); ?>" lang="<?php echo $this->htmlLang(); ?>">
+<head>
+    <?php echo $this->headTitle(); ?>
+
+    <?php
+    $this->headMeta()
+        ->appendName('viewport', 'width=device-width, initial-scale=1.0')
+        ->appendHttpEquiv('X-UA-Compatible', 'IE=edge');
+    echo $this->headMeta();
+
+    /** add rtl bootstrap css if the case */
+    if ($htmlDir == \Cube\View\Helper\HtmlDir::RTL) {
+        $this->script()
+            ->replaceHeaderCode('<link href="' . $this->baseUrl . '/css/bootstrap.min.css" rel="stylesheet" type="text/css">',
+                '<link rel="stylesheet" href="https://cdn.rtlcss.com/bootstrap/v4.0.0/css/bootstrap.min.css" integrity="sha384-P4uhUIGk/q1gaD/NdgkBIl3a6QywJjlsFJFk7SPRdruoGddvRVSwv5qFnvZ73cpz" crossorigin="anonymous">')
+            ->replaceBodyCode('<script type="text/javascript" src="' . $this->baseUrl . '/js/bootstrap.min.js"></script>',
+                '<script src="https://cdn.rtlcss.com/bootstrap/v4.0.0/js/bootstrap.min.js" integrity="sha384-54+cucJ4QbVb99v8dcttx/0JRx4FHMmhOWi4W+xrXpKcsKQodCBwAvu3xxkZAwsH" crossorigin="anonymous"></script>')
+            ->replaceBodyCode('<script type="text/javascript" src="' . $this->baseUrl . '/js/global.js"></script>',
+                '<script>var slickRtl = true;</script>
+                <script type="text/javascript" src="' . $this->baseUrl . '/js/global.js"></script>');
+    }
+
+    $this->script()->addHeaderCode('<link href="' . $this->themeFolder . '/css/theme.css" media="all" rel="stylesheet" type="text/css">')
+        ->addHeaderCode('<link href="' . $this->themeFolder . '/css/' . $headerType . '.css" media="all" rel="stylesheet" type="text/css">')
+        ->addHeaderCode('<link href="' . $this->themeFolder . '/css/colors.css" media="all" rel="stylesheet" type="text/css">');
+    ?>
+
+    <?php echo $this->script()->displayHeaderCode(); ?>
+</head>
+<body class="<?php echo $colorTheme; ?>">
+
+
+<!-- HEADER -->
+<header>
+    <?php
+    $container = $this->navigation()->getInitialContainer()->findOneBy('id', 'header');
+
+    echo $this->navigation()
+        ->setContainer($container)
+        ->setPartial('navigation/' . $headerType . '.phtml')
+        ->menu();
+    ?>
+
+    <!-- HEADER ADVERT -->
+    <?php
+    $advert = $this->advert('partials/advert-single.phtml')
+        ->findBySection('header', false, array($parentId))->render();
+
+    if (!empty($advert)) {
+        ?>
+        <div class="mb-4 mx-3 text-center">
+            <?php echo $advert; ?>
+        </div>
+    <?php } ?>
+    <!-- /HEADER ADVERT -->
+</header>
+<!-- /HEADER -->
+
+
+<!-- MAIN CONTENT -->
+<main class="<?php echo ($indexPage) ? '' : 'container'; ?>">
+    <?php if ($cmsPage) { ?>
+        <?php echo $this->getContent(); ?>
+    <?php }
+    else if ($this->isMembersModule === true) { ?>
+        <?php echo $this->render('_members.phtml'); ?>
+        <?php
+    }
+    else {
+        ?>
+        <!-- HEADLINE -->
+        <?php
+        if ($this->headline) {
+            echo $this->navigation()->setPartial('navigation/headline.phtml')->headline();
+        }
+        ?>
+        <!-- /HEADLINE -->
+
+        <!-- SITE MESSAGES -->
+        <?php echo $this->actionMessages()->setMessages($this->messages)->render(); ?>
+        <!-- /SITE MESSAGES -->
+
+        <?php echo $this->getContent(); ?>
+    <?php } ?>
+</main>
+<!-- /MAIN CONTENT -->
+
+
+<!-- FOOTER ADVERT -->
+<?php
+$advert = $this->advert('partials/advert-single.phtml')
+    ->findBySection('footer', false, array($parentId))->render();
+
+if (!empty($advert)) {
+    ?>
+    <div class="mt-5 mx-3 pt-5 text-center">
+        <?php echo $advert; ?>
+    </div>
+<?php } ?>
+<!-- /FOOTER ADVERT -->
+
+
+<!-- RECENTLY VIEWED LISTINGS -->
+<?php
+if ($this->settings['enable_recently_viewed_listings']) {
+    if ($indexPage || $browsePage || $listingDetailsPage) {
+        $recentlyViewedListings = $this->listings('partials/listings-cards.phtml')
+            ->setVariables(array())
+            ->fetchListings(array(
+                'filter' => array('active', 'recently-viewed'),
+                'limit'  => 4,
+            ), Ppb\Service\Listings::SELECT_SIMPLE, false)
+            ->getListings();
+
+        if (count($recentlyViewedListings) > 0) {
+            ?>
+            <div class="container mt-5">
+                <?php
+                echo $this->navigation()->setPartial('navigation/subtitle.phtml')->headline(array(
+                    'headline'        => $this->_('Recently Viewed'),
+                    'headlineButtons' => '',
+                ));
+                ?>
+
+                <?php echo $this->listings()->render(); ?>
+            </div>
+        <?php } ?>
+    <?php }
+} ?>
+<!-- /RECENTLY VIEWED LISTINGS -->
+
+<!-- FOOTER -->
+<?php
+$container = $this->navigation()->getInitialContainer()->findOneBy('id', 'header');
+
+echo $this->navigation()
+    ->setContainer($container)
+    ->setPartial('navigation/' . $footerType . '.phtml')
+    ->menu();
+?>
+<!-- /FOOTER -->
+
+
+<!-- cookie usage confirmation helper -->
+<?php echo $this->cookieUsage()->render(); ?>
+
+<div class="loading-modal"></div>
+
+<?php
+$this->script()->addBodyCode('<script src="' . $this->themeFolder . '/js/theme.js" type="text/javascript"></script>');
+?>
+
+<!-- client side scripts [loaded in bootstrap] -->
+<?php echo $this->script()->displayBodyCode(); ?>
+
+</body>
+</html>

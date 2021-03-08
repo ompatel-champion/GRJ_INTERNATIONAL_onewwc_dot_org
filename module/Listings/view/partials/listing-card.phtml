@@ -1,0 +1,91 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.08]
+ */
+/* @var \Ppb\Db\Table\Row\Listing $listing */
+
+$this->userDetails($listing->findParentRow('\Ppb\Db\Table\Users'));
+
+$listingLink = $this->url($listing->link());
+?>
+
+<div class="card listing-card" data-listing-id="<?php echo $listing['id']; ?>">
+    <div class="h-100 card-img">
+        <a href="<?php echo $listingLink; ?>">
+            <?php echo $this->thumbnail($listing->getMainImage(), 500, true,
+                array('alt' => $listing['name'], 'lazyLoad' => $this->settings['lazy_load_images'], 'class' => 'card-img-top')); ?>
+        </a>
+    </div>
+
+    <div class="card-body <?php echo ($listing['highlighted'] && $this->settings['enable_highlighted']) ? 'card-highlighted' : ''; ?>">
+        <h5 class="card-title">
+            <a href="<?php echo $listingLink; ?>"><?php echo $listing['name']; ?></a>
+        </h5>
+
+        <p class="card-text card-short-description">
+            <?php echo $listing->shortDescription(170); ?>
+        </p>
+
+        <div class="d-flex my-2">
+            <div class="au-price price">
+                <?php echo $this->partial('partials/current-price.phtml', array('listing' => $listing)); ?>
+            </div>
+
+            <?php if ($listing->isAuction()) { ?>
+                <div class="au-your-bid-status ml-2">
+                    <?php echo $this->listing($listing)->yourBidStatus(); ?>
+                </div>
+            <?php } ?>
+        </div>
+
+        <h6 class="card-text card-seller">
+            <?php echo $this->userDetails()->display(); ?>
+        </h6>
+        <p class="card-text card-details">
+            <?php if ($listing->isAuction()) { ?>
+                <small class="au-nb-bids text-muted">
+                    <?php echo $this->listing()->nbBids(); ?>
+                </small>
+            <?php } ?>
+            &nbsp;
+            <?php if ($listing['end_time'] != null) { ?>
+                <small class="au-countdown">
+                    <?php echo $this->listing()->countdown(true); ?>
+                </small>
+            <?php } ?>
+        </p>
+    </div>
+
+    <div class="card-footer action-buttons">
+        <?php if ($listing->isAuction()) { ?>
+            <a href="<?php echo $this->url($listing->biddingConfirmLink(true, true)); ?>"
+               class="btn btn-sm btn-default jq-popup-form" title="<?php echo $this->_('Place Bid'); ?>">
+                <span data-feather="loader"></span>
+                <span class="button-text"><?php echo $this->_('Place Bid'); ?></span>
+            </a>
+        <?php } ?>
+        <?php if ($listing->isProduct()) {
+            if (($listing->isShoppingCart() === true)) {
+                $btnValue = '<span data-feather="shopping-cart"></span> <span class="button-text">' . $this->_('Add to Cart') . '</span>';
+                $title = $this->_('Add to Cart');
+            }
+            else {
+                $btnValue = '<span class="button-text">' . $this->_('Buy Out') . '</span>';
+                $title = $this->_('Buy Out');
+            }
+            ?>
+            <a href="<?php echo $this->url($listing->buyOutConfirmLink(true, true)); ?>"
+               class="btn btn-sm btn-default jq-popup-form" title="<?php echo $title; ?>">
+                <?php echo $btnValue; ?>
+            </a>
+        <?php } ?>
+
+        <a class="btn btn-sm btn-wishlist-async <?php echo ($listing->isWatched()) ? 'btn-gold' : 'btn-default'; ?>"
+           href="<?php echo $this->url(array('module' => 'listings', 'controller' => 'listing', 'action' => 'watch', 'id' => $listing['id'])); ?>"
+           data-class-active="btn-gold"
+           data-class-default="btn-default"
+           title="<?php echo $this->_('Wish List'); ?>">
+            <span data-feather="heart"></span>
+        </a>
+    </div>
+</div>

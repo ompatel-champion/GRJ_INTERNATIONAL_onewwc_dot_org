@@ -1,0 +1,36 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.01]
+ */
+/** @var \Ppb\Db\Table\Row\User $user */
+?>
+
+<?php if (in_array('social_media', $this->form->getIncludedForms())) {
+    if (!$user->displaySocialMediaLinks()) {
+        if ($this->settings['social_media_user_type'] == 'verified') { ?>
+            <div class="alert alert-secondary">
+                <div class="mb-2">
+                    <?php echo $this->_('Please verify the account to display your social media links on your profile.'); ?>
+                </div>
+
+                <a href="<?php echo $this->url(array('module' => 'members', 'controller' => 'user', 'action' => 'verification')); ?>"
+                   class="btn btn-danger btn-lg">
+                    <?php echo $this->_('Get Verified'); ?></a>
+            </div>
+        <?php }
+        else if ($this->settings['social_media_user_type'] == 'store') { ?>
+            <div class="alert alert-secondary">
+                <div class="mb-2">
+                    <?php echo $this->_('Please create a store to display your social media links on your profile.'); ?>
+                </div>
+
+                <a href="<?php echo $this->url(array('module' => 'members', 'controller' => 'store', 'action' => 'setup')); ?>"
+                   class="btn btn-secondary btn-lg">
+                    <?php echo $this->_('Open a Store'); ?></a>
+            </div>
+        <?php }
+    }
+} ?>
+
+<?php echo $this->form; ?>
+

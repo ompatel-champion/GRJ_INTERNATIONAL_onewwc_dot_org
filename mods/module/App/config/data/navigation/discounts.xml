@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- MOD:- DISCOUNT RULES @version 3.0 -->
+
+<config>
+    <navigation>
+        <pages>
+            <members_menu>
+                <pages>
+                    <selling>
+                        <pages>
+                            <seller_tools>
+                                <pages>
+                                    <discount_rules>
+                                        <label>Discount Rules</label>
+                                        <module>members</module>
+                                        <controller>tools</controller>
+                                        <action>discount-rules</action>
+                                        <resource>Tools</resource>
+                                        <privilege>DiscountRules</privilege>
+                                        <hidden_children>true</hidden_children>
+                                        <pages>
+                                            <create_discount_rule>
+                                                <label>Create Discount Rule</label>
+                                                <module>members</module>
+                                                <controller>tools</controller>
+                                                <action>add-discount-rule</action>
+                                                <hidden>true</hidden>
+                                            </create_discount_rule>
+                                            <edit_discount_rule>
+                                                <label>Edit Discount Rule</label>
+                                                <module>members</module>
+                                                <controller>tools</controller>
+                                                <action>edit-discount-rule</action>
+                                                <hidden>true</hidden>
+                                            </edit_discount_rule>
+                                        </pages>
+                                    </discount_rules>
+                                </pages>
+                            </seller_tools>
+                        </pages>
+                    </selling>
+                </pages>
+            </members_menu>
+
+            <header_menu>
+                <pages>
+                    <discounted_listings>
+                        <label>Sale</label>
+                        <module>listings</module>
+                        <controller>browse</controller>
+                        <action>index</action>
+                        <params>
+                            <filter>discounted</filter>
+                        </params>
+                    </discounted_listings>
+                </pages>
+            </header_menu>
+
+        </pages>
+    </navigation>
+
+</config>

@@ -1,0 +1,64 @@
+<?php
+/**
+ * @version 8.1 [rev.8.1.01]
+ */
+/**
+ * MOD:- UNBRANDING
+ */
+?>
+<footer class="footer-one mt-5 py-3 py-md-5">
+    <!-- FOOTER CONTENT -->
+    <div class="footer container">
+        <div class="row">
+            <div class="col-md">
+                <?php
+                $contentSectionsService = $this->contentSections()->getContentSections();
+                $contentSections = $this->contentSections(
+                    $contentSectionsService->getTable()
+                        ->select()
+                        ->where('active = ?', 1)
+                        ->where('parent_id IS NULL')
+                        ->order(array('-order_id DESC', 'name ASC'))
+                );
+                ?>
+
+                <ul class="footer-links">
+                    <?php
+                    /** @var \Ppb\Db\Table\Row\ContentSection $section */
+                    foreach ($contentSections as $section) {
+                        ?>
+                        <li>
+                            <a href="<?php echo $this->url($section->link()); ?>">
+                                <?php echo $this->_($section['name']); ?>
+                            </a>
+                        </li>
+                    <?php } ?>
+                </ul>
+            </div>
+            <div class="col-md-auto">
+                <?php echo $this->social()->socialMediaLinks(); ?>
+            </div>
+        </div>
+
+        <?php if ($this->settings['newsletter_subscription_box']) { ?>
+            <div class="row mt-3">
+                <div class="col">
+                    <?php echo $this->newsletterSubscription()->render(); ?>
+                </div>
+            </div>
+        <?php } ?>
+
+        <div class="row mt-5">
+            <div class="col-12 text-center">
+                <?php if (!empty($this->settings['footer_branding_text'])) { ?>
+                    <?php echo $this->renderHtml($this->settings['footer_branding_text']); ?>
+                <?php }
+                else { ?>
+                    Powered by <a href="https://www.phpprobid.com/" target="_blank">PHP Pro Bid</a>.
+                    &copy;<?php echo date('Y'); ?> Online Ventures Software
+                <?php } ?>
+            </div>
+        </div>
+    </div>
+    <!-- FOOTER CONTENT -->
+</footer>

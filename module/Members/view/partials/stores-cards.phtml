@@ -1,0 +1,40 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.01]
+ */
+/** @var mixed $stores */
+
+$attributes = array(
+    'class'           => (isset($class)) ? $class : 'row stores-cards',
+    'data-grid-class' => (isset($gridClass)) ? $gridClass : 'col-6 col-md-3 card-grid',
+    'data-list-class' => (isset($listClass)) ? $listClass : 'col-12 card-list',
+);
+
+$listGridToggle = (isset($listGridToggle)) ? $listGridToggle : false;
+
+$cardClass = $attributes['data-grid-class'];
+if ($listGridToggle) {
+    $attributes['id'] = 'listGridToggle';
+
+    if (!empty($_COOKIE['list_grid'])) {
+        if ($_COOKIE['list_grid'] == 'list') {
+            $cardClass = $attributes['data-list-class'];
+        }
+    }
+}
+?>
+
+<div <?php echo implode(' ', array_map(function ($k, $v) {
+    return $k . '="' . $v . '"';
+}, array_keys($attributes), $attributes)); ?>>
+    <?php
+    /** @var \Ppb\Db\Table\Row\User $store */
+    foreach ($stores as $store) { ?>
+        <div class="<?php echo $cardClass; ?>">
+            <?php
+            echo $this->partial('partials/store-card.phtml', array(
+                'store' => $store,
+            )); ?>
+        </div>
+    <?php } ?>
+</div>

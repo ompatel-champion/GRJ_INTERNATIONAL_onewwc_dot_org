@@ -1,0 +1,35 @@
+/**
+ * MOD:- BANK TRANSFER
+ */
+
+dl.dl-bank-account {
+    margin-bottom: 0;
+}
+
+dl.dl-bank-account dt {
+    font-size: 85%;
+}
+
+dl.dl-bank-transfer-details dt {
+    font-size: 85%;
+    width: 140px;
+}
+
+dl.dl-bank-account dd {
+    margin-bottom: 5px;
+}
+
+dl.dl-bank-transfer-details dd {
+    margin-bottom: 5px;
+    margin-left: 160px;
+}
+
+.bank-account-selection {
+    overflow: hidden;
+    clear: both;
+    margin-bottom: 10px !important;
+}
+
+.bank-account-selection:last-child {
+    margin-bottom: 0 !important;
+}

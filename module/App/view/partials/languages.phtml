@@ -1,0 +1,35 @@
+<?php
+/**
+ * @version 8.2 [rev.8.2.01]
+ */
+
+$nbLanguages = count($this->languages);
+
+$activeClass = 'eng';
+foreach ($this->languages as $language) {
+    if ($language['locale'] == $this->activeLocale) {
+        $activeClass = $this->object->flagClass($language['locale']);
+    }
+}
+?>
+
+<?php if ($nbLanguages > 0) { ?>
+    <div class="dropdown language-dropdown">
+        <button class="btn <?php echo ($nbLanguages > 1) ? 'dropdown-toggle' : ''; ?>" type="button"
+                id="languageDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+            <span class="flag-icon flag-icon-<?php echo $activeClass; ?>"></span>
+        </button>
+
+        <?php if ($nbLanguages > 1) { ?>
+            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="languageDropdown">
+                <?php foreach ($this->languages as $language) { ?>
+                    <a class="dropdown-item"
+                       href="<?php echo $this->url(array('lang' => $language['locale']), null, true, null, true, false); ?>">
+                        <span class="flag-icon flag-icon-<?php echo $this->object->flagClass($language['locale']); ?> mr-2"></span>
+                        <?php echo $language['desc']; ?>
+                    </a>
+                <?php } ?>
+            </div>
+        <?php } ?>
+    </div>
+<?php } ?>

@@ -1,0 +1,222 @@
+<?php
+/**
+ * @version 8.2 [rev.8.2.01]
+ */
+
+/** @var \Ppb\Service\Table\Relational\ContentSections $contentSectionsService */
+
+$contentSectionsSelect = $contentSectionsService->getTable()->select()
+    ->where('type = ?', \Ppb\Db\Table\Row\ContentSection::TYPE_TREE);
+
+$headlineButtons = null;
+
+$headlineButtons .= '<a class="btn btn-outline-secondary" '
+    . 'href="' . $this->url(array('action' => 'new-section', 'parent_id' => $this->parentId)) . '">'
+    . $this->_('New Section') . '</a>';
+
+$this->setGlobal('headlineButtons', $headlineButtons);
+?>
+<nav class="navbar p-0 mb-4">
+    <form class="form-inline ml-auto"
+          action="<?php echo $this->url(null, null, true, array('id', 'name', 'type', 'parent_id', 'page', 'submit')); ?>"
+          method="get">
+
+        <div class="mr-1">
+            <?php echo $this->formElement('text', 'section_name', $this->sectionName)
+                ->setAttributes(array('placeholder' => $this->_('Name / Handle'), 'class' => 'form-control input-medium'))
+                ->render();
+            ?>
+        </div>
+        <div class="mr-1">
+            <?php echo $this->formElement('select', 'parent_id', $this->parentId)
+                ->setMultiOptions(
+                    array(
+                        ''         => $this->_('All Sections'),
+                        'single'   => $this->_('Single'),
+                        'multiple' => $this->_('Multiple'),
+                        'tree'     => $this->_('Tree'),
+                    ) + $contentSectionsService->getMultiOptions($contentSectionsSelect, null, false, true))
+                ->setAttributes(array(
+                    'class' => 'form-control input-medium'))
+                ->render();
+            ?>
+        </div>
+        <?php echo $this->formElement('submit', 'submit', 'Search')
+            ->setAttributes(array('class' => 'btn btn-secondary'))
+            ->render();
+        ?>
+    </form>
+</nav>
+
+<form method="post" action="">
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <caption>
+                <?php echo sprintf(
+                    $this->pluralize(
+                        $count = $this->paginator->getPages()->totalItemCount,
+                        $this->_('<strong>%s</strong> section found.'),
+                        $this->_('<strong>%s</strong> sections found.')
+                    ), $count); ?>
+
+                <?php if ($this->paginator->getPages()->totalItemCount > 1) { ?>
+                    <?php echo sprintf(
+                        $this->_('Showing results <strong>%s</strong> to <strong>%s</strong>'),
+                        $this->paginator->getPages()->firstItemNumber,
+                        $this->paginator->getPages()->lastItemNumber); ?>
+                <?php } ?>
+            </caption>
+            <?php if ($this->paginator->getPages()->totalItemCount) { ?>
+                <thead class="thead-light">
+                <tr>
+                    <th><?php echo $this->_('Name'); ?></th>
+                    <th class="size-medium"><?php echo $this->_('Handle'); ?></th>
+                    <th class="size-medium"><?php echo $this->_('URI'); ?></th>
+                    <th class="size-mini"><?php echo $this->_('Type'); ?></th>
+                    <th class="size-mini"><?php echo $this->_('Order ID'); ?></th>
+                    <th class="size-mini"><?php echo $this->_('Active'); ?></th>
+                    <th class="size-medium"><?php echo $this->_('Actions'); ?></th>
+                </tr>
+                </thead>
+            <?php } ?>
+            <tbody>
+            <?php
+            $checkboxCounter = 0;
+
+            /** @var \Ppb\Db\Table\Row\ContentSection $section */
+            foreach ($this->paginator as $section) {
+                ?>
+                <tr>
+                    <td>
+                        <div>
+                            <?php echo $section['name']; ?>
+                        </div>
+                        <?php if ($section['parent_id'] != null) { ?>
+                            <div class="mb-1">
+                                <span class="badge badge-secondary"><?php echo $contentSectionsService->getFullName($section['parent_id']); ?></span>
+                            </div>
+                        <?php } ?>
+
+                        <div class="mt-4">
+                            <a class="btn btn-success mb-1" target="_blank"
+                               href="<?php echo $this->url($section->link()); ?>"
+                               title="<?php echo $this->_('Preview Section'); ?>">
+                                <span data-feather="image"></span>
+                                <?php echo $this->_('Preview'); ?>
+                            </a>
+
+                            <?php if ($section->isTree()) { ?>
+                                <?php if ($section->hasBranches()) { ?>
+                                    <a class="btn btn-red mb-1"
+                                       href="<?php echo $this->url(array('parent_id' => $section['id'])); ?>"
+                                       title="<?php echo $this->_('View Branches'); ?>">
+                                        <span data-feather="share-2"></span>
+                                        <?php echo $this->_('View Branches'); ?>
+                                    </a>
+                                <?php } ?>
+
+                                <a class="btn btn-blue mb-1"
+                                   href="<?php echo $this->url(array('action' => 'new-section', 'parent_id' => $section['id'])); ?>"
+                                   title="<?php echo $this->_('Add Branch'); ?>">
+                                    <span data-feather="plus"></span>
+                                    <?php echo $this->_('Add Branch'); ?>
+                                </a>
+                            <?php } ?>
+
+                            <?php if ($section->canAddEntry()) { ?>
+                                <a class="btn btn-gold mb-1"
+                                   href="<?php echo $this->url(array('action' => 'new-entry', 'section_id' => $section['id'])); ?>"
+                                   title="<?php echo $this->_('Add Entry'); ?>">
+                                    <span data-feather="file-text"></span>
+                                    <?php echo $this->_('Add Entry'); ?>
+                                </a>
+                            <?php } ?>
+
+                            <?php if ($section->canEditEntry()) { ?>
+                                <a class="btn btn-orange mb-1"
+                                   href="<?php echo $this->url(array('action' => 'edit-entry', 'id' => $section->getEntryId())); ?>"
+                                   title="<?php echo $this->_('Edit Entry'); ?>">
+                                    <span data-feather="edit"></span>
+                                    <?php echo $this->_('Edit Entry'); ?>
+                                </a>
+                            <?php } ?>
+
+                            <?php if ($section->countEntries() > 0 && $section->isMultiple()) { ?>
+                                <a class="btn btn-dark mb-1"
+                                   href="<?php echo $this->url(array('action' => 'entries', 'handle' => $section->getData('handle'))); ?>"
+                                   title="<?php echo $this->_('View Entries'); ?>">
+                                    <span data-feather="grid"></span>
+                                    <?php echo $this->_('View Entries'); ?>
+                                </a>
+                            <?php } ?>
+                        </div>
+
+                    </td>
+                    <td>
+                        <em><?php echo $section['handle']; ?></em>
+                    </td>
+                    <td>
+                        <?php echo ltrim($this->url($section->link(), null, false, null, false), '/'); ?>
+                    </td>
+                    <td>
+                        <?php echo $section->getType(true); ?>
+                    </td>
+                    <td>
+                        <?php echo $this->formElement('hidden', 'id')
+                            ->setBrackets('[' . $checkboxCounter . ']')
+                            ->setMultiple()
+                            ->setValue($section['id'])
+                            ->render();
+                        ?>
+                        <?php echo $this->formElement('text', 'order_id')
+                            ->setAttributes(array('class' => 'form-control'))
+                            ->setBrackets('[' . $checkboxCounter . ']')
+                            ->setMultiple()
+                            ->setValue($section['order_id'])
+                            ->render();
+                        ?>
+                    </td>
+                    <td>
+                        <?php echo $this->formElement('checkbox', 'active')
+                            ->setValue($section['active'])
+                            ->setMultiOptions(array(1 => null))
+                            ->setBrackets('[' . $checkboxCounter . ']')
+                            ->setMultiple()
+                            ->render();
+                        ?>
+                    </td>
+                    <td>
+                        <a class="btn btn-secondary mb-1"
+                           href="<?php echo $this->url(array('action' => 'edit-section', 'id' => $section['id'])); ?>"
+                           title="<?php echo $this->_('Edit Section'); ?>">
+                            <span data-feather="folder"></span>
+                            <?php echo $this->_('Edit'); ?>
+                        </a>
+                        <a class="btn btn-danger mb-1 confirm-box"
+                           href="<?php echo $this->url(array('action' => 'delete-section', 'id' => $section['id']),
+                               null, true); ?>"
+                           title="<?php echo $this->_('Delete Section'); ?>"
+                           data-message="<?php echo $this->_('Are you sure you want to delete this section?'); ?>">
+                            <span data-feather="x"></span>
+                            <?php echo $this->_('Delete'); ?>
+                        </a>
+                    </td>
+                </tr>
+                <?php $checkboxCounter++; ?>
+            <?php } ?>
+            </tbody>
+        </table>
+    </div>
+
+    <?php if ($count > 0) { ?>
+        <div class="buttons-sticky-bottom">
+            <?php echo $this->formElement('submit', 'submit', $this->_('Update'))
+                ->setAttributes(array('class' => 'btn btn-primary btn-lg'))
+                ->render();
+            ?>
+        </div>
+    <?php } ?>
+</form>
+
+<?php echo $this->pagination($this->paginator, 'sliding', 'partials/pagination.phtml'); ?>
+

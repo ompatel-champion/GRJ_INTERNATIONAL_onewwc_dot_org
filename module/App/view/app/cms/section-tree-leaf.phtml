@@ -1,0 +1,68 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.03]
+ */
+
+/* @var \Ppb\Db\Table\Row\ContentSection $section */
+/* @var \Ppb\Db\Table\Row\ContentEntry|null $entry */
+/* @var \Ppb\Navigation\Page\ContentSection $currentPage */
+/* @var \Ppb\Navigation\Page\ContentSection $mainPage */
+/* @var array $params */
+/* @var bool $inAdmin */
+
+$headline = $headlineButtons = null;
+
+if ($inAdmin) {
+    if ($sectionEntryStatus = $this->sectionEntryStatus($section, $entry)) {
+        $headlineButtons = '<div class="mb-1 text-right">' . $sectionEntryStatus . '</div>';
+    }
+}
+
+if (!empty($entry['title'])) {
+    $headline = $entry['title'];
+}
+?>
+
+<?php
+echo $this->navigation()
+    ->setContainer($currentPage)
+    ->setPartial('navigation/breadcrumbs.phtml')->setMinDepth(0)->breadcrumbs(array(
+        'home' => array(
+            'params' => array('module' => 'app', 'controller' => 'index', 'action' => 'index'),
+            'label'  => $this->_('Home'),
+        )));
+?>
+
+<div class="row">
+    <div class="col-lg-3">
+        <!-- tree section sidebar -->
+        <?php
+        echo $this->navigation()
+            ->setContainer($mainPage)
+            ->setPartial('navigation/sidebar.phtml')
+            ->menu();
+        ?>
+    </div>
+    <div class="col-lg-9">
+        <?php
+        echo $this->navigation()->setPartial('navigation/headline.phtml')->headline(array(
+            'headline'        => $headline,
+            'headlineButtons' => $headlineButtons,
+        ));
+        ?>
+
+        <?php if ($entry) { ?>
+            <?php echo $this->renderHtml($entry['content'], true); ?>
+        <?php } ?>
+
+        <?php
+        echo $this->navigation()
+            ->setContainer($currentPage)
+            ->setPartial('navigation/pager.phtml')
+            ->pager();
+        ?>
+    </div>
+</div>
+
+
+

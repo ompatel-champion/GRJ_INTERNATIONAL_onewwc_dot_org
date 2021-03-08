@@ -1,0 +1,39 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.01]
+ */
+
+use Listings\View\Helper\BrowsePageTitle;
+
+$headline = null;
+$subtitle = null;
+
+$output = $this->output;
+
+if (!empty($output[BrowsePageTitle::PRIMARY])) {
+    $headline = $output[BrowsePageTitle::PRIMARY];
+    unset($output[BrowsePageTitle::PRIMARY]);
+}
+
+foreach (BrowsePageTitle::$paramTypes[BrowsePageTitle::PAGINATION] as $key) {
+    if (isset($output[$key])) {
+        unset($output[$key]);
+    }
+}
+
+$subtitle = implode(' &nbsp; ', $output);
+?>
+
+<div class=" pb-2 mb-3 border-bottom">
+    <?php if (!empty($headline)) { ?>
+        <h1 class="h3">
+            <?php echo $headline; ?>
+        </h1>
+    <?php } ?>
+
+    <?php if (!empty($subtitle)) { ?>
+        <h5 class="h6 mt-2">
+            <?php echo $subtitle; ?>
+        </h5>
+    <?php } ?>
+</div>

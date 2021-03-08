@@ -1,0 +1,45 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.04]
+ */
+
+$userId = (!empty($userId)) ? $userId : null;
+$listingId = (!empty($listingId)) ? $listingId : null;
+
+$voucherCode = (!empty($voucherCode)) ? $voucherCode : $this->request()->getRequest()->getParam('voucher_code');
+
+$voucher = null;
+if ($voucherCode) {
+    $vouchersService = new \Ppb\Service\Vouchers();
+    $voucher = $vouchersService->findBy($voucherCode, $userId);
+}
+?>
+<div class="form-group">
+    <div class="field-row align-items-center d-flex">
+        <?php echo $this->formElement('text', 'voucher_code')
+            ->setValue($voucherCode)
+            ->setAttributes(array(
+                'class'       => 'form-control mr-1',
+                'placeholder' => $this->_('Voucher Code'),
+            ))
+            ->render();
+        ?>
+
+        <?php echo $this->formElement('submit', 'voucher_add', $this->_('Apply'))
+            ->setAttributes(array(
+                'class' => 'btn btn-primary',
+            ))
+            ->render();
+        ?>
+    </div>
+    <div class="au-voucher-message">
+        <?php
+        echo $this->partial('partials/voucher-message.phtml', array(
+            'voucher'     => $voucher,
+            'listingId'   => $listingId,
+            'voucherCode' => $voucherCode,
+        ));
+        ?>
+    </div>
+</div>
+

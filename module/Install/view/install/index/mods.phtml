@@ -1,0 +1,25 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.01]
+ */
+/** @var bool $connected */
+/** @var bool $submitted */
+
+if ($connected) { ?>
+    <?php if ($submitted) { ?>
+        <div class="alert alert-success">
+            <?php echo sprintf(
+                $this->_('Please <a href="%s">click here</a> to access your website.'),
+                $this->url(null, 'app-home')); ?>
+        </div>
+        <?php
+    }
+    else {
+        ?>
+        <div class="alert alert-primary">
+            <?php echo $this->_('Please use this form to run the SQL for any official add-ons you have installed.'); ?>
+        </div>
+    <?php } ?>
+
+    <?php echo $this->form; ?>
+<?php } ?>

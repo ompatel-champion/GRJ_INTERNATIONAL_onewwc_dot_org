@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- MOD:- GOOGLE OAUTH LOGIN -->
+<config>
+    <navigation>
+        <pages>
+            <main_navigation>
+                <pages>
+                    <settings>
+                        <pages>
+                            <user_settings>
+                                <pages>
+                                    <google_oauth_login>
+                                        <label>Google Oauth Login [ Mod ]</label>
+                                        <uri>admin/settings/google_oauth_login</uri>
+                                    </google_oauth_login>
+                                </pages>
+                            </user_settings>
+                        </pages>
+                    </settings>
+                </pages>
+            </main_navigation>
+        </pages>
+    </navigation>
+</config>

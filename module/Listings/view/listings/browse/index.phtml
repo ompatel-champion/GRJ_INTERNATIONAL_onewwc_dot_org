@@ -1,0 +1,133 @@
+<?php
+/**
+ * @version 8.2 [rev.8.2.01]
+ */
+/* @var int $parentId */
+/* @var array $params */
+/* @var bool $displaySellingSortFilter */
+
+$featuredListings = array();
+
+if ($this->settings['enable_catfeat'] && $this->settings['catfeat_nb']) {
+    $featuredListings = $this->listings('partials/listings-cards.phtml')
+        ->setVariables(array(
+            'gridClass' => 'col-' . (12 / $this->settings['catfeat_items_row_phone']) . ' col-sm-' . (12 / $this->settings['catfeat_items_row_desktop']) . ' card-grid',
+            'cardType'  => $this->settings['catfeat_box'],
+        ))
+        ->fetchListings(array(
+                'filter'   => 'catfeat',
+                'sort'     => 'rand',
+                'limit'    => $this->settings['catfeat_nb'],
+                'user_id'  => (!empty($params['user_id'])) ? $params['user_id'] : null,
+                'store_id' => (!empty($params['store_id'])) ? $params['store_id'] : null,
+            ) + $params)
+        ->getListings();
+}
+
+/** @var \Cube\Paginator $paginator */
+$paginator = $this->listings()->fetchPaginator($params)->getPaginator();
+?>
+
+<div class="row">
+    <nav class="col-lg-3 pr-lg-1 sidebar">
+        <!-- SIDEBAR -->
+        <?php echo $this->basicSearchForm; ?>
+        <!-- /SIDEBAR -->
+    </nav>
+    <main class="col-lg-9 main">
+        <div class="main-content">
+            <!-- HEADLINE -->
+            <?php echo $this->browsePageTitle('partials/browse-page-title-headline.phtml')->render(); ?>
+            <!-- /HEADLINE -->
+
+            <?php if ($paginator->getPages()->totalItemCount) { ?>
+                <!-- CATEGORY FEATURED LISTINGS -->
+                <?php
+                if (count($featuredListings) > 0) {
+                    ?>
+
+                    <div class="mt-3 mb-3 pt-2 pb-1 px-3 bg-light">
+                        <?php
+                        echo $this->navigation()->setPartial('navigation/subtitle.phtml')->headline(array(
+                            'headline' => $this->_('Featured Listings'),
+                        ));
+                        ?>
+
+                        <?php echo $this->listings()->render(); ?>
+                    </div>
+                <?php } ?>
+                <!-- /CATEGORY FEATURED LISTINGS -->
+
+                <!-- ORDERING / DISPLAY OPTIONS -->
+                <div class="row align-items-center p-0 mb-4">
+                    <div class="col-12 col-lg mb-2 mb-lg-0">
+                        <?php echo sprintf(
+                            $this->pluralize(
+                                $count = $paginator->getPages()->totalItemCount,
+                                $this->_('<strong>%s</strong> listing found.'),
+                                $this->_('<strong>%s</strong> listings found.')
+                            ), $count); ?>
+
+                        <?php if ($paginator->getPages()->totalItemCount > 1) { ?>
+                            <?php echo sprintf(
+                                $this->_('Showing results <strong>%s</strong> to <strong>%s</strong>'),
+                                $paginator->getPages()->firstItemNumber,
+                                $paginator->getPages()->lastItemNumber); ?>
+                        <?php } ?>
+                    </div>
+                    <div class="col-6 col-lg-auto">
+                        <?php
+                        $this->setGlobals(array(
+                            'btnGroupClass' => 'btn-group btn-group-sm',
+                            'btnClass'      => 'btn btn-default',
+                        ));
+
+                        if ($displaySellingSortFilter) {
+                            $container = $this->navigation()->getInitialContainer()
+                                ->findOneBy('label', $this->_('Selling Sort Filter'));
+
+                            echo $this->navigation($container, 'navigation/browse-filter.phtml')->menu();
+                        }
+                        ?>
+
+                        <?php
+                        $container = $this->navigation()->getInitialContainer()
+                            ->findOneBy('label', $this->_('Items Per Page Filter'));
+
+                        echo $this->navigation($container, 'navigation/browse-filter.phtml')->menu();
+                        ?>
+                    </div>
+
+                    <div class="col-6 col-lg-auto text-right">
+                        <a href="#" id="btn-grid" class="btn btn-sm btn-default"
+                           title="<?php echo $this->_('Grid'); ?>">
+                            <span data-feather="grid"></span>
+                        </a>
+                        <a href="#" id="btn-list" class="btn btn-sm btn-default"
+                           title="<?php echo $this->_('List'); ?>">
+                            <span data-feather="server"></span>
+                        </a>
+                    </div>
+                </div>
+                <!-- /ORDERING / DISPLAY OPTIONS -->
+
+                <!-- DISPLAY LISTINGS -->
+                <div class="mb-4">
+                    <?php echo $this->listings()->setVariables(array('gridClass' => 'col-6 col-md-3 card-grid', 'listGridToggle' => true))->renderPaginator(); ?>
+                </div>
+                <!-- /DISPLAY LISTINGS -->
+
+                <!-- PAGINATION -->
+                <?php echo $this->pagination($paginator, 'sliding', 'partials/pagination.phtml'); ?>
+                <!-- /PAGINATION -->
+            <?php }
+            else { ?>
+                <div class="py-4 text-center">
+                    <?php echo $this->_('No listings match your query.'); ?>
+                </div>
+            <?php } ?>
+        </div>
+    </main>
+</div>
+
+

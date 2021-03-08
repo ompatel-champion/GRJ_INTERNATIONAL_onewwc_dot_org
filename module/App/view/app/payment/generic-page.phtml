@@ -1,0 +1,18 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.02]
+ */
+/* @var array $gatewayForms */
+/* @var string $paymentDescription */
+
+echo (!empty($gatewayContent)) ? $gatewayContent : null;
+
+if ($gatewayForms) { ?>
+    <blockquote class="bq bq-default mb-4">
+        <?php echo $paymentDescription; ?>
+    </blockquote>
+
+    <?php foreach ($gatewayForms as $form) { ?>
+        <?php echo $form; ?>
+    <?php } ?>
+<?php } ?>

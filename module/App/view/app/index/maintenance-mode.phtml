@@ -1,0 +1,50 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.01]
+ */
+?>
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <?php echo $this->headTitle(); ?>
+    <meta charset="utf-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <?php echo $this->script()->displayHeaderCode(); ?>
+    <link href="<?php echo $this->baseUrl; ?>/img/favicon.png"
+          rel="shortcut icon" type="image/vnd.microsoft.icon">
+
+</head>
+
+<body>
+
+<div class="maintenance-mode">
+    <?php if (!empty($this->settings['maintenance_mode_content'])) { ?>
+        <?php echo $this->renderHtml($this->settings['maintenance_mode_content']); ?>
+    <?php }
+    else { ?>
+        <div class="content">
+            <div class="mb-4">
+                <img src="<?php echo $this->baseUrl; ?>/img/maintenance.png"
+                     alt="<?php echo $this->_('Maintenance Mode'); ?>">
+            </div>
+
+            <h1>
+                <?php echo $this->settings['sitename']; ?>
+            </h1>
+            <h3 class="mb-4">
+                <?php echo $this->_('Maintenance Mode'); ?>
+            </h3>
+
+            <div>
+                <?php echo $this->_('The website is currently in maintenance mode. Sorry for the inconvenience.'); ?>
+            </div>
+        </div>
+    <?php } ?>
+</div>
+
+
+</body>
+</html>

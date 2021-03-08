@@ -1,0 +1,26 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.01]
+ */
+?>
+<div class="d-flex justify-content-between">
+    <div class="previous">
+        <?php if ($this->relPrev) {
+            if ($this->relPrev->getParent() instanceof \Ppb\Navigation\Page\ContentSection) { ?>
+                <a href="<?php echo $this->url($this->relPrev->params); ?>" rel="prev">
+                    &larr; <?php echo $this->relPrev->label; ?>
+                </a>
+            <?php }
+        } ?>
+    </div>
+
+    <div class="next">
+        <?php if ($this->relNext) {
+            if ($this->relNext->getParent() instanceof \Ppb\Navigation\Page\ContentSection) { ?>
+                <a href="<?php echo $this->url($this->relNext->params); ?>" rel="prev">
+                    <?php echo $this->relNext->label; ?> &rarr;
+                </a>
+            <?php }
+        } ?>
+    </div>
+</div>

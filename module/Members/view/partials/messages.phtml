@@ -1,0 +1,94 @@
+<?php
+/**
+ * this partial will require either a:
+ *
+ * @var \Ppb\Db\Table\Row\Message $message
+ *      => in this case it will display all messages from the topic in desc order
+ * @var \Ppb\Db\Table\Row\Listing $listing
+ *      => in this case it will display all questions and answers for the listing in desc order
+ */
+/**
+ * @version 8.2 [rev.8.2.01]
+ */
+
+$message = (isset($message)) ? $message : null;
+$listing = (isset($listing)) ? $listing : null;
+
+$publicQuestions = false;
+$messages = array();
+if ($message instanceof \Ppb\Db\Table\Row\Message) {
+    $messages = $message->findDependentRowset('\Ppb\Db\Table\Messaging');
+}
+else if ($listing instanceof \Ppb\Db\Table\Row\Listing) {
+    $publicQuestions = true;
+    $messages = $listing->findDependentRowset('\Ppb\Db\Table\Messaging', null, $listing->getTable()->getAdapter()->select()->where('private = ?', 0));
+}
+
+?>
+
+<?php if (count($messages) <= 0) { ?>
+    <div class="p-3 text-center text-danger">
+        <?php echo $this->_('There are no messages posted.'); ?>
+    </div>
+<?php } ?>
+<?php foreach ($messages as $message) {
+    $sender = $message->findParentRow('\Ppb\Db\Table\Users', 'Sender'); ?>
+    <dl class="row dl-flex">
+        <dt class="col-lg-3 text-truncate">
+            <?php if ($publicQuestions) { ?>
+                <span data-feather="help-circle" class="text-danger"></span>
+                <?php
+            }
+            else {
+                echo $this->userDetails($sender)->display();
+            } ?>
+        </dt>
+        <dd class="col-lg-9">
+            <div>
+                <?php if ($publicQuestions) { ?>
+                    <?php echo $this->userDetails($sender)->display(); ?>
+                <?php } ?>
+                <?php if (!empty($message['title'])) { ?>
+                    <strong><?php echo $this->renderText($message['title']); ?></strong>
+                <?php } ?>
+            </div>
+            <div>
+                <small class="text-muted"><?php echo $this->date($message['created_at']); ?></small>
+            </div>
+            <div class="mt-2">
+                <?php echo $this->renderText($message['content'], true); ?>
+            </div>
+        </dd>
+
+        <?php if ($publicQuestions) {
+            $answers = $message->findDependentRowset('\Ppb\Db\Table\Messaging', null,
+                $message->getTable()->select()
+                    ->where('listing_id IS NULL')
+                    ->where('sender_id != ?', $sender['id'])
+                    ->order('created_at ASC')
+            );
+
+            foreach ($answers as $answer) {
+                ?>
+                <!-- display all answers for the above question -->
+                <dt class="col-lg-3 text-truncate">
+                    <span data-feather="send" class="text-success"></span>
+                </dt>
+                <dd class="col-lg-9">
+                    <div>
+                        <?php if (!empty($answer['title'])) { ?>
+                            <strong><?php echo $this->renderText($answer['title']); ?></strong>
+                        <?php } ?>
+                    </div>
+                    <div>
+                        <small class="text-muted"><?php echo $this->date($answer['created_at']); ?></small>
+                    </div>
+                    <div class="mt-2">
+                        <?php echo $this->renderText($answer['content'], true); ?>
+                    </div>
+                </dd>
+            <?php } ?>
+        <?php } ?>
+    </dl>
+<?php } ?>
+

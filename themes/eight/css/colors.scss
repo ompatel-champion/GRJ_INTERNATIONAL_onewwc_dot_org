@@ -1,0 +1,206 @@
+/* version 8.0 [rev.8.0.01] */
+@import "../../../css/colors";
+@import "../../../css/mixins";
+@import "themify";
+a:not(.btn),
+.btn-link {
+    @include themify($themes) {
+        color: themed('linkColor');
+    }
+
+    &:hover {
+        @include themify($themes) {
+            color: themed('linkColorHover');
+        }
+    }
+}
+.h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6 {
+    @include themify($themes) {
+        color: themed('headlineColor');
+    }
+}
+.border-bottom {
+    @include themify($themes) {
+        border-bottom-color: themed('borderBottomColor') !important;
+    }
+}
+.btn-primary,
+.nav-pills .nav-link.active,
+.nav-pills .show > .nav-link,
+.page-item.active .page-link {
+    @include themify($themes) {
+        color: themed('btnPrimaryColor');
+        background-color: themed('btnPrimaryBackground');
+        border-color: themed('btnPrimaryBackground');
+    }
+
+    &:hover {
+        @include themify($themes) {
+            color: themed('btnPrimaryColorHover');
+            background-color: themed('btnPrimaryBackgroundHover');
+            border-color: themed('btnPrimaryBackgroundHover');
+        }
+    }
+}
+/* HEADER */
+header {
+    .bg-light {
+        @include themify($themes) {
+            background-color: themed('backgroundThree') !important;
+        }
+    }
+
+    a#category-select-btn {
+        @include themify($themes) {
+            color: themed('headlineLinkColor');
+        }
+
+        &:hover {
+            @include themify($themes) {
+                color: themed('headlineLinkColorHover');
+            }
+        }
+    }
+    .desktop-navbar {
+        .bg-search {
+            @include themify($themes) {
+                background-color: themed('backgroundTwo');
+            }
+        }
+
+        .nav-search {
+            @include themify($themes) {
+                background-color: themed('backgroundOne');
+            }
+
+            a {
+                @include themify($themes) {
+                    color: themed('headlineLinkColor');
+                }
+
+                &:hover {
+                    @include themify($themes) {
+                        color: themed('headlineLinkColorHover');
+                    }
+                }
+            }
+        }
+
+        .navbar-nav {
+            &.nav-main-menu {
+                .active .nav-link {
+                    @include themify($themes) {
+                        color: themed('linkColorHover');
+                    }
+                }
+            }
+        }
+    }
+}
+/* /HEADER */
+
+/* SIDEBAR & CORRESPONDING MAIN ELEMENT */
+.sidebar-menu {
+    .nav-item.open > a,
+    .nav-item > a:hover {
+        @include themify($themes) {
+            color: themed('linkColorHover');
+        }
+    }
+
+    .nav-link {
+        &.active {
+            @include themify($themes) {
+                color: themed('linkColorHover');
+            }
+        }
+    }
+
+}
+/* /SIDEBAR & CORRESPONDING MAIN ELEMENT */
+
+/* LISTING & STORES CARDS */
+.listing-card {
+    //@include themify($themes) {
+    //    border-color: themed('cardBorderColor') !important;
+    //}
+
+    .card-body {
+        .card-title {
+            a {
+                @include themify($themes) {
+                    //color: themed('headlineColor');
+                }
+            }
+        }
+    }
+
+    .card-highlighted {
+        @include themify($themes) {
+            background-color: lighten(themed('backgroundTwo'), 15%);
+        }
+    }
+
+    /* card grid */
+    .card-grid & {
+        .card-footer {
+            //background-color: $bgOne;
+            //border-top-color: $bgTwo;
+        }
+    }
+    /* /card grid */
+}
+.store-card {
+    //border-color: $bgTwo !important;
+}
+/* /LISTING & STORES CARDS */
+
+/* STORE HEADER */
+.store-header {
+    .navbar {
+        //background-color: $bgTwo;
+    }
+}
+/* /STORE HEADER */
+
+/* CATEGORIES CARD COLUMNS */
+.categories-card-columns {
+    .card {
+        .card-title {
+            a {
+                @include themify($themes) {
+                    color: themed('linkColorHover');
+                }
+            }
+        }
+    }
+}
+/* /CATEGORIES CARD COLUMNS */
+
+/* LISTING DETAILS PAGE */
+.listing-details {
+    /* breadcrumbs */
+    .breadcrumb {
+        a {
+            color: $gray-dark;
+        }
+    }
+    /* /breadcrumbs */
+}
+/* /LISTING DETAILS PAGE */
+
+/* FOOTER */
+footer {
+    a:not(.btn) {
+        @include themify($themes) {
+            color: themed('footerLinkColor') !important;
+        }
+
+        &:hover {
+            @include themify($themes) {
+                color: themed('footerLinkColorHover') !important;
+            }
+        }
+    }
+}
+/* /FOOTER */

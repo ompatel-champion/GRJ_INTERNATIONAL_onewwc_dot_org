@@ -1,0 +1,95 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.04]
+ */
+/**
+ * MOD:- GOOGLE OAUTH LOGIN
+ * MOD:- FACEBOOK LOGIN
+ */
+
+/* @var int $modal */
+?>
+<?php
+if ($this->form->isAsync()) {
+    if ($this->form->isRedirectParent()) {
+        echo json_encode(array(
+            'redirectUrl' => $this->form->getRedirectUrl()
+        ));
+    }
+    else { ?>
+        <div class="p-3 mx-auto">
+            <?php echo $this->form; ?>        
+            
+            <!-- ## -- ADD -- [ MOD:- GOOGLE OAUTH LOGIN ] -->
+            <?php if ($this->settings['enable_google_oauth_login']) { ?>
+                <div class="form-sign-in mt-2">
+                    <a href="<?php echo $this->url(array('module' => 'members', 'controller' => 'user', 'action' => 'google-oauth-login')); ?>"
+                       class="btn btn-lg btn-secondary btn-block btn-register-google-oauth">
+                        <span data-feather="key"></span>
+                        <?php echo $this->_('Sign In Using Google'); ?>
+                    </a>
+                </div>
+            <?php } ?>
+            <!-- ## -- ./ADD -- [ MOD:- GOOGLE OAUTH LOGIN ] -->
+            <!-- ## -- START :: ADD -- [ MOD:- FACEBOOK LOGIN ] -->
+            <?php if ($this->settings['enable_facebook_login']) { ?>
+                <div class="form-sign-in mt-2">
+                    <a href="<?php echo $this->url(array('module' => 'members', 'controller' => 'user', 'action' => 'facebook-login')); ?>"
+                       class="btn btn-lg btn-secondary btn-block btn-register-facebook">
+                        <span data-feather="facebook"></span>
+                        <?php echo $this->_('Sign In Using Facebook'); ?>
+                    </a>
+                </div>
+            <?php } ?>
+            <!-- ## -- END :: ADD -- [ MOD:- FACEBOOK LOGIN ] -->            
+            <div class="mt-4 text-center">
+                <?php echo $this->_('No Account?'); ?>
+                <a href="<?php echo $this->url(array('module' => 'members', 'controller' => 'user', 'action' => 'register')); ?>">
+                    <?php echo $this->_('Create one'); ?></a>.
+            </div>
+        </div>
+    <?php }
+}
+else { ?>
+    <div class="row">
+        <div class="col-sm">
+            <?php echo $this->form; ?>
+    
+            <!-- ## -- ADD -- [ MOD:- GOOGLE OAUTH LOGIN ] -->
+            <?php if ($this->settings['enable_google_oauth_login']) { ?>
+                <div class="mt-4 form-sign-in">
+                    <a href="<?php echo $this->url(array('module' => 'members', 'controller' => 'user', 'action' => 'google-oauth-login')); ?>"
+                       class="btn btn-lg btn-primary btn-register-google-oauth btn-block">
+                        <span data-feather="key"></span>
+                        <?php echo $this->_('Sign In Using Google'); ?>
+                    </a>
+                </div>
+            <?php } ?>
+            <!-- ## -- ./ADD -- [ MOD:- GOOGLE OAUTH LOGIN ] -->
+            <!-- ## -- START :: ADD -- [ MOD:- FACEBOOK LOGIN ] -->
+            <?php if ($this->settings['enable_facebook_login']) { ?>
+                <div class="mt-4 form-sign-in">
+                    <a href="<?php echo $this->url(array('module' => 'members', 'controller' => 'user', 'action' => 'facebook-login')); ?>"
+                       class="btn btn-lg btn-primary btn-register-facebook btn-block">
+                        <span data-feather="facebook"></span>
+                        <?php echo $this->_('Sign In Using Facebook'); ?>
+                    </a>
+                </div>
+            <?php } ?>
+            <!-- ## -- END :: ADD -- [ MOD:- FACEBOOK LOGIN ] -->            
+        </div>
+        <div class="col-sm offset-sm-1">
+            <?php
+            echo $this->navigation()->setPartial('navigation/subtitle.phtml')->headline(array(
+                'headline' => $this->_('New Users'),
+            ));
+            ?>
+    
+            <div class="mb-5"><?php echo $this->_("Don't have an account? Click below to sign up."); ?></div>
+    
+            <a href="<?php echo $this->url(null, 'members-register'); ?>"
+               class="btn btn-lg btn-default btn-block">
+                <?php echo $this->_('Create Account'); ?></a>
+        </div>
+    </div>
+<?php } ?>

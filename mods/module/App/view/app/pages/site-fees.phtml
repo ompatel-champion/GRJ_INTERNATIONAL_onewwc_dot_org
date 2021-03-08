@@ -1,0 +1,84 @@
+<?php
+/**
+ * @version 8.1 [rev.8.1.01]
+ */
+/**
+ * MOD:- ADVANCED CLASSIFIEDS
+ */
+/** @var array $tabs */
+/** @var array $categoriesMultiOptions */
+/** @var int $categoryId */
+/** @var \Ppb\Db\Table\Rowset\StoresSubscriptions $storesSubscriptions */
+
+$element = $this->formElement('select', 'category_id')
+    ->setLabel('Select Category')
+    ->setMultiOptions($categoriesMultiOptions)
+    ->setValue($categoryId)
+    ->setAttributes(array(
+        'class'    => 'form-control input-medium',
+        'onchange' => 'this.form.submit();'
+    ));
+?>
+
+<?php foreach ($tabs as $key => $tab) {
+    $fees = $tab['fees'];
+    $display = $tab['display'];
+
+    if ($display) {
+        ?>
+
+        <h5 class="subtitle"><?php echo $this->_($tab['name']); ?></h5>
+        <!-- ## -- ONE LINE :: CHANGE -- [ MOD:- ADVANCED CLASSIFIEDS ] -->
+        <?php if ($key == 'listings' || $key == 'classifieds') { ?>
+            <form action="" method="get">
+                <?php echo $this->partial('partials/form-element-vertical.phtml', array('element' => $element)); ?>
+            </form>
+            <?php if (count($fees) > 0) { ?>
+                <dl class="row dl-lg">
+                    <?php foreach ($fees as $fee) { ?>
+                        <dt class="col-sm-3"><?php echo $this->_($fee['desc']); ?></dt>
+                        <dd class="col-sm-9">
+                            <?php if ($fee['tier_from'] > 0 || $fee['tier_to'] > 0) { ?>
+                                <span class="fee-tier">
+                        [ <?php echo $this->amount($fee['tier_from']); ?>
+                                    - <?php echo $this->amount($fee['tier_to']); ?> ]
+                    </span>
+                            <?php } ?>
+                            <span class="fee-amount">
+                        <?php echo ($fee['calculation_type'] == 'flat') ? $this->amount($fee['amount']) : $fee['amount'] . '%'; ?>
+                    </span>
+                        </dd>
+                    <?php } ?>
+                </dl>
+            <?php }
+            else { ?>
+                <div class="text-info mb-3"><?php echo $this->_('No fees apply for this category.'); ?></div>
+            <?php }
+        }
+        else if ($key == 'stores') {
+            if (count($storesSubscriptions) > 0) {
+                ?>
+                <dl class="row dl-lg">
+                    <?php foreach ($storesSubscriptions as $subscription) { ?>
+                        <dt class="col-sm-3"><?php echo $this->_($subscription['name']); ?></dt>
+                        <dd class="col-sm-9">
+                            <?php echo $this->storeSubscription($subscription)->description(); ?>
+                        </dd>
+                    <?php } ?>
+                </dl>
+                <?php
+            }
+        }
+        else {
+            ?>
+            <dl class="row dl-lg">
+                <?php foreach ($fees as $fee) { ?>
+                    <dt class="col-sm-3"><?php echo $this->_($fee['desc']); ?></dt>
+                    <dd class="col-sm-9"><?php echo $this->amount($fee['amount']); ?></dd>
+                <?php } ?>
+            </dl>
+        <?php } ?>
+        <?php
+    }
+} ?>
+

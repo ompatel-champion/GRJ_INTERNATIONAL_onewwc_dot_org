@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+we will need to use acl (at a later date) as well as some attributes to determine 
+when to render buttons based on settings
+
+secondly, all front end navigation will be handled by this module (including members module nav)
+
+==> use <settings>{$key}</settings>
+
+for pages with very similar functionality, create routes rather than forwards
+
+==> for buttons that depend both on settings and on privileges, make two buttons that have the same link
+
+-->
+<!-- @version 7.5 -->
+<!-- MOD:- SELLERS CREDIT -->
+<config>
+    <navigation>
+        <pages>
+            <members_menu>
+                <pages>
+                    <my_account>
+                        <pages>
+                            <balance_withdrawals>
+                                <label>Balance Withdrawals</label>
+                                <module>members</module>
+                                <controller>account</controller>
+                                <action>balance-withdrawals</action>
+                                <settings>
+                                    <name>enable_sellers_credit</name>
+                                    <value>1</value>
+                                </settings>
+                            </balance_withdrawals>
+                        </pages>
+                    </my_account>
+                </pages>
+            </members_menu>
+
+            <!-- filters -->
+
+            <balance_withdrawals_filter>
+                <label>Balance Withdrawals Filter</label>
+                <params>
+                    <filter/>
+                </params>
+                <pages>
+                    <filter_all>
+                        <label>All</label>
+                        <params>
+                            <filter/>
+                        </params>
+                        <filter>true</filter>
+                        <caret>true</caret>
+                    </filter_all>
+                    <filter_pending>
+                        <label>Pending</label>
+                        <params>
+                            <filter>pending</filter>
+                        </params>
+                        <filter>true</filter>
+                    </filter_pending>
+                    <filter_paid>
+                        <label>Paid</label>
+                        <params>
+                            <filter>paid</filter>
+                        </params>
+                        <filter>true</filter>
+                    </filter_paid>
+                    <filter_unpaid>
+                        <label>Cancelled</label>
+                        <params>
+                            <filter>cancelled</filter>
+                        </params>
+                        <filter>true</filter>
+                    </filter_unpaid>
+                </pages>
+            </balance_withdrawals_filter>
+        </pages>
+    </navigation>
+</config>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- MOD:- GOOGLE PLUS LOGIN -->
+<config>
+    <navigation>
+        <pages>
+            <main_navigation>
+                <pages>
+                    <settings>
+                        <pages>
+                            <user_settings>
+                                <pages>
+                                    <google_plus_login>
+                                        <label>Google+ Login [ Mod ]</label>
+                                        <uri>admin/settings/google_plus_login</uri>
+                                    </google_plus_login>
+                                </pages>
+                            </user_settings>
+                        </pages>
+                    </settings>
+                </pages>
+            </main_navigation>
+        </pages>
+    </navigation>
+</config>

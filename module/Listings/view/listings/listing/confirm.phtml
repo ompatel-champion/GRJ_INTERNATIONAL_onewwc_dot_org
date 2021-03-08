@@ -1,0 +1,20 @@
+<?php
+/**
+ * @version 8.1 [rev.8.1.01]
+ */
+/** @var \Ppb\Db\Table\Row\Listing $listing */
+
+if ($listing instanceof \Ppb\Db\Table\Row\Listing) { ?>
+    <?php echo $this->listing($listing, 'partials/listing-list.phtml')
+        ->setDisplaySeller()
+        ->setDisplayEnhanced()
+        ->render(); ?>
+
+    <div class="text-center mt-3 pt-3 border-top">
+        <?php echo $this->partial('partials/buttons-listing-manage.phtml',
+            array(
+                'listing' => $listing,
+                'all'     => true,
+            )); ?>
+    </div>
+<?php } ?>

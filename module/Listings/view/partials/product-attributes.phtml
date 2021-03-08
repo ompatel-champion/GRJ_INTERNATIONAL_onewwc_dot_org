@@ -1,0 +1,39 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.01]
+ *
+ * @8.0: DEPRECATED
+ */
+
+
+/* @var \Ppb\Db\Table\Row\Listing $listing */
+$form = new \Listings\Form\Purchase($listing, null, 'buy');
+$form->setData(
+    $this->request()->getRequest()->getParams());
+
+/** @var \Cube\Form\Element $element */
+foreach ($form->getElements() as $element) {
+    $name = $element->getName();
+
+    if (strstr($name, 'product_attributes')) {
+        $label = $element->getLabel();
+
+        $element->setRequired(false)
+            ->removeAttribute('class')
+            ->addAttribute('class', 'custom-select form-control');
+
+        $this->script()->addBodyCode($element->getBodyCode());
+        ?>
+        <div class="form-group product-attribute-element">
+            <label for="" class="col-form-label">
+                <?php if (!empty($label)) { ?>
+                    <?php echo $label; ?>
+                <?php } ?>
+            </label>
+            <div>
+                <?php echo $element->render(); ?>
+            </div>
+        </div>
+        <?php
+    }
+}

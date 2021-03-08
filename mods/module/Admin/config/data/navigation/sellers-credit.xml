@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- @version 7.3 -->
+<!-- MOD:- SELLERS CREDIT -->
+<config>
+    <navigation>
+        <pages>
+            <main_navigation>
+                <pages>
+                    <settings>
+                        <pages>
+                            <site_settings>
+                                <pages>
+                                    <sellers_credit>
+                                        <label>Sellers Credit [ Mod ]</label>
+                                        <uri>admin/settings/sellers_credit</uri>
+                                    </sellers_credit>
+                                </pages>
+                            </site_settings>
+                        </pages>
+                    </settings>
+
+                    <tools>
+                        <pages>
+                            <balance_withdrawals>
+                                <label>Balance Withdrawals [ Mod ]</label>
+                                <module>admin</module>
+                                <controller>tools</controller>
+                                <action>balance-withdrawals</action>
+                            </balance_withdrawals>
+                        </pages>
+                    </tools>
+                </pages>
+            </main_navigation>
+
+            <balance_withdrawals_filter>
+                <label>Balance Withdrawals Filter</label>
+                <filter>true</filter>
+                <params>
+                    <filter/>
+                </params>
+                <pages>
+                    <filter_all>
+                        <label>All</label>
+                        <params>
+                            <filter/>
+                        </params>
+                        <filter>true</filter>
+                        <caret>true</caret>
+                    </filter_all>
+                    <filter_pending>
+                        <label>Pending</label>
+                        <params>
+                            <filter>pending</filter>
+                        </params>
+                        <filter>true</filter>
+                    </filter_pending>
+                    <filter_paid>
+                        <label>Paid</label>
+                        <params>
+                            <filter>paid</filter>
+                        </params>
+                        <filter>true</filter>
+                    </filter_paid>
+                    <filter_unpaid>
+                        <label>Cancelled</label>
+                        <params>
+                            <filter>cancelled</filter>
+                        </params>
+                        <filter>true</filter>
+                    </filter_unpaid>
+                </pages>
+            </balance_withdrawals_filter>
+        </pages>
+    </navigation>
+</config>

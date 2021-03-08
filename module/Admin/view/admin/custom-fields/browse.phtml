@@ -1,0 +1,167 @@
+<?php
+/**
+ * @version 8.1 [rev.8.1.01]
+ */
+
+/* @var \Ppb\Service\Table\Relational\Categories $categoriesService */
+
+$headlineButtons = null;
+
+$headlineButtons .= '<a class="btn btn-outline-secondary" '
+    . 'href="' . $this->url(array('controller' => 'custom-fields', 'action' => 'add', 'type' => $this->type)) . '">'
+    . $this->_('Create Custom Field') . '</a>';
+
+$this->setGlobal('headlineButtons', $headlineButtons);
+
+?>
+<nav class="navbar p-0 mb-4">
+    <form class="form-inline ml-auto"
+          action="<?php echo $this->url(null, null, true, array('label', 'page', 'submit')); ?>" method="get">
+        <div class="mr-1">
+            <?php echo $this->formElement('text', 'label', $this->label)
+                ->setAttributes(array('placeholder' => $this->_('Label'), 'class' => 'form-control input-medium'))
+                ->render();
+            ?>
+        </div>
+        <?php echo $this->formElement('submit', 'submit', 'Search')
+            ->setAttributes(array('class' => 'btn btn-secondary'))
+            ->render();
+        ?>
+    </form>
+</nav>
+
+<form method="post" action="">
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <caption>
+                <?php echo sprintf(
+                    $this->pluralize(
+                        $count = $this->paginator->getPages()->totalItemCount,
+                        $this->_('<strong>%s</strong> custom field found.'),
+                        $this->_('<strong>%s</strong> custom fields found.')
+                    ), $count); ?>
+
+                <?php if ($this->paginator->getPages()->totalItemCount > 1) { ?>
+                    <?php echo sprintf(
+                        $this->_('Showing results <strong>%s</strong> to <strong>%s</strong>'),
+                        $this->paginator->getPages()->firstItemNumber,
+                        $this->paginator->getPages()->lastItemNumber); ?>
+                <?php } ?>
+            </caption>
+            <?php if ($this->paginator->getPages()->totalItemCount) { ?>
+                <thead class="thead-light">
+                <tr>
+                    <th><?php echo $this->_('Custom Field Preview'); ?></th>
+                    <th class="size-mini"><?php echo $this->_('Order ID'); ?></th>
+                    <th class="size-mini"><?php echo $this->_('Active'); ?></th>
+                    <th class="size-medium"><?php echo $this->_('Actions'); ?></th>
+                </tr>
+                </thead>
+            <?php } ?>
+            <tbody>
+            <?php
+            $checkboxCounter = 0;
+            foreach ($this->paginator as $item) { ?>
+                <tr>
+                    <td>
+                        <?php echo $this->partial('partials/form-element.phtml', array(
+                            'element' => $this->formElement($item, 'custom_field_' . $item['id']),
+                        )); ?>
+
+                        <div class="my-2">
+                            <?php if ($item['product_attribute']) { ?>
+                                <span class="badge badge-primary">
+                                    <?php echo $this->_('Product Attribute'); ?>
+                                </span>
+                            <?php }
+                            else if ($item['required']) { ?>
+                                <span class="badge badge-danger">
+                                    <?php echo $this->_('Required'); ?>
+                                </span>
+                            <?php } ?>
+
+                            <?php if ($item['searchable']) { ?>
+                                <span class="badge badge-warning">
+                                    <?php echo $this->_('Searchable'); ?>
+                                </span>
+                            <?php } ?>
+                        </div>
+
+                        <?php if ($this->type != 'user') { ?>
+                            <div>
+                                <small>
+                                    <strong><?php echo $this->_('Categories:'); ?></strong>
+
+                                    <?php
+                                    if ($item['category_ids']) {
+                                        $select = $categoriesService->getTable()->select()
+                                            ->where('id IN (?)', \Ppb\Utility::unserialize($item['category_ids']));
+                                        $multiOptions = $categoriesService->getMultiOptions($select);
+
+                                        echo implode('; ', $multiOptions);
+                                    }
+                                    else {
+                                        echo $this->_('All Categories');
+                                    } ?>
+                                </small>
+                            </div>
+                        <?php } ?>
+                    </td>
+                    <td>
+                        <?php echo $this->formElement('text', 'order_id')
+                            ->setAttributes(array('class' => 'form-control'))
+                            ->setMultiple()
+                            ->setValue($item['order_id'])
+                            ->render();
+                        ?>
+                    </td>
+                    <td>
+                        <?php echo $this->formElement('hidden', 'id')
+                            ->setMultiple()
+                            ->setValue($item['id'])
+                            ->render();
+                        ?>
+                        <?php echo $this->formElement('checkbox', 'active')
+                            ->setValue($item['active'])
+                            ->setMultiOptions(array(1 => null))
+                            ->setBrackets('[' . $checkboxCounter . ']')
+                            ->setMultiple()
+                            ->render();
+                        ?>
+                    </td>
+
+                    <td>
+                        <a class="btn btn-secondary mb-1"
+                           href="<?php echo $this->url(array('controller' => 'custom-fields', 'action' => 'edit', 'id' => $item['id'])); ?>"
+                           title="<?php echo $this->_('Edit Custom Field'); ?>">
+                            <span data-feather="folder"></span>
+                            <?php echo $this->_('Edit'); ?>
+                        </a>
+                        <a class="btn btn-danger mb-1 confirm-box"
+                           href="<?php echo $this->url(array('controller' => 'custom-fields', 'action' => 'delete', 'id' => $item['id']), null, true); ?>"
+                           title="<?php echo $this->_('Delete Custom Field'); ?>"
+                           data-message="<?php echo $this->_('Are you sure that you want to delete this custom field?'); ?>">
+                            <span data-feather="x"></span>
+                            <?php echo $this->_('Delete'); ?>
+                        </a>
+                    </td>
+                </tr>
+                <?php $checkboxCounter++; ?>
+            <?php } ?>
+
+            </tbody>
+        </table>
+    </div>
+
+    <?php if ($count > 0) { ?>
+        <div class="buttons-sticky-bottom">
+            <?php echo $this->formElement('submit', 'submit', $this->_('Update'))
+                ->setAttributes(array('class' => 'btn btn-primary'))
+                ->render();
+            ?>
+        </div>
+    <?php } ?>
+</form>
+
+<?php echo $this->pagination($this->paginator, 'sliding', 'partials/pagination.phtml'); ?>
+

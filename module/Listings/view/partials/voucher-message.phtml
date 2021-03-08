@@ -1,0 +1,42 @@
+<?php
+/**
+ * @version 8.2 [rev.8.2.01]
+ */
+/* @var \Ppb\Db\Table\Row\Voucher $voucher */
+/* @var int $listingId */
+/* @var string $voucherCode */
+
+$listingsIds = (is_array($listingId)) ? $listingId : array($listingId);
+
+$valid = false;
+if ($voucher instanceof \Ppb\Db\Table\Row\Voucher) {
+    foreach ($listingsIds as $listingId) {
+        if ($voucher->isValid($listingId)) {
+            $valid = true;
+            ?>
+            <span class="badge badge-success mt-1">
+            <?php echo sprintf(
+                $this->_('The voucher is valid. %s reduction applied'),
+                (($voucher['reduction_type'] == 'percent') ?
+                    \Cube\Locale\Format::getInstance()->numericToLocalized($voucher['reduction_amount']) . '%' :
+                    $this->amount($voucher['reduction_amount']))); ?>
+        </span>
+            <?php
+            break;
+        }
+    }
+}
+
+if (!$voucherCode) {
+    ?>
+    <span class="help-block">
+        <?php echo $this->_('Enter your voucher code (if applicable) then click apply.'); ?>
+    </span>
+<?php }
+else if (!$valid) {
+    ?>
+    <span class="badge badge-danger mt-1">
+        <?php echo $this->_('The voucher is not valid.'); ?>
+    </span>
+    <?php
+} ?>

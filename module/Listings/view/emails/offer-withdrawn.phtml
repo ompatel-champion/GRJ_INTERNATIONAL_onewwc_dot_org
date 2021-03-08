@@ -1,0 +1,61 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.01]
+ */
+
+$listing = $this->data['listing'];
+?>
+<p>
+    <?php echo sprintf(
+        $this->_('An offer posted for the below item listed on %s has been withdrawn.'),
+        $this->siteName); ?>
+</p>
+
+<div class="my-4">
+    <?php echo $this->listing($listing, 'partials/listing-list.phtml')
+        ->setDisplaySeller()
+        ->setDisplayEnhanced()
+        ->render(array(
+            'email'    => true,
+            'sitePath' => $this->sitePath,
+        )); ?>
+</div>
+
+<dl class="dl-lg dl-indented">
+    <?php if ($this->data['offer']['type'] == 'offer') { ?>
+        <dt>
+            <?php echo $this->_('Offer Amount:'); ?>
+        </dt>
+        <dd>
+            <span class="text-danger">
+                <?php echo $this->amount($this->data['offer']['amount'], $this->data['listing']['currency']); ?>
+                / <?php echo $this->_('item'); ?>
+            </span>
+        </dd>
+
+    <?php } ?>
+    <?php if (!empty($this->data['offer']['product_attributes'])) { ?>
+        <dd>
+            <small><?php echo $this->productAttributes($this->data['offer']['product_attributes'])->display(); ?></small>
+        </dd>
+    <?php } ?>
+    <dt>
+        <?php echo $this->_('Quantity:'); ?>
+    </dt>
+    <dd>
+        <?php echo $this->data['offer']['quantity']; ?>
+    </dd>
+</dl>
+<p>
+    [ <a href="<?php echo $this->sitePath . $this->url($this->data['link'], null, false, null, false); ?>">
+        <?php echo $this->_('Click here'); ?>
+    </a> ]
+    <?php echo $this->_('to access the offer details page.'); ?>
+    <?php echo $this->_('Please note that you will have to sign in first.'); ?>
+</p>
+
+<p>
+    <?php echo $this->_('Best regards'); ?> <br>
+    <?php echo $this->siteName; ?>
+</p>
+

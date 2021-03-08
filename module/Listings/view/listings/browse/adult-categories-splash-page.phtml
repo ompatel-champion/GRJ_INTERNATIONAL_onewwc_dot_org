@@ -1,0 +1,28 @@
+<?php
+/**
+ * @version 7.9 [rev.7.9.01]
+ */
+?>
+
+<?php if ($this->settings['adult_categories_splash_page']) { ?>
+    <?php echo $this->renderHtml($this->settings['adult_categories_splash_page_content']); ?>
+<?php }
+else { ?>
+    <p class="text-danger">
+        <?php echo $this->_('The content you are trying to view (access) may be offensive or disturbing to some audiences. Viewer discretion advised.'); ?>
+    </p>
+
+    <p>
+        <?php echo $this->_('By clicking "Enter" you are accessing the results voluntarily and are willing to see the adult content.'); ?>
+    </p>
+<?php } ?>
+
+<div class="text-center mgt-40 mgb-40">
+    <a class="btn btn-lg btn-success mgr-20" href="<?php echo $this->url(array('agree_adult' => 1), null, true); ?>">
+        <?php echo $this->_('Enter'); ?>
+    </a>
+
+    <a class="btn btn-lg btn-danger" href="<?php echo $this->url(null, 'app-home'); ?>">
+        <?php echo $this->_('Cancel'); ?>
+    </a>
+</div>

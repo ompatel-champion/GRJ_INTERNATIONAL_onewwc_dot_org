@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- MOD:- PICKUP LOCATIONS -->
+
+<config>
+    <navigation>
+        <pages>
+            <main_navigation>
+                <pages>
+                    <settings>
+                        <pages>
+                            <listing_settings>
+                                <pages>
+                                    <listings_settings_global>
+                                        <pages>
+                                            <google_api>
+                                                <label>Google API [ Mod ]</label>
+                                                <uri>admin/settings/google_api</uri>
+                                            </google_api>
+                                        </pages>
+                                    </listings_settings_global>
+                                </pages>
+                            </listing_settings>
+                        </pages>
+                    </settings>
+                    <tools>
+                        <pages>
+                            <pickup_locations>
+                                <label>Pickup Locations [ Mod ]</label>
+                                <uri>admin/tools/pickup-locations</uri>
+                                <hidden_children>true</hidden_children>
+                                <pages>
+                                    <add_pickup_location>
+                                        <label>Add Pickup Location</label>
+                                        <uri>admin/tools/add-pickup-location</uri>
+                                    </add_pickup_location>
+                                    <edit_pickup_location>
+                                        <label>Edit Pickup Location</label>
+                                        <uri>admin/tools/manage-pickup-location</uri>
+                                    </edit_pickup_location>
+                                </pages>
+                            </pickup_locations>
+                        </pages>
+                    </tools>
+                </pages>
+            </main_navigation>
+        </pages>
+    </navigation>
+</config>

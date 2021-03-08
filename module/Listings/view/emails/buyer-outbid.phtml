@@ -1,0 +1,45 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.01]
+ */
+
+$listing = $this->data['listing'];
+?>
+
+<p>
+    <?php echo sprintf(
+        $this->_('You have been outbid on the following listing from %s:'),
+        $this->siteName); ?>
+</p>
+
+<div class="my-4">
+    <?php echo $this->listing($listing, 'partials/listing-list.phtml')
+        ->setDisplaySeller()
+        ->setDisplayEnhanced()
+        ->render(array(
+            'email'    => true,
+            'sitePath' => $this->sitePath,
+        )); ?>
+</div>
+
+<dl class="dl-lg dl-indented">
+    <dt>
+        <?php echo $this->_('Your Bid:'); ?>
+    </dt>
+    <dd>
+        <span class="text-danger"><?php echo $this->amount($this->data['bid']['amount'], $this->data['listing']['currency']); ?></span>
+    </dd>
+</dl>
+<p>
+    [ <a href="<?php echo $this->sitePath . $this->url($this->data['link'], null, false, null, false); ?>">
+        <?php echo $this->_('Click here'); ?>
+    </a> ]
+    <?php echo $this->_('to access your current bids page.'); ?>
+    <?php echo $this->_('Please note that you will have to sign in first.'); ?>
+</p>
+
+<p>
+    <?php echo $this->_('Best regards'); ?> <br>
+    <?php echo $this->siteName; ?>
+</p>
+

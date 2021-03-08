@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- MOD:- EBAY IMPORTER -->
+<config>
+    <navigation>
+        <pages>
+            <main_navigation>
+                <pages>
+                    <settings>
+                        <pages>
+                            <site_settings>
+                                <pages>
+                                    <ebay_import_tool>
+                                        <label>Ebay Import Tool [ Mod ]</label>
+                                        <uri>admin/settings/ebay_import_tool</uri>
+                                    </ebay_import_tool>
+                                </pages>
+                            </site_settings>
+                        </pages>
+                    </settings>
+
+                    <tables>
+                        <pages>
+                            <ebay_categories>
+                                <label>Ebay Categories [ Mod ]</label>
+                                <uri>admin/tables/table/ebayCategories</uri>
+                            </ebay_categories>
+
+                        </pages>
+                    </tables>
+
+                </pages>
+            </main_navigation>
+        </pages>
+    </navigation>
+</config>

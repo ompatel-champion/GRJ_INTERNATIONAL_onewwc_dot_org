@@ -1,0 +1,31 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.01]
+ */
+?>
+
+<span>
+    <?php if (!empty($this->loggedInUser['id'])) { ?>
+        <a class="nav-link"
+           href="<?php echo $this->url(null, 'members-index'); ?>"
+           title="<?php echo $this->_('My Account'); ?>"><?php echo $this->_('My Account'); ?></a>
+    <?php }
+    else { ?>
+        <a class="nav-link"
+           href="<?php echo $this->url(array('module' => 'members', 'controller' => 'user', 'action' => 'register')); ?>"
+           title="<?php echo $this->_('Sign Up'); ?>"><?php echo $this->_('Sign Up'); ?> </a>
+    <?php } ?>
+</span>
+/
+<span>
+    <?php if (!empty($this->loggedInUser['id'])) { ?>
+        <a class="nav-link"
+           href="<?php echo $this->url(null, 'members-logout'); ?>"
+           title="<?php echo $this->_('Sign Out'); ?>"><?php echo $this->_('Sign Out'); ?></a>
+    <?php }
+    else { ?>
+        <a class="nav-link dialog-box" rel="nofollow"
+           href="<?php echo $this->url(array('module' => 'members', 'controller' => 'user', 'action' => 'login', 'async' => 1)); ?>"
+           title="<?php echo $this->_('Sign In'); ?>"><?php echo $this->_('Sign In'); ?></a>
+    <?php } ?>
+</span>

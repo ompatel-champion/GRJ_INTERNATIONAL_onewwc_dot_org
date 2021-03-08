@@ -1,0 +1,79 @@
+$themes: (
+        red: (
+                backgroundColor: #fff,
+                textColor: #212529,
+                linkColor: #9A3334,
+                linkColorHover: #861F20,
+                headlineColor: #212529,
+                headlineLinkColor: #21282F,
+                headlineLinkColorHover: #21282F,
+                footerLinkColor: #535A61,
+                footerLinkColorHover: #353C43,
+                borderBottomColor: #dee2e6,
+                btnPrimaryColor: #fff,
+                btnPrimaryBackground: #8f0000,
+                btnPrimaryColorHover: #fff,
+                btnPrimaryBackgroundHover: #5c0000,
+                backgroundOne: rgba(245, 0, 0, 0.3),
+                backgroundTwo: rgba(245, 0, 0, 0.1),
+                backgroundThree: #f8f9fa,
+        ),
+        green: (
+                backgroundColor: #fff,
+                textColor: #212529,
+                linkColor: #2C6700,
+                linkColorHover: #185300,
+                headlineColor: #212529,
+                headlineLinkColor: #21282F,
+                headlineLinkColorHover: #21282F,
+                footerLinkColor: #535A61,
+                footerLinkColorHover: #353C43,
+                borderBottomColor: #dee2e6,
+                btnPrimaryColor: #fff,
+                btnPrimaryBackground: #2C6700,
+                btnPrimaryColorHover: #fff,
+                btnPrimaryBackgroundHover: #185300,
+                backgroundOne: #9AD56E,
+                backgroundTwo: #E0FFB4,
+                backgroundThree: #f8f9fa,
+        ),
+        gray: (
+                backgroundColor: #fff,
+                textColor: #212529,
+                linkColor: #007BFF,
+                linkColorHover: #0056b3,
+                headlineColor: #212529,
+                headlineLinkColor: #21282F,
+                headlineLinkColorHover: #21282F,
+                footerLinkColor: #535A61,
+                footerLinkColorHover: #353C43,
+                borderBottomColor: #dee2e6,
+                btnPrimaryColor: #fff,
+                btnPrimaryBackground: #0067EB,
+                btnPrimaryColorHover: #fff,
+                btnPrimaryBackgroundHover: #0056b3,
+                backgroundOne: #e6e6e6,
+                backgroundTwo: #fbfbfb,
+                backgroundThree: #f8f9fa,
+        ),
+);
+
+@mixin themify($themes: $themes) {
+    @each $theme, $map in $themes {
+
+        .theme-#{$theme} & {
+            $theme-map: () !global;
+            @each $key, $submap in $map {
+                $value: map-get(map-get($themes, $theme), '#{$key}');
+                $theme-map: map-merge($theme-map, ($key: $value)) !global;
+            }
+
+            @content;
+            $theme-map: null !global;
+        }
+
+    }
+}
+@function themed($key) {
+    @return map-get($theme-map, $key);
+}

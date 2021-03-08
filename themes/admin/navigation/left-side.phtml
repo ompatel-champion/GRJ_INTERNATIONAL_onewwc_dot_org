@@ -1,0 +1,136 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.03]
+ */
+
+$collapseId = 0;
+
+if (!function_exists('sidebar')) {
+    /**
+     *
+     * recursive sidebar menu builder
+     *
+     * @param \Ppb\Navigation\Page\ContentSection $page
+     * @param \Cube\View                          $view
+     * @param int                                 $collapseId
+     *
+     * @return string
+     */
+    function sidebar($page, $view, $collapseId)
+    {
+        $ulClass = array('collapse');
+
+        if ($page->isActive(true)) {
+            $ulClass[] = 'show';
+        }
+
+        $pages = $page->getPages();
+
+        $output = '<ul class="' . implode(' ', $ulClass) . '" '
+            . (($collapseId) ? 'id="collapse' . $collapseId . '"' : '') . '>';
+
+        $collapseId *= 100;
+
+        /* @var \Ppb\Navigation\Page\ContentSection $subPage */
+        foreach ($pages as $key => $subPage) {
+            if ($subPage->hidden != 'true' && $view->navigation()->accept($subPage)) {
+                $collapseId++;
+                $hasChildren = (!empty($subPage->hasChildren()) && $subPage->hidden_children != 'true') ? true : false;
+
+                $liClass = array('nav-item');
+                $aClass = array('nav-link');
+
+                if ($hasChildren) {
+                    $liClass[] = 'nav-dropdown p-0';
+                    $aClass[] = 'nav-dropdown-toggle d-flex justify-content-between align-items-center';
+                }
+                else if ($subPage->isActive()) {
+                    $aClass[] = 'active';
+                }
+
+                if ($subPage->isActive(true)) {
+                    $liClass[] = 'open';
+                    $aClass[] = 'open';
+                }
+
+                $collapseId++;
+
+                $output .= '<li class="' . implode(' ', $liClass) . '">'
+                    . '<a class="' . implode(' ', $aClass) . '" '
+                    . (($hasChildren) ? 'data-toggle="collapse" href="#collapse' . $collapseId . '"' : 'href="' . $view->url($subPage->params) . '"') . '>'
+                    . $subPage->label
+                    . (($hasChildren) ? '<span data-feather="chevron-left"></span>' : '')
+                    . '</a>';
+
+                if ($hasChildren) {
+                    $output .= sidebar($subPage, $view, $collapseId);
+                }
+
+                $output .= '</li>';
+            }
+        }
+        $output .= '</ul>';
+
+        return $output;
+    }
+}
+
+?>
+
+<form class="sidebar-search">
+    <?php echo $this->formElement('search', 'quick_navigation')
+        ->setAttributes(array(
+            'id'          => 'quick-navigation',
+            'class'       => 'form-control',
+            'placeholder' => $this->_('Search...'),
+            'data-url'    => $this->url(array('module' => 'admin', 'controller' => 'index', 'action' => 'quick-navigation')),
+        ))
+        ->render();
+    ?>
+</form>
+
+<nav class="sidebar-menu">
+    <?php
+    /* @var \Ppb\Navigation\Page\ContentSection $levelOne */
+    foreach ($this->menu->pages as $levelOne) { ?>
+        <?php if ($levelOne->hidden != 'true' && $this->navigation()->accept($levelOne)) { ?>
+            <?php
+            $collapseId++;
+
+            $hasChildren = ($levelOne->hasChildren() && $levelOne->hidden_children != 'true') ? true : false;
+
+            $ulClass = array('collapse');
+            $hClass = array('sidebar-heading d-flex justify-content-between p-2 mt-2 mb-0');
+
+            if ($levelOne->isActive(true)) {
+                $hClass[] = 'open';
+                $ulClass[] = 'show';
+            }
+            else {
+                $hClass[] = 'closed';
+            }
+
+            ?>
+            <h6 class="<?php echo implode(' ', $hClass); ?>"
+                <?php echo(($hasChildren) ? 'data-toggle="collapse" href="#collapse' . $collapseId . '"' : ''); ?>>
+                <?php if ($levelOne->icon) { ?>
+                    <span class="icon-heading">
+                    <span data-feather="<?php echo $levelOne->icon; ?>"></span>
+                </span>
+                <?php } ?>
+                <span class="sidebar-heading-label">
+                <?php echo $levelOne->label; ?>
+            </span>
+                <?php if ($hasChildren) { ?>
+                    <span class="icon-animate text-muted">
+                    <span data-feather="more-horizontal"></span>
+                </span>
+                <?php } ?>
+            </h6>
+
+            <?php if ($hasChildren) { ?>
+                <?php echo sidebar($levelOne, $this, $collapseId); ?>
+            <?php } ?>
+        <?php } ?>
+    <?php } ?>
+</nav>

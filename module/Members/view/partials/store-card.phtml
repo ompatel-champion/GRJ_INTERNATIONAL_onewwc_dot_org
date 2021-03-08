@@ -1,0 +1,36 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.02]
+ */
+/* @var \Ppb\Db\Table\Row\User $store */
+
+$this->userDetails($store);
+
+$lazyLoad = (isset($lazyLoad)) ? $lazyLoad : true;
+
+$storeName = $store->storeName();
+$storeLink = $this->url($store->storeLink());
+?>
+
+<div class="card store-card">
+    <div class="h-100 card-img">
+        <a href="<?php echo $storeLink; ?>">
+            <?php echo $this->thumbnail($store->storeLogo(), 500, true,
+                array('alt' => $storeName, 'lazyLoad' => $lazyLoad, 'class' => 'card-img-top')); ?>
+        </a>
+    </div>
+    <div class="card-body">
+        <h5 class="card-title">
+            <a href="<?php echo $storeLink; ?>"><?php echo $storeName; ?></a>
+        </h5>
+
+        <p class="card-text card-short-description">
+            <?php echo $this->userDetails()->storeDescription(false); ?>
+        </p>
+
+        <div class="card-text card-seller">
+            <h6 class="mb-1"><?php echo $this->userDetails()->display(); ?></h6>
+            <div><?php echo $this->userDetails()->location(); ?></div>
+        </div>
+    </div>
+</div>

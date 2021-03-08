@@ -1,0 +1,41 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.04]
+ */
+?>
+
+<div class="dropdown cart-dropdown">
+    <!-- DESKTOP BUTTON -->
+    <button class="btn dropdown-toggle d-none d-lg-block" type="button" id="cartDropdown" data-toggle="dropdown"
+            aria-haspopup="true" aria-expanded="true">
+        <span data-feather="shopping-cart"></span>
+        <span class="badge badge-pill badge-light"><?php echo $this->nbItems; ?></span>
+        <span class="badge badge-text badge-slim"><?php echo $this->price; ?></span>
+    </button>
+    <!-- /DESKTOP BUTTON -->
+
+    <!-- MOBILE BUTTON -->
+    <a href="<?php echo $this->url(null, 'listings-cart'); ?>" class="btn d-block d-lg-none">
+        <span data-feather="shopping-cart"></span>
+        <span class="badge badge-pill badge-light"><?php echo $this->nbItems; ?></span>
+    </a>
+    <!-- /MOBILE BUTTON -->
+
+    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="cartDropdown">
+
+        <?php if (count($this->sales) > 0) { ?>
+            <?php
+            /** @var \Ppb\Db\Table\Row\Sale $sale */
+            foreach ($this->sales as $sale) { ?>
+                <?php echo $this->cart($sale, 'partials/cart-box.phtml')
+                    ->setDisplayTotal()
+                    ->setDisplayCheckoutBtns()
+                    ->setDisplayRemoveBtn()
+                    ->box(); ?>
+            <?php } ?>
+        <?php }
+        else { ?>
+            <div class="text-center"> <?php echo $this->_('Your shopping cart is empty.'); ?></div>
+        <?php } ?>
+    </div>
+</div>

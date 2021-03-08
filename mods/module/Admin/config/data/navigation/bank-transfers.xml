@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- @version 7.5 -->
+<!-- MOD:- BANK TRANSFER -->
+<config>
+    <navigation>
+        <pages>
+            <main_navigation>
+                <pages>
+                    <tables>
+                        <pages>
+                            <banks>
+                                <label>Banks</label>
+                                <uri>admin/tables/table/banks</uri>
+                                <hidden_children>true</hidden_children>
+                                <pages>
+                                    <add_bank_account>
+                                        <label>Add Bank Account</label>
+                                        <uri>admin/fees/add-bank-account</uri>
+                                        <hidden>true</hidden>
+                                    </add_bank_account>
+                                    <edit_bank_account>
+                                        <label>Edit Bank Account</label>
+                                        <uri>admin/fees/edit-bank-account</uri>
+                                        <hidden>true</hidden>
+                                    </edit_bank_account>
+                                </pages>
+                            </banks>
+                        </pages>
+                    </tables>
+                    <tools>
+                        <pages>
+                            <bank_transfers>
+                                <label>Bank Transfers</label>
+                                <module>admin</module>
+                                <controller>tools</controller>
+                                <action>bank-transfers</action>
+                            </bank_transfers>
+                        </pages>
+                    </tools>
+                </pages>
+            </main_navigation>
+
+            <bank_transfers_filter>
+                <label>Bank Transfers Filter</label>
+                <filter>true</filter>
+                <params>
+                    <filter/>
+                </params>
+                <pages>
+                    <filter_all>
+                        <label>All</label>
+                        <params>
+                            <filter/>
+                        </params>
+                        <filter>true</filter>
+                        <caret>true</caret>
+                    </filter_all>
+                    <filter_pending>
+                        <label>Pending</label>
+                        <params>
+                            <filter>pending</filter>
+                        </params>
+                        <filter>true</filter>
+                    </filter_pending>
+                    <filter_paid>
+                        <label>Paid</label>
+                        <params>
+                            <filter>paid</filter>
+                        </params>
+                        <filter>true</filter>
+                    </filter_paid>
+                    <filter_unpaid>
+                        <label>Cancelled</label>
+                        <params>
+                            <filter>cancelled</filter>
+                        </params>
+                        <filter>true</filter>
+                    </filter_unpaid>
+                </pages>
+            </bank_transfers_filter>
+        </pages>
+    </navigation>
+</config>

@@ -1,0 +1,114 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.03]
+ */
+
+$collapseId = 0;
+
+if (!function_exists('sidebar')) {
+
+    /**
+     *
+     * recursive sidebar menu builder
+     *
+     * @param \Ppb\Navigation\Page\ContentSection $page
+     * @param \Cube\View                          $view
+     * @param int                                 $collapseId
+     *
+     * @return string
+     */
+    function sidebar($page, $view, $collapseId)
+    {
+        $ulClass = array('collapse');
+
+        if ($page->isActive(true)) {
+            $ulClass[] = 'show';
+        }
+
+        $pages = $page->getPages();
+
+        $output = '<ul class="' . implode(' ', $ulClass) . '" '
+            . (($collapseId) ? 'id="collapse' . $collapseId . '"' : '') . '>';
+
+        $collapseId *= 100;
+
+        /* @var \Ppb\Navigation\Page\ContentSection $subPage */
+        foreach ($pages as $key => $subPage) {
+            if ($subPage->hidden != 'true' &&
+                $view->navigation()->accept($subPage) &&
+                (!$subPage->settings || (intval($view->settings[(string)$subPage->settings['name']]) == $subPage->settings['value']))
+            ) {
+                $collapseId++;
+                $hasChildren = (!empty($subPage->hasChildren()) && $subPage->hidden_children != 'true') ? true : false;
+
+                $liClass = array('nav-item');
+                $aClass = array('nav-link');
+
+                if ($hasChildren) {
+                    $liClass[] = 'nav-dropdown p-0';
+                    $aClass[] = 'nav-dropdown-toggle d-flex justify-content-between align-items-center';
+                }
+                else if ($subPage->isActive()) {
+                    $aClass[] = 'active';
+                }
+
+                if ($subPage->isActive(true)) {
+                    $liClass[] = 'open';
+                    $aClass[] = 'open';
+                }
+
+                $collapseId++;
+
+                $output .= '<li class="' . implode(' ', $liClass) . '">'
+                    . '<a class="' . implode(' ', $aClass) . '" '
+                    . (($hasChildren) ? 'data-toggle="collapse" href="#collapse' . $collapseId . '"' : 'href="' . $view->url($subPage->params) . '"') . '>'
+                    . $subPage->label
+                    . (($hasChildren) ? '<span data-feather="chevron-left"></span>' : '')
+                    . '</a>';
+
+                if ($hasChildren) {
+                    $output .= sidebar($subPage, $view, $collapseId);
+                }
+
+                $output .= '</li>';
+            }
+        }
+        $output .= '</ul>';
+
+        return $output;
+    }
+}
+
+?>
+
+<?php if ($this->sidebarSearch) { ?>
+    <form class="sidebar-search">
+        <?php echo $this->formElement('search', 'quick_navigation')
+            ->setAttributes(array(
+                'id'          => 'quick-navigation',
+                'class'       => 'form-control',
+                'placeholder' => $this->_('Search...'),
+                'data-url'    => $this->url($this->sidebarSearch),
+            ))
+            ->render();
+        ?>
+    </form>
+<?php } ?>
+
+
+<nav class="sidebar-menu">
+    <h5 class="sidebar-heading pb-2 border-bottom">
+        <a data-toggle="collapse" href="#sidebar"
+           role="button" aria-expanded="false" aria-controls="sidebar">
+            <?php if (isset($this->menu->icon)) { ?>
+                <span data-feather="<?php echo $this->menu->icon; ?>"></span>
+            <?php } ?>
+            <?php echo $this->menu->label; ?>
+            <span class="glyphicon glyphicon-triangle-bottom"></span>
+        </a>
+    </h5>
+
+    <div class="collapse" id="sidebar">
+        <?php echo sidebar($this->menu, $this, 1); ?>
+    </div>
+</nav>

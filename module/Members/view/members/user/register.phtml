@@ -1,0 +1,16 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.01]
+ */
+
+echo $this->form;
+
+if (!empty($this->loggedInUser['id'])) {
+    /** @var \Ppb\Db\Table\Row\User $user */
+    $user = $this->userDetails($this->loggedInUser['id'])->getUser();
+
+    if ($user->isSignUpFee()) {
+        echo $this->action('user-signup', 'payment', 'app', array('id' => $userId));
+    }
+}
+

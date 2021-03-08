@@ -1,0 +1,80 @@
+<?php
+/**
+ * @version 8.1 [rev.8.1.01]
+ */
+/** @var \Ppb\Db\Table\Row\User $user */
+
+$this->userDetails($user);
+
+$headlineButtons = null;
+
+$headlineButtons .= '<a class="btn btn-outline-secondary" '
+    . 'href="' . $this->url(array('action' => 'retrieve-postmen-shipper-accounts')) . '">'
+    . $this->_('Retrieve Shipper Accounts') . '</a>';
+
+$this->setGlobal('headlineButtons', $headlineButtons);
+?>
+
+<div class="mb-4 border-bottom">
+    <h5 class="subtitle">
+        <?php echo $this->_('Postmen API Account Setup'); ?>
+    </h5>
+    <p>
+        <?php echo sprintf($this->_('To create a Postmen account, <a href="%s" target="_blank">click here</a>.'), 'https://secure.postmen.com/register'); ?>
+    </p>
+    <?php echo $this->form; ?>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover">
+        <caption>
+            <?php echo sprintf(
+                $this->pluralize(
+                    $count = $this->paginator->getPages()->totalItemCount,
+                    $this->_('<strong>%s</strong> shipper account found.'),
+                    $this->_('<strong>%s</strong> shipper accounts found.')
+                ), $count); ?>
+
+            <?php if ($this->paginator->getPages()->totalItemCount > 1) { ?>
+                <?php echo sprintf(
+                    $this->_('Showing results <strong>%s</strong> to <strong>%s</strong>'),
+                    $this->paginator->getPages()->firstItemNumber,
+                    $this->paginator->getPages()->lastItemNumber); ?>
+            <?php } ?>
+        </caption>
+        <?php if ($this->paginator->getPages()->totalItemCount) { ?>
+            <thead class="thead-light">
+            <tr>
+                <th class="size-medium"><?php echo $this->_('Description'); ?></th>
+                <th class="size-small"><?php echo $this->_('Carrier Slug'); ?></th>
+                <th><?php echo $this->_('ID'); ?></th>
+                <th class="size-small"><?php echo $this->_('Status'); ?></th>
+            </tr>
+            </thead>
+        <?php } ?>
+        <tbody>
+        <?php
+        /** @var \Ppb\Db\Table\Row\PostmenShipperAccount $shipperAccount */
+        foreach ($this->paginator as $shipperAccount) {
+            ?>
+            <tr>
+                <td>
+                    <?php echo $shipperAccount->getDescription(); ?>
+                </td>
+                <td>
+                    <code><?php echo $shipperAccount->getSlug(); ?></code>
+                </td>
+                <td>
+                    <?php echo $shipperAccount->getId(); ?>
+                </td>
+                <td>
+                    <?php echo $shipperAccount->getStatus(); ?>
+                </td>
+            </tr>
+        <?php } ?>
+        </tbody>
+    </table>
+</div>
+
+<?php echo $this->pagination($this->paginator, 'sliding', 'partials/pagination.phtml'); ?>
+

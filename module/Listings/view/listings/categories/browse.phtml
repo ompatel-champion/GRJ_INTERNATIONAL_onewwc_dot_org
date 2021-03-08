@@ -1,0 +1,84 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.03]
+ */
+/* @var string $htmlHeader */
+/* @var \Ppb\Db\Table\Rowset\Categories $categories */
+
+echo $this->renderHtml($htmlHeader, true); ?>
+
+<div class="card-columns categories-card-columns">
+    <?php
+    /** @var \Ppb\Db\Table\Row\Category $category */
+    foreach ($categories as $category) {
+        $counter = $category->getCounter();
+
+        if ($counter > 0 || !$this->settings['hide_empty_categories']) {
+            $children = $category->findDependentRowset('\Ppb\Db\Table\Categories');
+            $hasChildren = count($children);
+            $urlParams = ($hasChildren > 0) ? $category->browseLink() : $category->link();
+            ?>
+
+            <div class="card">
+                <?php if (!empty($category['logo_path'])) { ?>
+                    <img class="card-img-top" src="<?php echo $this->thumbnail()->generateLink($category['logo_path'],
+                        300); ?>" alt="<?php echo $this->_($category['name']); ?>">
+                <?php } ?>
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <a href="<?php echo $this->url($urlParams); ?>">
+                            <?php echo $this->_($category['name']); ?>
+                            <?php
+                            if ($this->settings['category_counters']) {
+                                echo '<small>(' . $counter . ')</small>';
+                            }
+                            ?></a>
+                    </h5>
+                    <div class="card-text">
+                        <ul class="nav flex-column">
+                            <?php if ($hasChildren > 0) {
+                                /** @var \Ppb\Db\Table\Row\Category $subcategory */
+                                foreach ($children as $subcategory) {
+                                    $subcategoryCounter = $subcategory->getCounter();
+
+                                    if ($subcategoryCounter > 0 || !$this->settings['hide_empty_categories']) {
+                                        ?>
+                                        <li>
+                                            <a href="<?php echo $this->url($subcategory->link()); ?>">
+                                                <?php echo $this->_($subcategory['name']); ?>
+
+
+                                                <?php
+                                                if ($this->settings['category_counters']) {
+                                                    echo '<small>(' . $subcategoryCounter . ')</small>';
+                                                }
+                                                ?></a>
+                                        </li>
+                                        <?php
+                                    }
+                                }
+                            } ?>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <?php
+        }
+    } ?>
+</div>
+
+<?php
+$featuredListings = $this->listings('partials/listings-cards.phtml')->fetchListings(array('filter' => 'catfeat', 'sort' => 'rand', 'parent_id' => $parentId, 'limit' => 4))->getListings();
+if (count($featuredListings) > 0) {
+    ?>
+    <div class="mt-5">
+        <?php
+        echo $this->navigation()->setPartial('navigation/subtitle.phtml')->headline(array(
+            'headline' => sprintf($this->_('Featured Listings from %s'), $this->_($this->headline)),
+        ));
+        ?>
+
+        <?php echo $this->listings()->render(); ?>
+    </div>
+<?php } ?>
+

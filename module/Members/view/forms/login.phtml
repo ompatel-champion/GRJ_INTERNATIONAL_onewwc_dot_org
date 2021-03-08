@@ -1,0 +1,99 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.05]
+ */
+
+/** @var \Cube\Form\Element\Text $username */
+$username = $this->form->getElement('username');
+
+/** @var \Cube\Form\Element\Password $password */
+$password = $this->form->getElement('password');
+
+/** @var \Cube\Form\Element\Checkbox $rememberMe */
+$rememberMe = $this->form->getElement('remember_me');
+?>
+
+<form class="form-sign-in"
+      action="<?php echo $this->form->getAction(); ?>" method="<?php echo $this->form->getMethod(); ?>">
+
+    <?php
+    echo $this->actionMessages()->setMessages($this->messages)->render();
+    $this->messages = null;
+    ?>
+
+    <?php echo $this->form->hiddenElements; ?>
+
+    <div class="form-label-group">
+        <?php echo $username->render(); ?>
+        <label for="<?php echo $username->getAttribute('id'); ?>"><?php echo $username->getLabel(); ?></label>
+    </div>
+
+    <div class="form-label-group">
+        <?php echo $password->render(); ?>
+        <label for="<?php echo $password->getAttribute('id'); ?>"><?php echo $password->getLabel(); ?></label>
+    </div>
+
+    <div class="mb-3">
+        <small>
+            <a href="<?php echo $this->url(null, 'members-forgot-username'); ?>">
+                <?php echo $this->_('Forgot username'); ?></a>
+            <?php echo $this->_('or'); ?>
+            <a href="<?php echo $this->url(null, 'members-forgot-password'); ?>">
+                <?php echo $this->_('forgot password'); ?></a>?
+        </small>
+    </div>
+
+    <div class="checkbox mb-2">
+        <label>
+            <?php echo $rememberMe->render(); ?>
+            <?php echo $rememberMe->getLabel(); ?>
+        </label>
+    </div>
+
+    <?php echo $this->form->getElement(\Members\Form\Login::BTN_SUBMIT)->render(); ?>
+</form>
+
+<?php
+if ($this->form->isAsync()) {
+    $headerLinksUrl = $this->url(array('module' => 'app', 'controller' => 'async', 'action' => 'header-links'));
+
+    $this->script()->addBodyCode('<script type="text/javascript" src="' . $this->baseUrl . '/js/functions.js"></script>')
+        ->addBodyCode('<script type="text/javascript">
+            $(".form-sign-in").formAsync({
+                wrapper: ".bootbox-body",
+                redirectUrl: "' . $this->form->getRedirectUrl() . '",
+                submitElementValue: "' . $this->_('Please wait...') . '",
+                ajaxActions: { 
+                    "cart" : { 
+                        "url" : "' . $this->url(array('module' => 'app', 'controller' => 'async', 'action' => 'cart-dropdown')) . '", 
+                        "data" : {}, 
+                        "wrapper" : ".au-cart-dropdown" 
+                    },
+                    "welcome-user" : { 
+                        "url" : "' . $headerLinksUrl . '", 
+                        "data" : { 
+                            "partial" : "partials/header-links-welcome-user.phtml"
+                        }, 
+                        "wrapper" : ".au-welcome-user" 
+                    },
+                    "links-desktop" : { 
+                        "url" : "' . $headerLinksUrl . '", 
+                        "data" : { 
+                            "partial" : "partials/header-links-desktop.phtml"
+                        }, 
+                        "wrapper" : ".au-links-desktop" 
+                    },
+                    "links-mobile" : { 
+                        "url" : "' . $headerLinksUrl . '", 
+                        "data" : { 
+                            "partial" : "partials/header-links-mobile.phtml"
+                        }, 
+                        "wrapper" : ".au-links-mobile" 
+                    }
+                }
+            });
+        </script>');
+
+    echo $this->script()->displayBodyCode();
+} ?>
+

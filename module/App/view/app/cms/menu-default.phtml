@@ -1,0 +1,24 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.01]
+ */
+
+/* @var \Ppb\Db\Table\Row\ContentMenu $menu */
+
+$sections = $menu->getSections();
+?>
+
+<h4><?php echo $this->_($menu->name()); ?></h4>
+
+<ul class="nav flex-column">
+    <?php
+    /** @var \Ppb\Db\Table\Row\ContentSection $section */
+    foreach ($sections as $section) { ?>
+        <li class="nav-item">
+            <a class="nav-link <?php echo ($section->isActiveCurrentPage(true)) ? 'active' : ''; ?>"
+               href="<?php echo $this->url($section->link()); ?>">
+                <?php echo $this->_($section['name']); ?>
+            </a>
+        </li>
+    <?php } ?>
+</ul>

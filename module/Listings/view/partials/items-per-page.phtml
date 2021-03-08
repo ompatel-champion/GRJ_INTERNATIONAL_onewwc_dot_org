@@ -1,0 +1,20 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.01]
+ */
+
+$pages = array(10, 20, 40, 80);
+?>
+<nav aria-label="Items per Page">
+    <ul class="pagination justify-content-center">
+        <li class="page-item disabled">
+            <span class="page-link"><?php echo $this->_('Items per Page:'); ?></span>
+        </li>
+        <?php foreach ($pages as $page) { ?>
+            <li class="page-item <?php echo ($page == $this->itemsPerPage) ? 'active' : ''; ?>">
+                <a class="page-link"
+                   href="<?php echo $this->url(array('limit' => $page), null, true); ?>"><?php echo $page; ?></a>
+            </li>
+        <?php } ?>
+    </ul>
+</nav>

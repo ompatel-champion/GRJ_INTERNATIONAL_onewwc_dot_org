@@ -1,0 +1,44 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.02]
+ */
+?>
+
+<ul class="navbar-nav d-inline-flex ml-3">
+    <?php
+    /* @var \Ppb\Navigation\Page\ContentSection $page */
+    foreach ($this->menu->pages as $page) { ?>
+        <?php if ($this->navigation()->accept($page)) {
+            $liClass = array('nav-item');
+            if ($page->isActive(true)) {
+                $liClass[] = 'active';
+            }
+            ?>
+            <li class="<?php echo implode(' ', $liClass); ?>">
+                <a class="nav-link" href="<?php echo $this->url($page->params); ?>" title="<?php echo $page->label;?>" <?php echo ($page->icon == 'monitor') ? 'target="_blank"' : ''; ?>>
+                    <?php if ($page->icon) { ?>
+                        <span class="icon-heading">
+                            <span data-feather="<?php echo $page->icon; ?>"></span>
+                        </span>
+                    <?php } ?>
+                    <small class="d-md-none d-lg-none d-xl-inline"><?php echo $page->label; ?></small>
+                </a>
+            </li>
+        <?php } ?>
+    <?php } ?>
+
+    <li class="nav-item">
+        <a class="nav-link" href="https://www.newlightmedia.net/timeline&u=onewwc&ref=se" title="<?php echo $this->_('Documentation'); ?>" target="_blank">
+            <span class="icon-heading">
+                <span data-feather="book"></span>
+            </span>
+            <small class="d-md-none d-lg-none d-xl-inline"><?php echo $this->_('Documentation'); ?></small>
+        </a>
+    </li>
+    <li class="nav-item d-md-none">
+        <a class="nav-link" href="<?php echo $this->url(array('controller' => 'index', 'action' => 'logout')); ?>"
+           title="<?php echo $this->_('Logout'); ?>"><i data-feather="power"></i>
+            <small><?php echo $this->_('Logout'); ?></small>
+        </a>
+    </li>
+</ul>

@@ -1,0 +1,18 @@
+<?php
+/**
+ * @version 8.1 [rev.8.1.01]
+ */
+?>
+
+<?php if ($this->headline || $this->headlineButtons) { ?>
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+        <h1 class="h3"><?php echo $this->_($this->headline); ?></h1>
+
+        <?php if ($this->headlineButtons) { ?>
+            <div class="btn-toolbar">
+                <?php echo $this->headlineButtons; ?>
+            </div>
+        <?php } ?>
+    </div>
+<?php } ?>
+

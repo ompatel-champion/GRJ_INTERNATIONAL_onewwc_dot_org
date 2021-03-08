@@ -1,0 +1,29 @@
+<?php
+/**
+ * MOD:- ADVANCED CLASSIFIEDS
+ * @version 1.1
+ */
+
+if ($listingFees !== false) { ?>
+    <div class="well">
+
+        <div class="subtitle">
+            <?php echo $this->_('Listing Setup Fees'); ?>
+        </div>
+        <div>
+            <dl class="dl-horizontal">
+                <?php if (count($listingFees) > 0) { ?>
+                    <?php foreach ($listingFees as $row) { ?>
+                        <dt><?php echo $this->_($row['name']); ?></dt>
+                        <dd><?php echo $this->amount($row['amount']); ?></dd>
+                    <?php } ?>
+                <?php } ?>
+                <dt class="fees-total"><?php echo $this->_('Total'); ?></dt>
+                <dd class="fees-total"><?php echo $this->amount($listingSetupService->getTotalAmount()); ?>
+                </dd>
+            </dl>
+        </div>
+    </div>
+<?php } ?>
+
+<?php echo $this->form; ?>

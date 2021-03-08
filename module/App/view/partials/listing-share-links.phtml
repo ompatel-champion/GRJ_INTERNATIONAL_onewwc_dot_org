@@ -1,0 +1,47 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.01]
+ */
+
+$icons = array(
+    'Email'     => array(
+        'icon'  => 'mail',
+        'style' => 'background-color: #049fb3;',
+    ),
+    'Facebook'  => array(
+        'icon'  => 'facebook',
+        'style' => 'background-color: #3b5998;',
+    ),
+    'Twitter'   => array(
+        'icon'  => 'twitter',
+        'style' => 'background-color: #00aced;',
+    ),
+    'Instagram' => array(
+        'icon'  => 'instagram',
+        'style' => 'background-color: #517fa4;',
+    ),
+    'LinkedIn'  => array(
+        'icon'  => 'linkedin',
+        'style' => 'background-color: #0077b5;',
+    ),
+    'Pinterest' => array(
+        'icon'  => 'map-pin',
+        'style' => 'background-color: #cb2027;',
+    ),
+);
+?>
+
+<div>
+    <?php foreach ($this->sharingOptions as $key => $link) { ?>
+        <?php if (array_key_exists($key, $icons)) { ?>
+            <a href="<?php echo $link['href']; ?>"
+               title="<?php echo $link['name']; ?>"
+               class="btn btn-sm text-white" style="<?php echo $icons[$key]['style']; ?>"
+               target="<?php echo $link['target']; ?>"
+               rel="nofollow">
+                <span data-feather="<?php echo $icons[$key]['icon']; ?>"></span>
+            </a>
+        <?php } ?>
+    <?php } ?>
+</div>
+

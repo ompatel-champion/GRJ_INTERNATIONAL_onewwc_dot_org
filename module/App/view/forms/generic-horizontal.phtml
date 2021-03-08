@@ -1,0 +1,41 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.05]
+ */
+
+if ($this->form->isAsync()) {
+    if (!$this->form->isAsyncWrapper()) {
+        echo $this->script()->displayHeaderCode();
+    }
+
+    echo $this->actionMessages()->setMessages($this->messages)->render();
+} ?>
+
+<form <?php echo ($this->form->isAsync()) ? 'data-async' : ''; ?>
+        action="<?php echo $this->form->getAction(); ?>" method="<?php echo $this->form->getMethod(); ?>">
+    <?php echo $this->form->hiddenElements; ?>
+
+    <?php
+    /* @var \Cube\Form\Element $element */
+    foreach ($this->form->getElements() as $element) { ?>
+        <?php if (!$element->isHidden()) {
+            $partial = ($partial = $element->getPartial()) ? $partial : 'partials/form-element.phtml';
+            ?>
+            <?php echo $this->partial($partial, array('element' => $element)); ?>
+        <?php } ?>
+    <?php } ?>
+</form>
+
+<?php if ($this->form->isAsync()) {
+    $this->script()
+        ->addBodyCode('<script type="text/javascript">
+            $("form[data-async]").formAsync({
+                submitElementValue: "' . $this->_('Please wait...') . '"
+            });
+            </script>');
+
+    if (!$this->form->isAsyncWrapper()) {
+        echo $this->script()->displayBodyCode();
+    }
+} ?>
+

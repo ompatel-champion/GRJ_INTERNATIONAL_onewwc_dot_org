@@ -1,0 +1,185 @@
+<?php
+/**
+ * @version 8.2 [rev.8.2.02]
+ */
+/* @var \Ppb\Service\Offers $offersService */
+$headlineButtons = null;
+
+$container = $this->navigation()->getInitialContainer()
+    ->findOneBy('label', $this->_('Offers Filter'));
+
+$headlineButtons .= $this->navigation($container, 'navigation/browse-filter.phtml')->menu();
+
+$this->setGlobal('headlineButtons', $headlineButtons);
+?>
+<nav class="navbar p-0 mb-4">
+    <form class="form-inline ml-auto"
+          action="<?php echo $this->url(null, null, true, array('listing_id', 'keywords', 'option', 'page', 'submit')); ?>"
+          method="get">
+        <?php echo $this->formElement('hidden', 'filter', $this->filter)
+            ->render();
+        ?>
+        <div class="mr-1">
+            <?php echo $this->formElement('text', 'listing_id', $this->listingId)
+                ->setAttributes(array('placeholder' => $this->_('Listing ID'), 'class' => 'form-control input-small'))
+                ->render();
+            ?>
+        </div>
+        <div class="mr-1">
+            <?php echo $this->formElement('text', 'keywords', $this->keywords)
+                ->setAttributes(array('placeholder' => $this->_('Listing Title'), 'class' => 'form-control input-medium'))
+                ->render();
+            ?>
+        </div>
+        <?php echo $this->formElement('submit', 'submit', $this->_('Search'))
+            ->setAttributes(array('class' => 'btn btn-secondary'))
+            ->render();
+        ?>
+    </form>
+</nav>
+
+<div class="table-responsive">
+    <table class="table table-hover">
+        <caption>
+            <?php echo sprintf(
+                $this->pluralize(
+                    $count = $this->paginator->getPages()->totalItemCount,
+                    $this->_('<strong>%s</strong> listing with offers found.'),
+                    $this->_('<strong>%s</strong> listings with offers found.')
+                ), $count); ?>
+
+            <?php if ($this->paginator->getPages()->totalItemCount > 1) { ?>
+                <?php echo sprintf(
+                    $this->_('Showing results <strong>%s</strong> to <strong>%s</strong>'),
+                    $this->paginator->getPages()->firstItemNumber,
+                    $this->paginator->getPages()->lastItemNumber); ?>
+            <?php } ?>
+        </caption>
+        <?php if ($this->paginator->getPages()->totalItemCount) { ?>
+            <thead class="thead-light">
+            <tr>
+                <th><?php echo $this->_('Listing'); ?></th>
+                <th class="size-medium"><?php echo $this->_('Last Offer'); ?></th>
+                <th class="size-actions"><?php echo $this->_('Actions'); ?></th>
+            </tr>
+            </thead>
+        <?php } ?>
+        <tbody>
+        <?php
+        /** @var \Ppb\Db\Table\Row\Listing $listing */
+        foreach ($this->paginator as $listing) {
+            $select = $offersService->getTable()->getAdapter()->select()
+                ->where('(user_id = ? OR receiver_id = ?)', $this->loggedInUser['id'])
+                ->order('created_at DESC');
+
+            $pendingSelect = clone $select;
+            $pendingSelect->where('status = ?', \Ppb\Db\Table\Row\Offer::STATUS_PENDING);
+
+            /** @var \Ppb\Db\Table\Row\Offer $offer */
+            $offer = $listing->findDependentRowset('\Ppb\Db\Table\Offers', null, $pendingSelect)->getRow(0);
+
+            if ($offer === null) {
+                /** @var \Ppb\Db\Table\Row\Offer $offer */
+                $offer = $listing->findDependentRowset('\Ppb\Db\Table\Offers', null, $select)->getRow(0);
+            }
+            ?>
+            <tr>
+                <td>
+                    <?php echo $this->listing($listing, 'partials/listing-list.phtml')
+                        ->setDisplaySeller()
+                        ->setDisplayEnhanced()
+                        ->render(); ?>
+
+                    <div class="mt-3">
+                        <a class="btn btn-gold"
+                           href="<?php echo $this->url(array('type' => $this->type, 'id' => $offer['topic_id']), 'members-offers-details'); ?>">
+                            <span data-feather="clipboard"></span>
+                            <?php echo $this->_('View Offers'); ?>
+                        </a>
+                    </div>
+                </td>
+                <td>
+                    <dl class="dl-variable">
+                        <?php if ($offer['type'] == 'offer') { ?>
+                            <dd class="pl-0">
+                                <span class="h5"><?php echo $this->amount($offer['amount'], $listing['currency']); ?></span>
+                                / <?php echo $this->_('item'); ?>
+                            </dd>
+                        <?php } ?>
+
+                        <?php if (!empty($offer['product_attributes'])) { ?>
+                            <dt></dt>
+                            <dd>
+                                <?php echo $this->productAttributes($offer->getData('product_attributes'))->display(); ?>
+                            </dd>
+                        <?php } ?>
+
+                        <dt><span><?php echo $this->_('Quantity'); ?></span></dt>
+                        <dd><?php echo $offer['quantity']; ?></dd>
+
+                        <dt><span><?php echo $this->_('From'); ?></span></dt>
+                        <dd><?php echo $this->userDetails($offer['user_id'])->display(); ?></dd>
+
+                        <dt><span><?php echo $this->_('Date'); ?></span></dt>
+                        <dd><?php echo $this->date($offer['created_at']); ?></dd>
+
+                        <dt></dt>
+                        <dd><?php echo $this->offerStatus($offer, true); ?></dd>
+                    </dl>
+                </td>
+                <td>
+
+                    <?php if ($offer->canAccept($listing)) { ?>
+                        <a class="btn btn-success mb-1 confirm-box"
+                           href="<?php echo $this->url(array('action' => 'accept', 'id' => $offer['id']),
+                               null,
+                               true); ?>"
+                           title="<?php echo $this->_('Accept Offer'); ?>"
+                           data-message="<?php echo $this->_('Are you sure you want to accept this offer?'); ?>">
+                            <span data-feather="check"></span>
+                            <?php echo $this->_('Accept'); ?>
+                        </a>
+                    <?php } ?>
+                    <?php if ($offer->canCounter($listing)) { ?>
+                        <a class="btn btn-info mb-1 confirm-box"
+                           href="<?php echo $this->url(array('action' => 'counter', 'type' => $this->type, 'id' => $offer['id']),
+                               'members-offers-counter'); ?>"
+                           title="<?php echo $this->_('Counter Offer'); ?>"
+                           data-message="<?php echo $this->_('Are you sure you want to make a counter offer?'); ?>">
+                            <span data-feather="corner-up-left"></span>
+                            <?php echo $this->_('Counter'); ?>
+                        </a>
+                    <?php } ?>
+                    <?php if ($offer->canDecline()) { ?>
+                        <a class="btn btn-danger mb-1 confirm-box"
+                           href="<?php echo $this->url(array('action' => 'decline', 'id' => $offer['id']), null,
+                               true); ?>"
+                           title="<?php echo $this->_('Decline Offer'); ?>"
+                           data-message="<?php echo $this->_('Are you sure you want to decline this offer?'); ?>">
+                            <span data-feather="x"></span>
+                            <?php echo $this->_('Decline'); ?>
+                        </a>
+                    <?php } ?>
+                    <?php if ($offer->canWithdraw()) { ?>
+                        <a class="btn btn-warning mb-1 confirm-box"
+                           href="<?php echo $this->url(array('action' => 'withdraw', 'id' => $offer['id']), null,
+                               true); ?>"
+                           title="<?php echo $this->_('Withdraw Offer'); ?>"
+                           data-message="<?php echo $this->_('Are you sure you want to withdraw this offer?'); ?>">
+                            <span data-feather="x"></span>
+                            <?php echo $this->_('Withdraw'); ?>
+                        </a>
+                    <?php } ?>
+
+                    <?php if (($sale = $offer->getSale()) !== null && $sale->canPayDirectPayment() !== false) { ?>
+                        <a href="<?php echo $this->url(array('module' => 'app', 'controller' => 'payment', 'action' => 'direct-payment', 'id' => $sale['id'])); ?>"
+                           class="btn btn-success"><?php echo $this->_('Make Payment'); ?></a>
+                    <?php } ?>
+                </td>
+            </tr>
+        <?php } ?>
+        </tbody>
+    </table>
+</div>
+<?php echo $this->pagination($this->paginator, 'sliding', 'partials/pagination.phtml'); ?>
+

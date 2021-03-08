@@ -1,0 +1,57 @@
+<?php
+/**
+ * @version 7.10 [rev.7.10.01]
+ */
+/**
+ * MOD:- ESCROW PAYMENTS
+ */
+/* @var \Ppb\Db\Table\Row\Listing $listing */
+/** @var \Ppb\Db\Table\Row\User $seller */
+$seller = $listing->findParentRow('\Ppb\Db\Table\Users');
+?>
+<div class="pull-right">
+    <a href="<?php echo $this->url($listing->link()); ?>" class="btn btn-default">
+        <?php echo $this->_('Return to Listing'); ?>
+    </a>
+</div>
+<dl class="dl-horizontal">
+    <dt><?php echo $this->_('Name'); ?></dt>
+    <dd><?php echo $listing['name']; ?></dd>
+    <?php if ($this->type == 'buy') { ?>
+        <dt><?php echo $this->_('Price'); ?></dt>
+        <dd><?php echo $this->amount($listing['buyout_price'], $listing['currency']); ?></dd>
+        <dt><?php echo $this->_('Quantity Available'); ?></dt>
+        <dd><?php echo $listing['quantity']; ?></dd>
+    <?php } ?>
+    <?php if ($this->type == 'bid') { ?>
+        <dt><?php echo $this->_('Current Bid'); ?></dt>
+        <dd><?php echo $this->amount($listing->currentBid(true), $listing['currency']); ?></dd>
+        <dt><?php echo $this->_('Bids'); ?></dt>
+        <dd><?php echo $listing->countDependentRowset('\Ppb\Db\Table\Bids'); ?></dd>
+    <?php } ?>
+    <?php if ($this->type == 'offer') { ?>
+        <?php if ($seller->displayMakeOfferRanges()) { ?>
+            <dt><?php echo $this->_('Offer Range'); ?></dt>
+            <dd><?php echo $this->offerRanges($listing); ?></dd>
+        <?php } ?>
+    <?php } ?>
+
+    <dt><?php echo $this->_('Payment Methods'); ?></dt>
+    <dd><?php
+        ## -- START :: CHANGE -- [ MOD:- ESCROW PAYMENTS ]
+        $display = $this->fieldDisplay(array_map(function ($array) {
+            return $array['name'];
+        }, $listing->getPaymentMethods()), null, $this->_('n/a'));
+
+        $string = ($listing->getData('enable_escrow')) ? $this->_('Escrow Payment (%s)') : $this->_('Direct Payment (%s)');
+
+        echo sprintf($string, $display);
+        ## -- END :: CHANGE -- [ MOD:- ESCROW PAYMENTS ]
+        ?></dd>
+</dl>
+
+<?php if (!empty($message)) { ?>
+    <blockquote class="bq bq-success">
+        <?php echo $this->_($message); ?>
+    </blockquote>
+<?php } ?>

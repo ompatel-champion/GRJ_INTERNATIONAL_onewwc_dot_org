@@ -1,0 +1,225 @@
+<?php
+/**
+ * @version 8.2 [rev.8.2.02]
+ */
+?>
+<?php
+if ($this->settings['enable_home_page_advert_carousel']) {
+    $sliderType = (array_key_exists('carousel_type', $this->settings)) ? $this->settings['carousel_type'] : 'standard';
+
+    echo '<div class="' . (($sliderType == 'standard') ? 'container' : '') . '">'
+        . $this->advert('partials/advert-carousel.phtml')
+            ->findBySection('slider', true)->render()
+        . '</div>';
+}
+?>
+
+<div class="container">
+    <?php echo $this->renderHtml($this->settings['home_page_html']); ?>
+
+    <?php
+    $tabs = array();
+
+    if ($this->settings['enable_hpfeat'] && $this->settings['hpfeat_nb']) {
+        $tabs[] = array(
+            'tabId'           => 'hpfeat',
+            'title'           => $this->_('Featured Listings'),
+            'tabbed'          => $this->settings['hpfeat_tabbed'],
+            'output'          => $this->listings('partials/listings-cards.phtml')
+                ->setVariables(array(
+                    'gridClass'   => 'col-' . (12 / $this->settings['hpfeat_items_row_phone']) . ' col-md-' . (12 / $this->settings['hpfeat_items_row_desktop']) . ' card-grid',
+                    'cardType'    => $this->settings['hpfeat_box'],
+                    'carouselId'  => ($this->settings['hpfeat_carousel']) ? 'hpfeatCarousel' : null,
+                    'itemsPerRow' => $this->settings['hpfeat_items_row_desktop'],
+                ))
+                ->fetchListings(array(
+                    'filter' => 'hpfeat',
+                    'sort'   => 'rand',
+                    'limit'  => $this->settings['hpfeat_nb'],
+                ))
+                ->render(),
+            'headlineButtons' => '<a class="btn btn-outline-secondary"
+                       href="' . $this->url(array('module' => 'listings', 'controller' => 'browse', 'action' => 'index', 'filter' => 'hpfeat')) . '">'
+                . $this->_('View All') . '</a>',
+        );
+    }
+
+    if ($this->settings['enable_stores'] && !empty($this->settings['stores_nb']) && $this->settings['stores_nb'] > 0) {
+        $storesFilter = array('active');
+        if ($this->settings['stores_featured_only']) {
+            array_push($storesFilter, 'featured');
+        }
+        if ($this->settings['hide_empty_stores']) {
+            array_push($storesFilter, 'not-empty');
+        }
+        $tabs[] = array(
+            'tabId'           => 'stores',
+            'title'           => $this->_('Featured Stores'),
+            'tabbed'          => $this->settings['stores_tabbed'],
+            'output'          => $this->stores('partials/stores-cards.phtml')
+                ->setVariables(array(
+                    'gridClass'   => 'col-' . (12 / $this->settings['stores_items_row_phone']) . ' col-md-' . (12 / $this->settings['stores_items_row_desktop']) . ' card-grid',
+                    'cardType'    => $this->settings['stores_box'],
+                    'carouselId'  => ($this->settings['stores_carousel']) ? 'storesCarousel' : null,
+                    'itemsPerRow' => $this->settings['stores_items_row_desktop'],
+                ))
+                ->fetchStores(array(
+                    'filter' => $storesFilter,
+                    'sort'   => 'rand',
+                    'limit'  => $this->settings['stores_nb'],
+                ))
+                ->render(),
+            'headlineButtons' => '<a class="btn btn-outline-secondary"
+                       href="' . $this->url(array('module' => 'stores', 'controller' => 'browse', 'action' => 'index')) . '">'
+                . $this->_('View All') . '</a>',
+            'emptyMessage'    => $this->_('No stores found.'),
+        );
+    }
+
+    if ($this->settings['recent_nb']) {
+        $tabs[] = array(
+            'tabId'           => 'recent',
+            'title'           => $this->_('Recently Listed'),
+            'tabbed'          => $this->settings['recent_tabbed'],
+            'output'          => $this->listings('partials/listings-cards.phtml')
+                ->setVariables(array(
+                    'gridClass'   => 'col-' . (12 / $this->settings['recent_items_row_phone']) . ' col-md-' . (12 / $this->settings['recent_items_row_desktop']) . ' card-grid',
+                    'cardType'    => $this->settings['recent_box'],
+                    'carouselId'  => ($this->settings['recent_carousel']) ? 'recentCarousel' : null,
+                    'itemsPerRow' => $this->settings['recent_items_row_desktop'],
+                ))
+                ->fetchListings(array(
+                    'filter' => 'recent',
+                    'sort'   => 'started_desc',
+                    'limit'  => $this->settings['recent_nb'],
+                ))
+                ->render(),
+            'headlineButtons' => '<a class="btn btn-outline-secondary"
+                       href="' . $this->url(array('module' => 'listings', 'controller' => 'browse', 'action' => 'index', 'filter' => 'recent')) . '">'
+                . $this->_('View All') . '</a>',
+        );
+    }
+
+    if ($this->settings['ending_nb']) {
+        $tabs[] = array(
+            'tabId'           => 'ending',
+            'title'           => $this->_('Ending Soon'),
+            'partial'         => 'partials/listings-cards.phtml',
+            'tabbed'          => $this->settings['ending_tabbed'],
+            'output'          => $this->listings('partials/listings-cards.phtml')
+                ->setVariables(array(
+                    'gridClass'   => 'col-' . (12 / $this->settings['ending_items_row_phone']) . ' col-md-' . (12 / $this->settings['ending_items_row_desktop']) . ' card-grid',
+                    'cardType'    => $this->settings['ending_box'],
+                    'carouselId'  => ($this->settings['ending_carousel']) ? 'endingCarousel' : null,
+                    'itemsPerRow' => $this->settings['ending_items_row_desktop'],
+                ))
+                ->fetchListings(array(
+                    'filter' => 'ending-soon',
+                    'sort'   => 'ending_asc',
+                    'limit'  => $this->settings['ending_nb'],
+                ))
+                ->render(),
+            'headlineButtons' => '<a class="btn btn-outline-secondary"
+                       href="' . $this->url(array('module' => 'listings', 'controller' => 'browse', 'action' => 'index', 'filter' => 'ending-soon')) . '">'
+                . $this->_('View All') . '</a>',
+        );
+    }
+
+    if ($this->settings['popular_nb']) {
+        $tabs[] = array(
+            'tabId'           => 'popular',
+            'title'           => $this->_('Popular Listings'),
+            'partial'         => 'partials/listings-cards.phtml',
+            'tabbed'          => $this->settings['popular_tabbed'],
+            'output'          => $this->listings('partials/listings-cards.phtml')
+                ->setVariables(array(
+                    'gridClass'   => 'col-' . (12 / $this->settings['popular_items_row_phone']) . ' col-md-' . (12 / $this->settings['popular_items_row_desktop']) . ' card-grid',
+                    'cardType'    => $this->settings['popular_box'],
+                    'carouselId'  => ($this->settings['popular_carousel']) ? 'popularCarousel' : null,
+                    'itemsPerRow' => $this->settings['popular_items_row_desktop'],
+                ))
+                ->fetchListings(array(
+                    'filter' => 'popular',
+                    'sort'   => 'clicks_desc',
+                    'limit'  => $this->settings['popular_nb'],
+                ))
+                ->render(),
+            'headlineButtons' => '<a class="btn btn-outline-secondary"
+                       href="' . $this->url(array('module' => 'listings', 'controller' => 'browse', 'action' => 'index', 'filter' => 'popular')) . '">'
+                . $this->_('View All') . '</a>',
+        );
+    }
+
+    if (count($tabs) > 0) {
+        foreach ($tabs as $tab) {
+            if (!$tab['tabbed']) {
+                $output = $tab['output'];
+                $headlineButtons = $tab['headlineButtons'];
+
+                echo $this->navigation()->setPartial('navigation/headline.phtml')->headline(array(
+                    'headline'        => $tab['title'],
+                    'headlineButtons' => (!empty($output)) ? $headlineButtons : ''
+                ));
+                ?>
+
+                <div class="mb-4">
+                    <?php
+                    if (!empty($output)) {
+                        echo $output;
+                    }
+                    else { ?>
+                        <div class="p-5 text-center text-danger">
+                            <?php echo (!empty($tab['emptyMessage'])) ? $tab['emptyMessage'] : $this->_('No listings found.'); ?>
+                        </div>
+                    <?php } ?>
+                </div>
+            <?php }
+        } ?>
+
+        <?php $activeTab = 'active'; ?>
+
+        <ul class="nav nav-tabs nav-fill mb-3" role="tablist">
+            <?php foreach ($tabs as $tab) {
+                if ($tab['tabbed']) {
+                    ?>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo $activeTab; ?>" href="#<?php echo $tab['tabId']; ?>"
+                           data-toggle="tab"
+                           role="tab"><?php echo $tab['title']; ?></a>
+                    </li>
+                    <?php
+                    $activeTab = '';
+                }
+            } ?>
+        </ul>
+
+        <?php $activeTab = 'show active'; ?>
+
+        <div class="tab-content">
+            <?php foreach ($tabs as $tab) {
+                if ($tab['tabbed']) {
+                    ?>
+                    <div class="tab-pane fade <?php echo $activeTab; ?>" id="<?php echo $tab['tabId']; ?>"
+                         role="tabpanel">
+                        <?php $output = $tab['output'];
+
+                        if (!empty($output)) {
+                            echo $output;
+                            ?>
+
+                            <div class="text-right mt-3">
+                                <?php echo $tab['headlineButtons']; ?>
+                            </div>
+                        <?php }
+                        else { ?>
+                            <div class="p-5 text-center text-danger">
+                                <?php echo (!empty($tab['emptyMessage'])) ? $tab['emptyMessage'] : $this->_('No listings found.'); ?>
+                            </div>
+                        <?php } ?>
+                    </div>
+                    <?php $activeTab = '';
+                }
+            } ?>
+        </div>
+    <?php } ?>
+</div>

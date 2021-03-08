@@ -1,0 +1,483 @@
+/* version 8.2 [rev.8.2.01] */
+@import "../../../css/colors";
+@import "../../../css/mixins";
+
+// variables
+$navbarHeight: 52px;
+$navbarMobileHeight: 97px;
+$desktopSidebarWidth: 300px;
+
+/* FONT SIZES */
+body {
+    font-size: .875rem;
+}
+
+small, .small {
+    font-size: 90%; // default: 80%
+}
+
+.dropdown-menu {
+    font-size: .875rem;
+}
+
+/* /FONT SIZES */
+
+/* SUBTITLE */
+.subtitle {
+    border-bottom: 1px solid #edf1f5;
+    padding-bottom: .4rem;
+    margin-bottom: .9rem;
+}
+
+/* /SUBTITLE */
+
+/* FORMS */
+.form-control {
+    font-size: inherit;
+}
+
+.col-form-label {
+    font-weight: 500;
+}
+
+/* /FORMS */
+
+/* TABLES, ACTIONS COLUMN SIZE */
+.table {
+    .size-actions {
+        width: 24%;
+    }
+
+    @include media-xl-only() {
+        .size-actions {
+            width: 240px;
+        }
+    }
+}
+
+/* BUTTONS */
+.btn {
+    font-size: inherit;
+}
+
+.btn-group-sm > .btn, .btn-sm {
+    font-size: .75rem;
+}
+
+.btn-group-lg > .btn, .btn-lg {
+    font-size: 1.1rem;
+}
+
+/* /BUTTONS */
+
+/* NAVBAR */
+.navbar-logo {
+    background-color: rgba(0, 0, 0, .25);
+
+    @include media-xl-only() {
+        flex: 0 1 $desktopSidebarWidth;
+    }
+}
+
+.navbar-brand {
+    padding-top: .75rem;
+    padding-bottom: .75rem;
+    font-size: 1rem;
+    background-image: url("../images/logo.png");
+    background-repeat: no-repeat;
+    background-position: left center;
+    background-size: 140px auto;
+    //height: 48px;
+    height: $navbarHeight - 16px;
+    width: 140px;
+}
+
+@include media-sm-down() {
+    .navbar-nav {
+        overflow-y: auto;
+        padding-top: .25rem;
+        padding-bottom: .25rem;
+
+        .nav-item {
+            padding-left: 0;
+            padding-right: 1rem;
+            white-space: nowrap;
+        }
+    }
+}
+
+.language-dropdown {
+    margin-top: .1rem;
+}
+
+/* /NAVBAR */
+
+/* SIDEBAR */
+.sidebar {
+    @supports not (-ms-high-contrast: none) {
+        @include position-sticky();
+        top: $navbarHeight; /* Height of navbar */
+        height: calc(100vh - #{$navbarHeight});
+    }
+
+    overflow-x: hidden;
+    overflow-y: hidden;
+    border-right: 1px solid rgba(0, 0, 0, .1);
+    background-color: #fff;
+    z-index: 1010;
+
+    ul {
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+    }
+
+    li > ul {
+        margin-top: 0;
+        padding-left: .5rem;
+    }
+
+    .nav-item.open > a,
+    .nav-item > a:hover {
+        color: $blue;
+    }
+
+    .nav-link {
+        font-weight: 400;
+        color: rgba(0, 0, 0, .75);
+
+        .feather {
+            margin-right: 4px;
+            color: #999;
+
+            transition: 0.25s linear;
+            transform: rotate(0deg);
+        }
+
+        &.open .feather {
+            transform: rotate(-90deg);
+        }
+
+        &.active {
+            color: $white !important;
+            background-color: $blue;
+            border-radius: 4px;
+        }
+
+        &:hover .feather,
+        &.active .feather {
+            color: inherit;
+        }
+    }
+
+    .nav-dropdown > .nav-link {
+        font-weight: 500;
+        color: #333;
+    }
+
+    &-search {
+        position: relative;
+        padding: 1rem 15px;
+        border-bottom: 1px solid rgba(0, 0, 0, .05);
+
+        .dropdown-menu {
+            width: 100%;
+        }
+    }
+
+    &-menu {
+        padding: 0 15px;
+        height: calc(100vh - 128px);
+        overflow-y: auto;
+    }
+
+    &-toggler {
+        color: #fff;
+        background-color: transparent;
+        border: none;
+        cursor: pointer;
+
+        .feather {
+            width: 24px;
+            height: 24px;
+        }
+    }
+
+    &-heading {
+        font-size: .9rem;
+        text-transform: uppercase;
+        font-weight: 500;
+        cursor: pointer;
+        background-color: $light;
+        @include border-radius(4px);
+
+        &.open {
+            color: $blue !important;
+        }
+
+        .icon-heading {
+            color: #929ea9 !important;
+            min-width: 16px;
+            margin-right: .7rem;
+        }
+
+        .icon-animate .feather {
+            transition: 0.25s linear;
+            transform: rotate(0deg);
+        }
+
+        &.open .icon-animate .feather {
+            transform: rotate(-90deg);
+        }
+    }
+
+    &-heading-label {
+        flex-grow: 2;
+    }
+
+    @include media-xl-only() {
+        flex: 0 1 $desktopSidebarWidth;
+    }
+
+    @include media-xs-only() {
+        top: $navbarMobileHeight;
+        height: calc(100vh - #{$navbarMobileHeight});
+    }
+}
+
+/* /SIDEBAR */
+
+/* SIDEBAR HEADING */
+
+/* PACE.JS */
+.pace {
+    @include pointer-events(none);
+
+    @include user-select(none);
+
+    &-inactive {
+        display: none;
+    }
+
+    .pace-progress {
+        background: $blue;
+        position: fixed;
+        z-index: 2000;
+        top: 0;
+        right: 100%;
+        width: 100%;
+        height: 2px;
+    }
+}
+
+/* /PACE.JS */
+
+/* MAIN */
+.main {
+    @supports not (-ms-high-contrast: none) {
+        display: flex;
+        min-height: calc(100vh - #{$navbarHeight});
+        flex-direction: column;
+
+        .main-content {
+            flex: 1;
+        }
+
+        footer {
+            display: flex !important;
+        }
+
+        @include media-xl-only() {
+            flex: 0 0 calc(100% - #{$desktopSidebarWidth});
+            max-width: calc(100% - #{$desktopSidebarWidth});
+        }
+
+        @include media-md-down() {
+            min-height: calc(100vh - #{$navbarHeight} - 45px);
+        }
+    }
+
+    footer {
+        font-size: .7rem;
+        padding: .75rem 1.5rem;
+        margin-left: -1.5rem;
+        margin-right: -1rem;
+        background: $light;
+    }
+}
+
+/* /MAIN */
+
+/* LOGIN PAGE */
+.login-page {
+    padding-top: 30px;
+
+    .feather {
+        width: 20px;
+        height: 20px;
+    }
+
+    .login-container {
+        margin: 10vh auto 0;
+        width: 350px;
+
+        .login-form {
+            padding: 2rem;
+
+            .btn {
+                height: 46px;
+            }
+
+            @include media-xs-only() {
+                padding-left: 0;
+                padding-right: 0;
+            }
+        }
+
+        @include media-xs-only() {
+            width: auto;
+            margin-left: 20px;
+            margin-right: 20px;
+        }
+    }
+
+    header {
+        text-align: center;
+        margin-top: 30px;
+        padding: 0 30px;
+
+        h1 {
+            text-align: center;
+            max-width: 290px;
+        }
+
+        img {
+            width: 90%;
+        }
+    }
+
+    footer {
+        font-size: 90%;
+        text-align: center;
+    }
+
+    .icon-addon {
+        position: relative;
+        color: #555;
+        display: block;
+
+        .feather {
+            position: absolute;
+            top: 12px;
+            left: 14px;
+            color: #bdbdbd;
+        }
+
+        .form-control {
+            line-height: 46px;
+            height: 46px;
+            font-size: 0.875rem;
+            padding-left: 50px;
+        }
+
+        &:after,
+        &:before {
+            display: table;
+            content: " ";
+        }
+
+        &n:after {
+            clear: both;
+        }
+
+        .form-control:focus + .feather,
+        &:hover .feather {
+            color: #007bff;
+        }
+    }
+
+    @include media-xs-only() {
+        padding: 0;
+    }
+}
+
+/* /LOGIN PAGE */
+
+/* DASHBOARD CARD COLUMNS */
+.card-columns {
+    @include media-xl-only() {
+        @include column-count(4);
+    }
+}
+
+/* /DASHBOARD CARD COLUMNS */
+
+/* MEDIA QUERIES */
+@include media-lg-up() {
+    .sidebar-hidden-lg {
+        .sidebar {
+            display: none !important;
+        }
+
+        main {
+            -webkit-box-flex: 0;
+            -ms-flex: 0 0 100%;
+            flex: 0 0 100%;
+            max-width: 100%;
+            padding-left: 1rem !important;
+        }
+    }
+}
+
+@include media-md-down() {
+    .sidebar-hidden-md {
+        .sidebar {
+            display: none !important;
+        }
+
+        main {
+            -webkit-box-flex: 0;
+            -ms-flex: 0 0 100%;
+            flex: 0 0 100%;
+            max-width: 100%;
+            padding-left: 1rem !important;
+        }
+    }
+}
+
+@include media-xl-only() {
+    .table dl.row {
+        max-width: 600px;
+    }
+    /* FLEX DEFINITION LISTS */
+    .dl-flex {
+        box-sizing: border-box;
+        display: flex;
+        flex-flow: row wrap;
+        padding: 0;
+
+        dt,
+        dd {
+            box-sizing: border-box;
+            margin: 0 2px 1px;
+            //padding: 0 0.5rem 0.5rem 0;
+            word-wrap: break-word;
+        }
+
+        dt {
+            width: 6rem;
+            //display: flex;
+            justify-content: flex-start;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        dd {
+            width: calc(100% - 6rem - 8px);
+        }
+    }
+    /* /FLEX DEFINITION LISTS */
+}
+
+/* /MEDIA QUERIES */

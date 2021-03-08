@@ -1,0 +1,206 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.04]
+ */
+/** @var \Ppb\Db\Table\Rowset\AbstractAccounting $rowset */
+/** @var \Ppb\Db\Table\Row\AbstractAccounting $row */
+$row = $rowset->getRow(0);
+
+/** @var \Ppb\Db\Table\Row\User $buyer */
+$buyer = $row->findParentRow('\Ppb\Db\Table\Users');
+
+$logoPath = (!empty($this->settings['invoice_logo_path'])) ?
+    $this->settings['invoice_logo_path'] : $this->settings['site_logo_path'];
+?>
+
+<div class="container px-0 ml-0 mb-4">
+    <div class="row">
+        <div class="col mb-5 text-right">
+            <?php
+            $printButtonValue = '<span data-feather="printer"></span>' . ' '
+                . $this->_('Print');
+
+            echo $this->formElement('\Ppb\Form\Element\PrintButton', 'printButton', $printButtonValue)
+                ->setAttributes(array(
+                    'class' => 'print-button btn btn-outline-secondary',
+                    'rel'   => 'print-area',
+                ))
+                ->render();
+            ?>
+        </div>
+    </div>
+
+    <div id="print-area">
+        <?php if (!empty($this->settings['invoice_header'])) { ?>
+            <div class="row mb-4">
+                <div class="col">
+                    <?php echo $this->renderHtml($this->settings['invoice_header']); ?>
+                </div>
+            </div>
+        <?php } ?>
+
+        <div class="row mb-4">
+            <div class="col-4">
+                <div class="invoice-billing-logo">
+                    <img src="<?php echo $this->thumbnail()->generateImagePath($logoPath); ?>"
+                         alt="<?php echo $this->settings['sitename']; ?>" class="img-fluid">
+                </div>
+            </div>
+            <div class="col-6 offset-2">
+                <table class="table">
+                    <caption>
+                        <h2><?php echo $row->caption(); ?></h2>
+                    </caption>
+                    <tbody>
+                    <?php if ($row instanceof \Ppb\Db\Table\Row\Accounting) { ?>
+                        <tr class="table-primary">
+                            <td class="size-small size-min-small">
+                                <strong><?php echo $this->_('Invoice #'); ?></strong>
+                            </td>
+                            <td><?php echo $row['id']; ?></td>
+                        </tr>
+                        <?php if (!empty($row['listing_id'])) {
+                            /** @var \Ppb\Db\Table\Row\Listing $listing */
+                            $listing = $row->findParentRow('\Ppb\Db\Table\Listings');
+                            ?>
+                            <tr>
+                                <td><strong><?php echo $this->_('Listing ID'); ?></strong></td>
+                                <td>
+                                    <a href="<?php echo $this->url($listing->link()); ?>"><?php echo $row['listing_id']; ?></a>
+                                </td>
+                            </tr>
+                        <?php } ?>
+                        <tr class="table-light">
+                            <td><strong><?php echo $this->_('Date'); ?></strong></td>
+                            <td><?php echo $this->date($row['created_at'], true); ?></td>
+                        </tr>
+                        <?php
+                    }
+                    else if ($row instanceof \Ppb\Db\Table\Row\Transaction) {
+                        ?>
+                        <tr class="table-primary">
+                            <td class="size-small"><strong><?php echo $this->_('Transaction #'); ?></strong></td>
+                            <td><?php echo $row['id']; ?></td>
+                        </tr>
+                        <tr>
+                            <td><strong><?php echo $this->_('Payment Method'); ?></strong></td>
+                            <td>
+                                <?php
+                                $paymentGateway = $row->findParentRow('\Ppb\Db\Table\PaymentGateways');
+                                echo (method_exists($paymentGateway, 'getData')) ? $paymentGateway->getData('name') : $this->_('n/a');
+                                ?>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong><?php echo $this->_('Transaction ID'); ?></strong></td>
+                            <td><?php echo $row['gateway_transaction_code']; ?></td>
+                        </tr>
+                        <tr class="table-light">
+                            <td><strong><?php echo $this->_('Payment Date'); ?></strong></td>
+                            <td><?php echo $this->date($row['updated_at'], true); ?></td>
+                        </tr>
+                    <?php } ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-4">
+                <div class="invoice-billing-headline">
+                    <?php echo $this->_('Billed By:'); ?>
+                </div>
+                <div class="invoice-billing-content">
+                    <?php echo nl2br($this->settings['invoice_address']); ?>
+                </div>
+            </div>
+
+            <div class="col-4 offset-2">
+                <div class="invoice-billing-headline">
+                    <?php echo $this->_('Billed To:'); ?>
+                </div>
+                <div class="invoice-billing-content">
+                    <?php echo $this->userDetails()->setUser($buyer)->displayFullAddress(); ?>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <table class="table">
+                    <thead>
+                    <tr class="table-light">
+                        <th><?php echo $this->_('Name'); ?></th>
+                        <?php if ($row['tax_rate'] > 0) { ?>
+                            <th class="size-mini"><?php echo $this->_('Price'); ?></th>
+                            <th class="size-mini"><?php echo $this->_('Tax'); ?></th>
+                            <th class="size-mini"><?php echo $this->_('Rate'); ?></th>
+                            <th class="size-mini"><?php echo $this->_('Subtotal'); ?></th>
+                            <?php
+                        }
+                        else {
+                            ?>
+                            <th class="size-mini"></th>
+                            <th class="size-mini"><?php echo $this->_('Price'); ?></th>
+                        <?php } ?>
+                    </tr>
+                    </thead>
+                    <tbody>
+
+                    <?php foreach ($rowset as $row) { ?>
+                        <tr>
+                            <td><?php echo $this->_($row->displayName()); ?></td>
+                            <?php if ($row['tax_rate'] > 0) { ?>
+                                <td><?php echo $this->amount($row->amountNoTax(), $row['currency']); ?></td>
+                                <td><?php echo $this->amount($row->taxAmount(), $row['currency']); ?></td>
+                                <td><?php echo $row['tax_rate'] . '%'; ?></td>
+                                <?php
+                            }
+                            else {
+                                ?>
+                                <td></td>
+                            <?php } ?>
+                            <td><?php echo $this->amount($row->totalAmount(), $row['currency']); ?></td>
+                        </tr>
+                    <?php } ?>
+
+                    <?php if ($row['tax_rate'] > 0) { ?>
+                        <tr>
+                            <td colspan="3"></td>
+                            <td>
+                                <small><?php echo $this->_('Subtotal'); ?></small>
+                            </td>
+                            <td><?php echo $this->amount($rowset->amountNoTax(), $rowset->currency()); ?></td>
+                        </tr>
+                        <tr>
+                            <td colspan="3"></td>
+                            <td>
+                                <small><?php echo $this->_('Tax'); ?></small>
+                            </td>
+                            <td><?php echo $this->amount($rowset->taxAmount(), $rowset->currency()); ?></td>
+                        </tr>
+                    <?php } ?>
+
+                    <tr>
+                        <td colspan="<?php echo ($row['tax_rate'] > 0) ? '3' : '1'; ?>"></td>
+                        <td>
+                            <small><strong><?php echo $this->_('Total'); ?></strong></small>
+                        </td>
+                        <td>
+                            <strong><?php echo $this->amount($rowset->totalAmount(), $rowset->currency()); ?></strong>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <?php if (!empty($this->settings['invoice_footer'])) { ?>
+            <div class="row mt-4">
+                <div class="col">
+                    <?php echo $this->renderHtml($this->settings['invoice_footer']); ?>
+                </div>
+            </div>
+        <?php } ?>
+    </div>
+</div>

@@ -1,0 +1,22 @@
+<?php
+/**
+ * MOD:- BANK TRANSFER
+ */
+
+if ($this->form instanceof \Cube\Form) {
+    if ($this->form->hasElements()) {
+        ?>
+
+        <dl class="dl-variable">
+            <dt><span><?php echo $this->_('Transaction Name'); ?></span></dt>
+            <dd>
+                <?php echo $transactionName; ?>
+            </dd>
+            <dt><span><?php echo $this->_('Transaction Amount'); ?></span></dt>
+            <dd><?php echo $this->amount($transaction['amount'], $transaction['currency']); ?></dd>
+        </dl>
+
+        <?php echo $this->form; ?>
+        <?php
+    }
+} ?>

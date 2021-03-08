@@ -1,0 +1,431 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.05]
+ */
+/**
+ * MOD:- PRODUCT BUNDLES
+ */
+/* @var \Ppb\Db\Table\Row\Listing $listing */
+
+/** @var \Cube\Controller\Request $request */
+$request = $this->request()->getRequest();
+
+/* @var bool $modal */
+$async = ($this->form->hasElement('modal')) ?
+    $this->form->getElement('modal')->getValue() : $request->getParam('modal');
+/* @var bool $details */
+$details = $this->form->isDetails();
+/* @var bool $summary */
+$summary = ($this->form->hasElement('summary')) ?
+    $this->form->getElement('summary')->getValue() : $request->getParam('summary');
+/* @var array $includedForms */
+$includedForms = $this->form->getIncludedForms();
+
+if ($async) {
+    echo $this->script()->displayHeaderCode();
+}
+else if (!$details) {
+    $headlineButtons = null;
+
+    $headlineButtons .= '<a class="btn btn-outline-secondary" '
+        . 'href="' . $this->url($listing->link()) . '">'
+        . $this->_('Return to Listing') . '</a>';
+
+    $this->setGlobal('headlineButtons', $headlineButtons);
+}
+
+/** @var \Ppb\Db\Table\Row\User $seller */
+$seller = $listing->findParentRow('\Ppb\Db\Table\Users');
+$this->userDetails($seller);
+$productAttributes = $this->request()->getRequest()->getParam('product_attributes');
+?>
+
+<div class="row">
+    <div class="order-last <?php echo (!$async && !$details) ? 'col-lg-6 order-lg-first' : 'col-12'; ?>">
+
+        <form <?php echo ($async) ? 'data-purchase-async class="p-3"' : 'class="form-purchase-confirm"'; ?>
+                action="<?php echo $this->form->getAction(); ?>" method="<?php echo $this->form->getMethod(); ?>">
+
+                        <?php
+            echo $this->actionMessages()->setMessages($this->messages)->render();
+            $this->messages = null;
+                        ?>
+
+            <?php echo $this->form->hiddenElements; ?>
+
+            <?php if (in_array('bid', $includedForms)) { ?>
+                <div class="mb-4">
+                    <!-- BID CONFIRM FORM -->
+                    <?php if (!$async) { ?>
+                        <div class="h5"><?php echo $this->_('Place Bid'); ?></div>
+                    <?php } ?>
+
+                    <?php if ($this->form->hasElement('bid_amount')) {
+                        $elementId = 'bid-amount' . (($async) ? '-modal' : '');
+                        ?>
+                        <div class="form-label-group mb-1">
+                            <?php
+                            echo $this->form->getElement('bid_amount')
+                                ->setPrefix('')
+                                ->clearAttributes()
+                                ->setAttributes(array(
+                                    'id'          => $elementId,
+                                    'class'       => 'form-control',
+                                    'placeholder' => $listing['currency'],
+                                ))
+                                ->render();
+                            ?>
+                            <label for="<?php echo $elementId; ?>"><?php echo $listing['currency']; ?></label>
+                        </div>
+
+                        <div class="mb-2 d-flex justify-content-between">
+                            <small>
+                                <?php echo $this->_('Minimum Bid:'); ?>
+                                <span class="au-minimum-bid"><?php echo $this->amount($listing->minimumBid(), $listing['currency']); ?></span>
+                            </small>
+
+                            <small class="au-nb-bids">
+                                <?php echo $this->listing($listing)->nbBids(); ?>
+                            </small>
+                        </div>
+                    <?php } ?>
+
+                    <?php
+                    if ($this->form->hasElement(\Listings\Form\Purchase::BTN_PLACE_BID)) {
+                        /** @var \Cube\Form\Element\Button $formElement */
+                        $formElement = $this->form->getElement(\Listings\Form\Purchase::BTN_PLACE_BID);
+
+                        $attributes = array(
+                            'class' => 'btn btn-primary btn-lg btn-block my-2',
+                            'title' => $this->_('Place Bid'),
+                        );
+
+                        if (!$listing->isActiveAndOpen()) {
+                            $attributes['disabled'] = 'disabled';
+                        }
+
+                        if ($details) {
+                            $attributes['class'] .= ' ' . 'jq-popup-form';
+                            $attributes['formaction'] = $this->url($listing->biddingConfirmLink(true));
+
+                            $formElement->setName(\Listings\Form\Purchase::BTN_CONFIRM);
+                        }
+
+                        echo $formElement->clearAttributes()
+                            ->setAttributes($attributes)
+                            ->render();
+                    }
+                    ?>
+                    <!-- /BID CONFIRM FORM -->
+                </div>
+            <?php } ?>
+
+
+            <?php if (array_intersect(array('buy', 'offer', 'cart'), $includedForms)) { ?>
+                <!-- FIELDS USED FOR BUY OUT AND MAKE OFFER -->
+                <?php
+                /** @var \Cube\Form\Element $element */
+                foreach ($this->form->getElements() as $element) {
+                    $name = $element->getName();
+
+                    if (strstr($name, 'product_attributes')) {
+                        $label = $element->getLabel();
+
+                        $element->setRequired(false)
+                            ->removeAttribute('class')
+                            ->addAttribute('class', 'custom-select form-control');
+                        ?>
+                        <div class="form-group product-attribute-element">
+                            <label for="" class="col-form-label">
+                                <?php if (!empty($label)) { ?>
+                                    <?php echo $label; ?>
+                                <?php } ?>
+                            </label>
+                            <div>
+                                <?php echo $element->render(); ?>
+                            </div>
+                        </div>
+                        <?php
+                    }
+                }
+                ?>
+
+                <?php if ($this->form->hasElement('quantity')) { ?>
+                    <div class="mb-3">
+                        <?php
+                        $class = 'form-control';
+
+                        if ($this->form->getType() == 'buy') {
+                            $class .= ' ' . 'field-changeable';
+                        }
+
+                        echo $this->form->getElement('quantity')
+                            ->clearAttributes()
+                            ->setBlock(true)
+                            ->setAttributes(array(
+                                'class'       => $class,
+                                'placeholder' => $this->_('Quantity'),
+                            ))
+                            ->render();
+                        ?>
+                    </div>
+                <?php } ?>
+                <!-- /FIELDS USED FOR BUY OUT AND MAKE OFFER -->
+
+
+                <!-- ## -- ADD -- [ MOD:- PRODUCT BUNDLES ] -->
+                <?php if ($this->form->hasElement('bundled_products')) { ?>
+                    <div class="mb-3">
+                        <?php echo $this->form->getElement('bundled_products')->render(); ?>
+                    </div>
+                <?php } ?>
+                <!-- ## -- ./ADD -- [ MOD:- PRODUCT BUNDLES ] -->
+
+
+                <?php if (in_array('buy', $includedForms)) { ?>
+
+                    <!-- BUY OUT CONFIRM FORM -->
+                    <div class="mb-4">
+                        <?php
+                        if (!$details) {
+                            if ($this->form->hasElement('shipping_address_id')) {
+                                $formElement = $this->form->getElement('shipping_address_id');
+
+                                $label = $formElement->getLabel();
+
+                                $formElement->removeAttribute('class')
+                                    ->addAttribute('class', 'custom-select form-control field-changeable');
+                                ?>
+                                <div class="form-group">
+                                    <label for="" class="col-form-label">
+                                        <?php if (!empty($label)) { ?>
+                                            <?php echo $label; ?>
+                                        <?php } ?>
+                                    </label>
+                                    <div>
+                                        <?php echo $formElement->render(); ?>
+                                    </div>
+                                </div>
+                            <?php } ?>
+
+
+                            <?php
+                            if ($this->form->hasElement('postage_id')) {
+                                $formElement = $this->form->getElement('postage_id');
+
+                                $label = $formElement->getLabel();
+
+                                $formElement->removeAttribute('class')
+                                    ->addAttribute('class', 'custom-select form-control');
+                                ?>
+                                <div class="form-group">
+                                    <label for="" class="col-form-label">
+                                        <?php if (!empty($label)) { ?>
+                                            <?php echo $label; ?>
+                                        <?php } ?>
+                                    </label>
+                                    <div>
+                                        <?php echo $formElement->render(); ?>
+                                    </div>
+                                </div>
+                            <?php } ?>
+
+                            <?php
+                            if ($this->form->hasElement('apply_insurance')) {
+                                $formElement = $this->form->getElement('apply_insurance');
+
+                                $label = $formElement->getLabel();
+                                ?>
+                                <div class="form-group">
+                                    <label for="" class="col-form-label">
+                                        <?php if (!empty($label)) { ?>
+                                            <?php echo $label; ?>
+                                        <?php } ?>
+                                    </label>
+                                    <div>
+                                        <?php echo $formElement->render(); ?>
+                                    </div>
+                                </div>
+                            <?php } ?>
+
+                            <?php if ($this->type == 'buy') { ?>
+                                <?php if ($this->form->hasElement('voucher_code')) { ?>
+                                    <div class="mt-4">
+                                        <?php echo $this->partial('partials/voucher-code.phtml', array(
+                                            'userId'    => $seller['id'],
+                                            'listingId' => $listing['id'],
+                                        )); ?>
+                                    </div>
+                                <?php } ?>
+                            <?php } ?>
+                        <?php } ?>
+
+                        <?php
+                        if ($this->form->hasElement(\Listings\Form\Purchase::BTN_BUY_OUT)) {
+                            /** @var \Cube\Form\Element\Button $formElement */
+                            $formElement = $this->form->getElement(\Listings\Form\Purchase::BTN_BUY_OUT);
+
+                            $attributes = array(
+                                'class' => 'btn btn-success btn-lg btn-block my-2',
+                                'title' => $this->_('Buy Out'),
+                            );
+
+                            if (!$listing->isActiveAndOpen() || $seller->isVacation()) {
+                                $attributes['disabled'] = 'disabled';
+                            }
+
+                            if ($details) {
+                                $attributes['class'] .= ' ' . 'jq-popup-form';
+                                $attributes['formaction'] = $this->url($listing->buyOutConfirmLink(true));
+
+                                $formElement->setName(\Listings\Form\Purchase::BTN_CONFIRM);
+
+                                if (!$listing->isProduct()) {
+                                    $formElement->setValue(
+                                        sprintf($this->_('Buy Out <small>for %s</small>'), $this->amount($listing['buyout_price'], $listing['currency'])));
+                                }
+                            }
+
+                            echo $formElement->clearAttributes()
+                                ->setAttributes($attributes)
+                                ->render();
+                        }
+                        ?>
+                    </div>
+                    <!-- /BUY OUT CONFIRM FORM -->
+                <?php } ?>
+
+
+                <?php if (in_array('cart', $includedForms)) { ?>
+                    <!-- ADD TO CART FORM -->
+                    <div class="mb-4">
+                        <?php
+                        if ($this->form->hasElement(\Listings\Form\Purchase::BTN_ADD_TO_CART)) {
+                            /** @var \Cube\Form\Element\Button $formElement */
+                            $formElement = $this->form->getElement(\Listings\Form\Purchase::BTN_ADD_TO_CART);
+
+                            $attributes = array(
+                                'class' => 'btn btn-success btn-lg btn-block my-2',
+                                'title' => $this->_('Add to Cart'),
+                            );
+
+                            if (!$listing->isActiveAndOpen() || $seller->isVacation()) {
+                                $attributes['disabled'] = 'disabled';
+                            }
+
+                            if ($details) {
+                                $attributes['class'] .= ' ' . 'jq-popup-form';
+                                $attributes['formaction'] = $this->url($listing->buyOutConfirmLink(true, true));
+
+                                $formElement->setName(\Listings\Form\Purchase::BTN_CONFIRM);
+                            }
+
+                            echo $formElement->clearAttributes()
+                                ->setAttributes($attributes)
+                                ->render();
+                        }
+                        ?>
+                    </div>
+                    <!-- /ADD TO CART FORM -->
+                <?php } ?>
+
+
+                <?php if (in_array('offer', $includedForms)) { ?>
+                    <!-- MAKE OFFER CONFIRM FORM -->
+                    <?php if (!$async) { ?>
+                        <div class="h5"><?php echo $this->_('Make Offer'); ?></div>
+                    <?php } ?>
+
+                    <?php if ($this->form->hasElement('offer_amount')) {
+                        $offerAmountPlaceholder = sprintf($this->_('%s / item'), $listing['currency']);
+                        ?>
+                        <div class="form-label-group mb-1">
+                            <?php
+                            $elementId = 'make-offer-amount' . (($async) ? '-modal' : '');
+                            echo $this->form->getElement('offer_amount')
+                                ->setPrefix('')
+                                ->setSuffix('')
+                                ->clearAttributes()
+                                ->setAttributes(array(
+                                    'id'          => $elementId,
+                                    'class'       => 'form-control',
+                                    'placeholder' => $offerAmountPlaceholder,
+                                ))
+                                ->render();
+                            ?>
+                            <label for="<?php echo $elementId; ?>"><?php echo $offerAmountPlaceholder; ?></label>
+                        </div>
+
+                        <?php if ($seller->displayMakeOfferRanges()) { ?>
+                            <div class="mb-3 d-flex justify-content-between">
+                                <small>
+                                    <?php echo $this->offerRanges($listing); ?>
+                                </small>
+                            </div>
+                        <?php } ?>
+                    <?php } ?>
+
+                    <?php
+                    if ($this->form->hasElement(\Listings\Form\Purchase::BTN_MAKE_OFFER)) {
+                        /** @var \Cube\Form\Element\Button $formElement */
+                        $formElement = $this->form->getElement(\Listings\Form\Purchase::BTN_MAKE_OFFER);
+
+                        $attributes = array(
+                            'class' => 'btn btn-warning btn-lg btn-block my-2',
+                            'title' => $this->_('Make Offer'),
+                        );
+
+                        if (!$listing->isActiveAndOpen()) {
+                            $attributes['disabled'] = 'disabled';
+                        }
+
+                        if ($details) {
+                            $attributes['class'] .= ' ' . 'jq-popup-form';
+                            $attributes['formaction'] = $this->url($listing->makeOfferConfirmLink(true));
+
+                            $formElement->setName(\Listings\Form\Purchase::BTN_CONFIRM);
+                        }
+
+                        echo $formElement->clearAttributes()
+                            ->setAttributes($attributes)
+                            ->render();
+                    }
+                    ?>
+                    <!-- MAKE OFFER CONFIRM FORM -->
+                <?php } ?>
+            <?php } ?>
+        </form>
+
+    </div>
+    <?php if ($summary) { ?>
+        <div class="order-first mb-3 <?php echo ($async) ? 'col-12' : 'col-lg-6 order-lg-last'; ?>">
+            <div class="<?php echo ($async) ? 'px-3' : ''; ?>">
+                <?php echo $this->listing($listing, 'partials/listing-list.phtml')
+                    ->setDisplaySeller()
+                    ->render(); ?>
+            </div>
+        </div>
+    <?php } ?>
+</div>
+
+<?php if ($async) {
+    $ajaxActions = 'null';
+    if (in_array('cart', $includedForms)) {
+        $ajaxActions = '{ "cart" : { "url" : "' . $this->url(array('module' => 'app', 'controller' => 'async', 'action' => 'cart-dropdown')) . '", "data" : {}, "wrapper" : ".au-cart-dropdown" } }';
+    }
+    $this->script()->addBodyCode('<script type="text/javascript" src="' . $this->baseUrl . '/js/functions.js"></script>')
+        // there are options set through data attributes as well (cart dropdown async update and form redirect url
+        ->addBodyCode('<script type="text/javascript">
+        feather.replace();
+            $("form[data-purchase-async]").formAsync({
+                wrapper: ".bootbox-body",
+                redirectUrl: "' . $this->form->getRedirectUrl() . '",
+                submitElementValue: "' . $this->_('Please wait...') . '",
+                onChange: ".field-changeable",
+                ajaxActions : ' . $ajaxActions . '
+            });
+        </script>');
+
+    echo $this->script()->displayBodyCode();
+} ?>
+

@@ -1,0 +1,149 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.07]
+ */
+
+$this->setGlobal('themeFolder', $this->baseUrl . '/' . $this->themesFolder . '/' . 'admin');
+?>
+<!DOCTYPE html>
+
+<html lang="<?php echo $this->htmlLang(); ?>" dir="<?php echo $htmlDir = $this->htmlDir(); ?>">
+<head>
+    <?php echo $this->headTitle(); ?>
+
+    <?php
+    $this->headMeta()
+        ->appendName('viewport', 'width=device-width, initial-scale=1, shrink-to-fit=no')
+        ->appendHttpEquiv('X-UA-Compatible', 'IE=edge');
+    echo $this->headMeta();
+
+    /** add rtl bootstrap css if the case */
+    if ($htmlDir == \Cube\View\Helper\HtmlDir::RTL) {
+        $this->script()
+            ->replaceHeaderCode('<link href="' . $this->baseUrl . '/css/bootstrap.min.css" rel="stylesheet" type="text/css">',
+                '<link rel="stylesheet" href="https://cdn.rtlcss.com/bootstrap/v4.0.0/css/bootstrap.min.css" integrity="sha384-P4uhUIGk/q1gaD/NdgkBIl3a6QywJjlsFJFk7SPRdruoGddvRVSwv5qFnvZ73cpz" crossorigin="anonymous">')
+            ->replaceBodyCode('<script type="text/javascript" src="' . $this->baseUrl . '/js/bootstrap.min.js"></script>',
+                '<script src="https://cdn.rtlcss.com/bootstrap/v4.0.0/js/bootstrap.min.js" integrity="sha384-54+cucJ4QbVb99v8dcttx/0JRx4FHMmhOWi4W+xrXpKcsKQodCBwAvu3xxkZAwsH" crossorigin="anonymous"></script>');
+    }
+
+    $this->script()
+        ->addHeaderCode('<link href="' . $this->themeFolder . '/css/theme.css" media="all" rel="stylesheet" type="text/css">');
+    ?>
+
+    <?php echo $this->script()->displayHeaderCode(); ?>
+</head>
+
+<body class="sidebar-hidden-md">
+
+<!-- HEADER -->
+<nav class="navbar navbar-expand-md navbar-dark sticky-top bg-dark flex-md-nowrap p-0">
+    <nav class="navbar navbar-logo col-md-4 col-lg-3">
+        <a class="navbar-brand" href="<?php echo $this->url(null, 'admin-index-index'); ?>"></a>
+        <button class="sidebar-toggler" type="button">
+            <span data-feather="menu"></span>
+        </button>
+    </nav>
+
+    <?php
+    $container = $this->navigation()->getInitialContainer()
+        ->findOneBy('label', $this->_('Quick Navigation'));
+
+    echo $this->navigation($container, 'navigation/navigation.phtml')->menu();
+    ?>
+
+    <ul class="navbar-nav d-none d-md-inline-flex ml-auto px-3">
+<!--        <li class="nav-item mr-4">-->
+<!--            <span class="navbar-text">--><?php //echo $this->liveTime(time()); ?><!--</span>-->
+<!--        </li>-->
+<!--        <li class="nav-item">-->
+<!--            <a class="nav-link" href="#"><i data-feather="inbox"></i><span-->
+<!--                        class="badge badge-pill badge-danger">5</span></a>-->
+<!--        </li>-->
+        <li class="nav-item">
+            <!-- LANGUAGE BAR -->
+            <?php echo $this->language()->render(); ?>
+            <!-- /LANGUAGE BAR -->
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="<?php echo $this->url(array('controller' => 'index', 'action' => 'logout')); ?>"
+               title="<?php echo $this->_('Logout'); ?>"><i data-feather="power"></i></a>
+        </li>
+    </ul>
+</nav>
+<!-- /HEADER -->
+
+
+<!-- CONTAINER -->
+<div class="container-fluid">
+    <div class="row">
+        <!-- SIDEBAR -->
+        <nav class="col-md-4 col-lg-3 p-0 sidebar">
+            <?php
+            $container = $this->navigation()->getInitialContainer()
+                ->findOneBy('label', $this->_('Home'));
+
+            echo $this->navigation($container, 'navigation/left-side.phtml')->menu();
+            ?>
+        </nav>
+        <!-- /SIDEBAR -->
+
+        <main role="main" class="col-md-8 col-lg-9 pt-3 px-3 pl-xl-4 main">
+            <!-- MAIN CONTENT -->
+            <div class="main-content">
+                <!-- BREADCRUMBS -->
+                <?php
+                $controller = ($this->controller) ?
+                    $this->controller : $this->request()->getRequest()->getController();
+
+                $container = $this->navigation()->getInitialContainer()
+                    ->findOneBy('label', $this->_($controller));
+
+                echo $this->navigation($container, 'navigation/breadcrumbs.phtml')->setMinDepth(1)->breadcrumbs();
+                ?>
+                <!-- /BREADCRUMBS -->
+
+
+                <!-- HEADLINE -->
+                <?php
+                echo $this->navigation()->setPartial('navigation/headline.phtml')->headline();
+                ?>
+                <!-- /HEADLINE -->
+
+
+                <!-- SITE MESSAGES -->
+                <?php echo $this->actionMessages()->setMessages($this->messages)->render(); ?>
+                <!-- /SITE MESSAGES -->
+
+
+                <!-- PAGE CONTENT -->
+                <?php echo $this->getContent(); ?>
+                <!-- /PAGE CONTENT -->
+            </div>
+            <!-- /MAIN CONTENT -->
+            
+
+            <!-- FOOTER -->
+            <footer>
+                <span class="mr-auto"><a href="https://www.newlightmedia.net/only1wwc"
+                                           target="_blank">Worldwide Classifieds Inc.</a> v<?php echo \Ppb\Utility::VERSION; ?></span>
+                <span class="text-right">&copy;<?php echo date('Y'); ?>
+                    The New Light Media Group. All rights reserved.</span>
+            </footer>
+            <!-- /FOOTER -->
+        </main>
+    </div>
+
+</div>
+<!-- /CONTAINER -->
+
+<?php
+$this->script()
+    ->prependBodyCode('<script src="' . $this->baseUrl . '/js/pace.min.js" type="text/javascript"></script>')
+    ->addBodyCode('<script src="' . $this->themeFolder . '/js/theme.js" type="text/javascript"></script>')
+    ->removeBodyCode($this->settings['google_analytics_code']);
+
+echo $this->script()->displayBodyCode();
+?>
+</body>
+
+</html>

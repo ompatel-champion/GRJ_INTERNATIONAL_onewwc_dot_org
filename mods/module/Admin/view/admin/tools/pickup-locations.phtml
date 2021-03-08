@@ -1,0 +1,76 @@
+<?php
+/**
+ * MOD:- PICKUP LOCATIONS
+ */
+
+$headlineButtons = null;
+
+$headlineButtons .= '<a class="btn btn-outline-secondary" '
+    . 'href="' . $this->url(array('action' => 'add-pickup-location')) . '">'
+    . $this->_('Add Pickup Location') . '</a>';
+
+$this->setGlobal('headlineButtons', $headlineButtons);
+?>
+
+<div class="table-responsive">
+    <table class="table hover">
+        <caption>
+            <?php echo sprintf(
+                $this->pluralize(
+                    $count = $this->paginator->getPages()->totalItemCount,
+                    $this->_('<strong>%s</strong> location found.'),
+                    $this->_('<strong>%s</strong> locations found.')
+                ), $count); ?>
+
+            <?php if ($this->paginator->getPages()->totalItemCount > 1) { ?>
+                <?php echo sprintf(
+                    $this->_('Showing results <strong>%s</strong> to <strong>%s</strong>'),
+                    $this->paginator->getPages()->firstItemNumber,
+                    $this->paginator->getPages()->lastItemNumber); ?>
+            <?php } ?>
+        </caption>
+        <?php if ($this->paginator->getPages()->totalItemCount) { ?>
+            <thead class="thead-light">
+            <tr>
+                <th><?php echo $this->_('Pickup Location'); ?></th>
+                <th class="size-actions"><?php echo $this->_('Actions'); ?></th>
+            </tr>
+            </thead>
+        <?php } ?>
+        <tbody>
+        <?php
+        /** @var \Ppb\Db\Table\Row\StorePickupLocation $storeLocation */
+        foreach ($this->paginator as $storeLocation) {
+            ?>
+            <tr>
+                <td>
+                    <?php echo $storeLocation->display(); ?>
+                </td>
+                <td>
+                    <?php if ($storeLocation->canEdit()) { ?>
+                        <a class="btn btn-secondary mb-1"
+                           href="<?php echo $this->url(array('action' => 'manage-pickup-location', 'id' => $storeLocation['id'])); ?>"
+                           title="<?php echo $this->_('Edit Pickup Location'); ?>">
+                            <span data-feather="folder"></span>
+                            <?php echo $this->_('Edit'); ?>
+                        </a>
+                    <?php } ?>
+                    <?php if ($storeLocation->canDelete()) { ?>
+                        <a class="btn btn-danger mb-1 confirm-box"
+                           href="<?php echo $this->url(array('action' => 'delete-pickup-location', 'id' => $storeLocation['id']),
+                               null, true); ?>"
+                           title="<?php echo $this->_('Delete Pickup Location'); ?>"
+                           data-message="<?php echo $this->_('Are you sure you want to delete this pickup location?'); ?>">
+                            <span data-feather="x"></span>
+                            <?php echo $this->_('Delete'); ?>
+                        </a>
+                    <?php } ?>
+                </td>
+            </tr>
+        <?php } ?>
+        </tbody>
+    </table>
+</div>
+
+<?php echo $this->pagination($this->paginator, 'sliding', 'partials/pagination.phtml'); ?>
+

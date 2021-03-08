@@ -1,0 +1,205 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.05]
+ */
+/* @var string $filter */
+/* @var int $itemsPerPage */
+/* @var \Ppb\Service\Offers $offersService */
+$headlineButtons = null;
+
+$container = $this->navigation()->getInitialContainer()
+    ->findOneBy('label', $this->_('Selling Sort Filter'));
+
+$headlineButtons .= $this->navigation($container, 'navigation/browse-filter.phtml')->menu();
+
+$container = $this->navigation()->getInitialContainer()
+    ->findOneBy('label', $this->_('Selling Listing Types Filter'));
+
+$headlineButtons .= '<div class="ml-1"></div>'
+    . $this->navigation($container, 'navigation/browse-filter.phtml')->menu();
+
+switch ($filter) {
+    case 'open':
+        $filterLabel = $this->_('Selling Open Filter');
+        break;
+    case 'closed':
+        $filterLabel = $this->_('Selling Closed Filter');
+        break;
+    default:
+        $filterLabel = null;
+        break;
+}
+
+if ($filterLabel !== null) {
+    $headlineButtons .= '<div class="ml-1"></div>';
+
+    $container = $this->navigation()->getInitialContainer()
+        ->findOneBy('label', $this->_($filterLabel));
+
+    $headlineButtons .= $this->navigation($container, 'navigation/browse-filter.phtml')->menu();
+}
+
+$this->setGlobal('headlineButtons', $headlineButtons);
+?>
+<nav class="navbar p-0 mb-4">
+    <form class="form-inline ml-auto"
+          action="<?php echo $this->url(null, null, true, array('listing_id', 'keywords', 'option', 'page', 'submit')); ?>"
+          method="get">
+        <div class="mr-1">
+            <?php echo $this->formElement('text', 'listing_id', $this->listingId)
+                ->setAttributes(array('placeholder' => $this->_('Listing ID'), 'class' => 'form-control input-small'))
+                ->render();
+            ?>
+        </div>
+        <div class="mr-1">
+            <?php echo $this->formElement('text', 'keywords', $this->keywords)
+                ->setAttributes(array('placeholder' => $this->_('Listing Title'), 'class' => 'form-control input-medium'))
+                ->render();
+            ?>
+        </div>
+        <?php echo $this->formElement('submit', 'submit', $this->_('Search'))
+            ->setAttributes(array('class' => 'btn btn-secondary'))
+            ->render();
+        ?>
+    </form>
+</nav>
+
+<form action="" method="post" class="form-sticky-buttons">
+    <?php echo $this->formElement('hidden', 'option', '')->render(); ?>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <caption>
+                <?php echo sprintf(
+                    $this->pluralize(
+                        $count = $this->paginator->getPages()->totalItemCount,
+                        $this->_('<strong>%s</strong> listing found.'),
+                        $this->_('<strong>%s</strong> listings found.')
+                    ), $count); ?>
+
+                <?php if ($this->paginator->getPages()->totalItemCount > 1) { ?>
+                    <?php echo sprintf(
+                        $this->_('Showing results <strong>%s</strong> to <strong>%s</strong>'),
+                        $this->paginator->getPages()->firstItemNumber,
+                        $this->paginator->getPages()->lastItemNumber); ?>
+                <?php } ?>
+            </caption>
+            <?php if ($this->paginator->getPages()->totalItemCount) { ?>
+                <thead class="thead-light">
+                <tr>
+                    <th class="size-tiny">
+                        <?php echo $this->formElement('checkbox', 'selectAll')
+                            ->setMultiOptions(array(1 => null))
+                            ->render();
+                        ?>
+                    </th>
+                    <th><?php echo $this->_('Listing'); ?></th>
+                    <th class="size-small"><?php echo $this->_('Status'); ?></th>
+                    <th class="size-actions"><?php echo $this->_('Actions'); ?></th>
+                </tr>
+                </thead>
+            <?php } ?>
+            <tbody>
+            <?php
+            /** @var \Ppb\Db\Table\Row\Listing $listing */
+            foreach ($this->paginator as $listing) {
+                $buttons = array();
+
+                if ($listing->isDraft()) {
+                    $buttons[] = 'draftsList';
+                }
+                else {
+                    if ($listing->canClose()) {
+                        $buttons[] = 'close';
+                    }
+
+                    if ($listing->isScheduled()) {
+                        $buttons[] = 'open';
+                    }
+
+                    if ($listing->isClosed()) {
+                        $buttons[] = 'relist';
+                    }
+                }
+
+                if ($listing->canDelete()) {
+                    $buttons[] = 'delete';
+                }
+                ?>
+                <tr>
+                    <td>
+                        <?php echo $this->formElement('checkbox', 'id')
+                            ->setMultiOptions(array($listing['id'] => null))
+                            ->setAttributes(array(
+                                'class'        => 'select-all',
+                                'data-buttons' => implode(' ', $buttons)
+                            ))
+                            ->setMultiple()
+                            ->render();
+                        ?>
+                    </td>
+                    <td>
+                        <?php echo $this->listing($listing, 'partials/listing-list.phtml')
+                            ->setDisplaySeller()
+                            ->setDisplayEnhanced()
+                            ->render(); ?>
+
+                        <div class="mt-3">
+                            <?php if ($listing->countDependentRowset('\Ppb\Db\Table\Offers')) {
+                                $offer = $listing->getOffers()->getRow(0);
+                                ?>
+                                <a class="btn btn-gold"
+                                   href="<?php echo $this->url(array('type' => 'selling', 'id' => $offer['topic_id']), 'members-offers-details'); ?>">
+                                    <span data-feather="clipboard"></span>
+                                    <?php echo $this->_('View Offers'); ?>
+                                </a>
+                            <?php } ?>
+                            <?php if (!$listing->getData('active')) { ?>
+                                <a class="btn btn-success"
+                                   href="<?php echo $this->url(array('module' => 'app', 'controller' => 'payment', 'action' => 'listing-setup', 'id' => $listing['id'])); ?>"
+                                   title="<?php echo $this->_('Pay Listing Setup Fee'); ?>">
+                                    <span data-feather="dollar-sign"></span>
+                                    <?php echo $this->_('Pay Listing Setup Fee'); ?>
+                                </a>
+                            <?php } ?>
+                        </div>
+                    </td>
+                    <td>
+                        <?php echo $this->listing()->status(); ?>
+                    </td>
+                    <td>
+                        <?php echo $this->partial('partials/buttons-listing-manage.phtml',
+                            array('listing' => $listing,
+                                  'filter'  => $filter,
+                            )); ?>
+                    </td>
+                </tr>
+            <?php } ?>
+            </tbody>
+        </table>
+    </div>
+
+    <?php if ($this->paginator->getPages()->totalItemCount) { ?>
+        <div class="buttons-sticky-bottom"
+             data-message="<?php echo $this->_('Check the boxes above to display the available management options.'); ?>">
+            <button class="btn btn-warning confirm-form" value="close"
+                    data-message="<?php echo $this->_('Are you sure you want to close the listings you have selected?'); ?>"><?php echo $this->_('Close'); ?></button>
+            <button class="btn btn-success confirm-form" value="open"
+                    data-message="<?php echo $this->_('Are you sure you want to open the listings you have selected?'); ?>"><?php echo $this->_('Open'); ?></button>
+            <button class="btn btn-primary confirm-form" value="relist"
+                    data-message="<?php echo $this->_('Are you sure you want to relist the listings you have selected?'); ?>"><?php echo $this->_('Relist'); ?></button>
+            <button class="btn btn-primary confirm-form" value="draftsList"
+                    data-message="<?php echo $this->_('Are you sure you want to list the selected drafts?'); ?>"><?php echo $this->_('List'); ?></button>
+            <button class="btn btn-danger confirm-form" value="delete"
+                    data-message="<?php echo $this->_('Are you sure you want to delete the listings you have selected?'); ?>"><?php echo $this->_('Delete'); ?></button>
+        </div>
+    <?php } ?>
+</form>
+
+<div class="d-md-flex justify-content-between">
+    <?php if ($this->paginator->getPages()->totalItemCount) {
+        ?>
+        <?php echo $this->partial('partials/items-per-page.phtml', array('itemsPerPage' => $itemsPerPage)); ?>
+    <?php } ?>
+    <?php echo $this->pagination($this->paginator, 'sliding', 'partials/pagination.phtml'); ?>
+</div>
+

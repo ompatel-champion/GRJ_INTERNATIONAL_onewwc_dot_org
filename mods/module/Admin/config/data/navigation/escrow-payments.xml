@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- MOD:- ESCROW PAYMENTS -->
+<config>
+    <navigation>
+        <pages>
+            <main_navigation>
+                <pages>
+                    <settings>
+                        <pages>
+                            <listing_settings>
+                                <pages>
+                                    <listings_settings_global>
+                                        <pages>
+                                            <escrow_payments>
+                                                <label>Escrow Payments [ Mod ]</label>
+                                                <uri>admin/settings/escrow_payments</uri>
+                                            </escrow_payments>
+                                        </pages>
+                                    </listings_settings_global>
+                                </pages>
+                            </listing_settings>
+                        </pages>
+                    </settings>
+                    <tools>
+                        <pages>
+                            <accounting>
+                                <pages>
+                                    <make_escrow_payment>
+                                        <label>Escrow Payment - Pay Seller</label>
+                                        <module>admin</module>
+                                        <controller>tools</controller>
+                                        <action>pay-escrow</action>
+                                        <hidden>true</hidden>
+                                    </make_escrow_payment>
+                                </pages>
+                            </accounting>
+                        </pages>
+                    </tools>
+                </pages>
+            </main_navigation>
+        </pages>
+    </navigation>
+</config>

@@ -1,0 +1,129 @@
+<?php
+/**
+ * @version 8.1 [rev.8.1.01]
+ */
+/* @var int $parentId */
+/* @var array $params */
+
+/** @var \Cube\Paginator $paginator */
+$filter = array('active');
+if ($this->settings['hide_empty_stores']) {
+    array_push($filter, 'not-empty');
+}
+$params = array_merge($params, array('filter' => $filter));
+$paginator = $this->stores()->fetchPaginator($params)->getPaginator();
+?>
+
+<div class="row">
+    <nav class="col-lg-3 pr-lg-1 sidebar">
+        <!-- SIDEBAR -->
+        <?php echo $this->action('stores', 'search', 'listings'); ?>
+        <!-- /SIDEBAR -->
+    </nav>
+    <main class="col-lg-9 main">
+        <div class="main-content">
+            <!-- HEADLINE -->
+            <?php
+            echo $this->navigation()->setPartial('navigation/headline.phtml')->headline(array('headline' => $this->_('Browse Stores')));
+            $this->headline = null;
+            ?>
+            <!-- /HEADLINE -->
+
+            <?php if ($paginator->getPages()->totalItemCount) { ?>
+                <!-- FEATURED STORES -->
+                <?php
+                $filter = array('active', 'featured');
+                if ($this->settings['hide_empty_stores']) {
+                    array_push($filter, 'not-empty');
+                }
+                $featuredStores = $this->stores('partials/stores-cards.phtml')
+                    ->setVariables(array('gridClass' => 'col-6 col-sm-4 card-grid'))
+                    ->fetchStores(array('filter' => $filter, 'parent_id' => $parentId, 'sort' => 'rand', 'limit' => 3))
+                    ->getStores();
+
+                if (count($featuredStores) > 0) {
+                    ?>
+
+                    <div class="mt-3 mb-3 pt-2 pb-1 px-3 bg-light">
+                        <?php
+                        echo $this->navigation()->setPartial('navigation/subtitle.phtml')->headline(array(
+                            'headline' => $this->_('Featured Stores'),
+                        ));
+                        ?>
+
+                        <?php echo $this->stores()->render(); ?>
+                    </div>
+                <?php } ?>
+                <!-- /FEATURED STORES -->
+
+                <!-- ORDERING / DISPLAY OPTIONS -->
+                <div class="row align-items-center p-0 mb-4">
+                    <div class="col-12 col-lg mb-2 mb-lg-0">
+                        <?php echo sprintf(
+                            $this->pluralize(
+                                $count = $paginator->getPages()->totalItemCount,
+                                $this->_('<strong>%s</strong> store found.'),
+                                $this->_('<strong>%s</strong> stores found.')
+                            ), $count); ?>
+
+                        <?php if ($paginator->getPages()->totalItemCount > 1) { ?>
+                            <?php echo sprintf(
+                                $this->_('Showing results <strong>%s</strong> to <strong>%s</strong>'),
+                                $paginator->getPages()->firstItemNumber,
+                                $paginator->getPages()->lastItemNumber); ?>
+                        <?php } ?>
+                    </div>
+                    <div class="col-6 col-lg-auto">
+                        <?php
+                        $this->setGlobals(array(
+                            'btnGroupClass' => 'btn-group btn-group-sm',
+                            'btnClass'      => 'btn btn-default',
+                        ));
+
+                        $container = $this->navigation()->getInitialContainer()
+                            ->findOneBy('label', $this->_('Stores Sort Filter'));
+
+                        echo $this->navigation($container, 'navigation/browse-filter.phtml')->menu();
+                        ?>
+
+                        <?php
+                        $container = $this->navigation()->getInitialContainer()
+                            ->findOneBy('label', $this->_('Items Per Page Filter'));
+
+                        echo $this->navigation($container, 'navigation/browse-filter.phtml')->menu();
+                        ?>
+                    </div>
+
+                    <div class="col-6 col-lg-auto text-right">
+                        <a href="#" id="btn-grid" class="btn btn-sm btn-default"
+                           title="<?php echo $this->_('Grid'); ?>">
+                            <span data-feather="grid"></span>
+                        </a>
+                        <a href="#" id="btn-list" class="btn btn-sm btn-default"
+                           title="<?php echo $this->_('List'); ?>">
+                            <span data-feather="server"></span>
+                        </a>
+                    </div>
+                </div>
+                <!-- /ORDERING / DISPLAY OPTIONS -->
+
+                <!-- DISPLAY LISTINGS -->
+                <div class="mb-4">
+                    <?php echo $this->stores()->setVariables(array('gridClass' => 'col-6 col-md-3 card-grid', 'listGridToggle' => true))->renderPaginator(); ?>
+                </div>
+                <!-- /DISPLAY LISTINGS -->
+
+                <!-- PAGINATION -->
+                <?php echo $this->pagination($paginator, 'sliding', 'partials/pagination.phtml'); ?>
+                <!-- /PAGINATION -->
+            <?php }
+            else { ?>
+                <div class="py-4 text-center">
+                    <?php echo $this->_('No stores matching your query found.'); ?>
+                </div>
+            <?php } ?>
+        </div>
+    </main>
+</div>
+
+

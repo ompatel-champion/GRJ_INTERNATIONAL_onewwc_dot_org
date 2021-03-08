@@ -1,0 +1,80 @@
+<?php
+/**
+ * @version 8.1 [rev.8.1.02]
+ */
+
+/** @var bool $inAdmin */
+
+use Ppb\Service\Messaging as MessagingService;
+
+$topicTitle = $this->message($message)->topicTitle();
+
+if ($sale instanceof \Ppb\Db\Table\Row\Sale) {
+    /** @var \Ppb\Db\Table\Row\User $user */
+    $user = $this->userDetails($this->loggedInUser['id'])->getUser();
+    $active = $user->isActive();
+
+    echo $this->partial('partials/sale.phtml', array(
+        'sale'                => $sale,
+        'postageDesc'         => ($active) ? true : false,
+        'caption'             => ($active) ? true : false,
+        'directPaymentButton' => ($active) ? true : false,
+        'headingButtons'      => ($inAdmin) ? false : true,
+        'inAdmin'             => $inAdmin,
+        'type'                => ($this->loggedInUser['id'] == $sale['seller_id'] ? 'sold' : 'bought')
+    ));
+}
+else {
+    $topic = $message->getTopic();
+
+    $listingId = $topic->getData('listing_id');
+
+    if (!$listingId) {
+        $topicTitle = $message->getTopicTitle(false);
+        if (is_array($topicTitle)) {
+            $string = (isset($topicTitle['msg'])) ? $topicTitle['msg'] : '';
+            $args = (isset($topicTitle['args'])) ? $topicTitle['args'] : '';
+
+            if (strcmp($string, MessagingService::TITLE_PRIVATE_MESSAGE) === 0) {
+                if (is_array($args)) {
+                    $listingId = intval($args[0]);
+                }
+            }
+        }
+    }
+
+    if ($listingId) {
+        $listingsService = new \Ppb\Service\Listings();
+        $listing = $listingsService->findBy('id', $listingId);
+        if ($listing instanceof \Ppb\Db\Table\Row\Listing) {
+            echo '<div class="mb-4">'
+                . $this->listing($listing, 'partials/listing-list.phtml')
+                    ->setDisplaySeller()
+                    ->setDisplayEnhanced()
+                    ->render()
+                . '</div>';
+        }
+    }
+}
+?>
+
+<h5 class="subtitle">
+    <?php echo $this->_('Message Board'); ?>
+</h5>
+
+<div class="mb-4">
+    <?php echo ($message['topic_id'] != null) ? $this->partial('partials/messages.phtml', array(
+        'message' => $message)) : null; ?>
+</div>
+
+<h5 class="subtitle">
+    <?php echo $this->_('Post Message'); ?>
+</h5>
+
+<?php echo $this->action('create', 'messaging', 'members', array(
+    'receiver_id' => ($this->loggedInUser['id'] == $message['sender_id']) ?
+        $message['receiver_id'] : $message['sender_id'],
+    'sale_id'     => $message['sale_id'],
+    'topic_id'    => $message['topic_id'],
+));
+?>

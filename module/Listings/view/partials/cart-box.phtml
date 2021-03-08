@@ -1,0 +1,97 @@
+<?php
+/**
+ * @version 8.1 [rev.8.1.01]
+ */
+/** @var \Ppb\Db\Table\Row\Sale $sale */
+$salesListings = $sale->getSalesListings();
+?>
+
+<div class="cart-box">
+    <?php
+    /** @var \Ppb\Db\Table\Row\SaleListing $saleListing */
+    foreach ($salesListings as $saleListing) {
+        /** @var \Ppb\Db\Table\Row\Listing $listing */
+        $listing = $saleListing->findParentRow('\Ppb\Db\Table\Listings');
+
+        $calculatedPrice = $saleListing->price(true);
+
+        if ($listing instanceof \Ppb\Db\Table\Row\Listing) {
+            $listingLink = $this->url($listing->link());
+            $listingImage = $listing->getMainImage();
+            $listingName = $listing['name'];
+        }
+        else {
+            $listingLink = '#';
+            $listingImage = null;
+            $listingName = $this->_('Listing Deleted');
+        }
+
+        $priceReduced = ($calculatedPrice < $saleListing->getData('price')) ? true : false;
+        ?>
+        <div class="media cart-item">
+            <?php echo $this->thumbnail($listingImage, 128, true,
+                array('alt' => $listingName, 'class' => 'mr-3 img-sm')); ?>
+
+            <div class="media-body">
+                <h6 class="m-0 d-flex justify-content-between">
+                    <a href="<?php echo $listingLink; ?>">
+                        <?php echo $listingName; ?>
+                    </a>
+
+                    <span>
+                        <?php if ($this->displayWishListBtn) { ?>
+                            <a href="<?php echo $this->url(array('module' => 'listings', 'controller' => 'cart', 'action' => 'move-wish-list', 'item_id' => $saleListing['id'])); ?>"
+                               class="jq-cart-action"
+                               title="<?php echo $this->_('Move to Wish List'); ?>">
+                                <span data-feather="heart"></span>
+                            </a>
+                        <?php } ?>
+                        <?php if ($this->displayRemoveBtn) { ?>
+                            <a href="<?php echo $this->url(array('module' => 'listings', 'controller' => 'cart', 'action' => 'delete', 'item_id' => $saleListing['id'])); ?>"
+                               class="jq-cart-action"
+                               title="<?php echo $this->_('Remove Item'); ?>">
+                                <span data-feather="trash-2"></span>
+                            </a>
+                        <?php } ?>
+                    </span>
+                </h6>
+
+                <?php if (!empty($saleListing['product_attributes'])) { ?>
+                    <div>
+                        <?php echo $this->productAttributes($saleListing['product_attributes'])->display(); ?>
+                    </div>
+                <?php } ?>
+                <div class="mt-1">
+                    <?php echo $saleListing['quantity']; ?> x
+                    <strong <?php echo ($priceReduced) ? 'class="text-danger"' : ''; ?>>
+                        <?php echo $this->amount($calculatedPrice, $sale['currency']); ?></strong>
+
+                    <?php if ($priceReduced) { ?>
+                        <del>
+                            <?php echo $this->amount($saleListing->getData('price'), $listing['currency']); ?></del>
+                    <?php } ?>
+                </div>
+            </div>
+        </div>
+    <?php } ?>
+
+    <?php if ($this->displayTotal) { ?>
+        <div class="cart-total mt-2 pt-1 text-right">
+            <?php echo $this->_('Total:'); ?>
+            <strong><?php echo $this->amount($sale->calculateTotal(true, true), $sale['currency']); ?></strong>
+        </div>
+    <?php } ?>
+
+    <?php if ($this->displayCheckoutBtns) { ?>
+        <div class="row mt-2">
+            <div class="col pr-1">
+                <a href="<?php echo $this->url(array('module' => 'listings', 'controller' => 'cart', 'action' => 'index', 'id' => $sale['id'])); ?>"
+                   class="btn btn-block btn-secondary"><?php echo $this->_('View Cart'); ?></a>
+            </div>
+            <div class="col pl-1">
+                <a href="<?php echo $this->url(array('module' => 'listings', 'controller' => 'cart', 'action' => 'checkout', 'id' => $sale['id'])); ?>"
+                   class="btn btn-block btn-primary"><?php echo $this->_('Checkout'); ?></a>
+            </div>
+        </div>
+    <?php } ?>
+</div>

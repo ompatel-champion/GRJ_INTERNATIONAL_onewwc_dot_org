@@ -1,0 +1,17 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.01]
+ */
+?>
+
+<form action="<?php echo $this->form->getAction(); ?>" method="<?php echo $this->form->getMethod(); ?>">
+    <?php echo $this->form->hiddenElements; ?>
+
+    <?php
+    /* @var \Cube\Form\Element $element */
+    foreach ($this->form->getElements() as $element) { ?>
+        <?php if (!$element->isHidden()) { ?>
+            <?php echo $this->partial('partials/form-element.phtml', array('element' => $element)); ?>
+        <?php } ?>
+    <?php } ?>
+</form>

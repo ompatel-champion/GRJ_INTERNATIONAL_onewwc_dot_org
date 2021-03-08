@@ -1,0 +1,308 @@
+<?php
+/**
+ * @version 8.2 [rev.8.2.01]
+ */
+
+/** @var array $adminRoles */
+
+$headlineButtons = null;
+
+if ($this->section != 'admin' || $this->loggedInUser['role'] == \Ppb\Service\Users::ADMIN_ROLE_PRIMARY) {
+    $headlineButtons .= '<a class="btn btn-outline-secondary mr-1" '
+        . 'href="' . $this->url(array('controller' => 'users', 'action' => 'add', 'view' => $this->section)) . '">'
+        . $this->_('Create Account') . '</a>';
+}
+
+if ($this->section != 'admin') {
+    $container = $this->navigation()->getInitialContainer()
+        ->findOneBy('label', $this->_('Filter Site Users'));
+
+    $headlineButtons .= $this->navigation($container, 'navigation/browse-filter.phtml')->menu();
+}
+
+$this->setGlobal('headlineButtons', $headlineButtons);
+?>
+<nav class="navbar p-0 mb-4">
+    <form class="form-inline ml-auto"
+          action="<?php echo $this->url(null, null, true, array('username', 'email', 'page', 'submit')); ?>"
+          method="get">
+
+        <div class="mr-1">
+            <?php echo $this->formElement('text', 'user_id', $this->userId)
+                ->setAttributes(array('placeholder' => $this->_('User ID'), 'class' => 'form-control input-small'))
+                ->render();
+            ?>
+        </div>
+
+        <div class="mr-1">
+            <?php echo $this->formElement('text', 'username', $this->username)
+                ->setAttributes(array('placeholder' => $this->_('Username'), 'class' => 'form-control input-default'))
+                ->render();
+            ?>
+        </div>
+
+        <div class="mr-1">
+            <?php echo $this->formElement('text', 'email', $this->email)
+                ->setAttributes(array('placeholder' => $this->_('Email Address'), 'class' => 'form-control input-default'))
+                ->render();
+            ?>
+        </div>
+
+        <?php echo $this->formElement('submit', 'submit', $this->_('Search'))
+            ->setAttributes(array('class' => 'btn btn-secondary'))
+            ->render();
+        ?>
+    </form>
+</nav>
+
+<form action="" method="post" class="form-sticky-buttons">
+    <?php echo $this->formElement('hidden', 'option', '')->render(); ?>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <caption>
+                <?php echo sprintf(
+                    $this->pluralize(
+                        $count = $this->paginator->getPages()->totalItemCount,
+                        $this->_('<strong>%s</strong> user found.'),
+                        $this->_('<strong>%s</strong> users found.')
+                    ), $count); ?>
+
+                <?php if ($this->paginator->getPages()->totalItemCount > 1) { ?>
+                    <?php echo sprintf(
+                        $this->_('Showing results <strong>%s</strong> to <strong>%s</strong>'),
+                        $this->paginator->getPages()->firstItemNumber,
+                        $this->paginator->getPages()->lastItemNumber); ?>
+                <?php } ?>
+            </caption>
+            <?php if ($this->paginator->getPages()->totalItemCount) { ?>
+                <thead class="thead-light">
+                <tr>
+                    <th class="size-tiny">
+                        <?php echo $this->formElement('checkbox', 'selectAll')
+                            ->setMultiOptions(array(1 => null))
+                            ->render();
+                        ?>
+                    </th>
+                    <th class="size-small"><?php echo $this->_('Username'); ?></th>
+                    <th class="size-min-large"><?php echo $this->_('Account Details'); ?></th>
+                    <th class="size-medium"><?php echo $this->_('Status'); ?></th>
+                    <th class="size-medium"><?php echo $this->_('Actions'); ?></th>
+                </tr>
+                </thead>
+            <?php } ?>
+            <tbody>
+            <?php
+            /** @var \Ppb\Db\Table\Row\User $user */
+            foreach ($this->paginator as $user) {
+                $buttons = array('delete');
+
+                if ($this->section != 'admin') {
+                    if (!$user->isApproved()) {
+                        $buttons[] = 'approve';
+                    }
+
+                    if ($user->getData('active')) {
+                        $buttons[] = 'suspend';
+                    }
+                    else {
+                        $buttons[] = 'activate';
+                    }
+
+                    if (!$user->isMailActivated()) {
+                        $buttons[] = 'verifyEmail';
+                    }
+                }
+                ?>
+                <tr>
+                    <td>
+                        <?php echo $this->formElement('checkbox', 'id')
+                            ->setMultiOptions(array($user['id'] => null))
+                            ->setAttributes(array(
+                                'class'        => 'select-all',
+                                'data-buttons' => implode(' ', $buttons)
+                            ))
+                            ->setMultiple()
+                            ->render();
+                        ?>
+                    </td>
+                    <td>
+                        <?php echo $this->userDetails($user)->display(); ?>
+                    </td>
+                    <td>
+                        <div class="row">
+                            <div class="col">
+                                <dl class="dl-variable">
+                                    <dt><i data-feather="user" title="<?php echo $this->_('Name'); ?>"></i></dt>
+                                    <dd><?php echo $this->userDetails($user)->displayFullName(); ?></dd>
+
+                                    <dt><i data-feather="map-pin" title="<?php echo $this->_('Address'); ?>"></i></dt>
+                                    <dd><?php echo $this->fieldDisplay($this->userDetails()->displayAddress(', ')); ?></dd>
+
+                                    <dt><i data-feather="at-sign" title="<?php echo $this->_('Email'); ?>"></i></dt>
+                                    <dd><?php echo $this->fieldDisplay($user['email']); ?></dd>
+
+                                    <dt><i data-feather="phone" title="<?php echo $this->_('Phone'); ?>"></i></dt>
+                                    <dd><?php echo $this->fieldDisplay($user['phone']); ?></dd>
+
+                                    <?php if ($user['birthdate'] > 0) { ?>
+                                        <dt><i data-feather="calendar" title="<?php echo $this->_('Birthdate'); ?>"></i>
+                                        </dt>
+                                        <dd><?php echo $this->date($user['birthdate'], true); ?></dd>
+                                    <?php } ?>
+                                </dl>
+                            </div>
+                            <div class="col">
+                                <dl class="dl-variable">
+                                    <dt><i data-feather="bookmark"
+                                           title="<?php echo $this->_('Registration Date'); ?>"></i></dt>
+                                    <dd><?php echo $this->date($user['created_at']); ?></dd>
+
+                                    <dt><i data-feather="log-in" title="<?php echo $this->_('Last Login'); ?>"></i></dt>
+                                    <dd><?php echo $this->date($user['last_login']); ?></dd>
+
+                                    <dt><i data-feather="server" title="<?php echo $this->_('IP Address'); ?>"></i></dt>
+                                    <dd>
+                                        <em>
+                                            <?php echo $this->fieldDisplay($user['ip_address'],
+                                                '<a href="http://db-ip.com/' . $user['ip_address'] . '" target="_blank">' . $user['ip_address'] . '</a>'); ?>
+                                        </em>
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+
+                        <?php if (!in_array($user['role'], $this->adminRoles)) { ?>
+                            <div>
+                                <?php if ($this->settings['private_site']) { ?>
+                                    <?php if ($user->isSeller()) {
+                                        $flag = 0;
+                                        $class = 'btn-blue';
+                                        $dataMessage = $this->_("Set '%s' as a buyer account?");
+                                        $icon = "award";
+                                        $label = $this->_('Seller');
+                                    }
+                                    else {
+                                        $flag = 1;
+                                        $class = 'btn-red';
+                                        $dataMessage = $this->_("Set '%s' as a seller account?");
+                                        $icon = "shopping-bag";
+                                        $label = $this->_('Buyer');
+                                    } ?>
+
+                                    <a class="btn btn-sm <?php echo $class; ?> confirm-box mb-1"
+                                       href="<?php echo $this->url(array('controller' => 'users', 'action' => 'change-status', 'option' => 'is_seller', 'id' => $user['id'], 'flag' => $flag),
+                                           null, true); ?>"
+                                       title="<?php echo $this->_('Change selling privileges'); ?>"
+                                       data-message="<?php echo sprintf($dataMessage, $user['username']); ?>">
+                                        <span data-feather="<?php echo $icon; ?>"></span>
+                                        <?php echo $label; ?>
+                                    </a>
+                                <?php } ?>
+
+                                <?php
+                                $userOptionsDataCloseRedirect = ($this->filter == 'stores') ? array('username' => $user['username']) : array(
+                                    'action' => 'browse', 'view' => 'site', 'username' => $user['username']);
+                                ?>
+
+                                <a class="btn btn-sm btn-dark jq-popup-form mb-1"
+                                   href="<?php echo $this->url(array('controller' => 'users', 'action' => 'user-options', 'id' => $user['id'])); ?>"
+                                   data-close-redirect="<?php echo $this->url($userOptionsDataCloseRedirect); ?>"
+                                   title="<?php echo $this->_('Edit User Options'); ?>">
+                                    <span data-feather="settings"></span>
+                                    <?php echo $this->_('User Options'); ?>
+                                </a>
+
+                                <a class="btn btn-sm btn-secondary mb-1"
+                                   href="<?php echo $this->url(array('controller' => 'tools', 'action' => 'accounting', 'user_id' => $user['id'])); ?>"
+                                   title="<?php echo $this->_('View Account History'); ?>">
+                                    <span data-feather="calendar"></span>
+                                    <?php echo $this->_('Account History'); ?>
+                                </a>
+
+                                <a class="btn btn-sm btn-info mb-1"
+                                   href="<?php echo $this->url(array('controller' => 'listings', 'action' => 'browse', 'listing_type' => 'all', 'user_id' => $user['id'])); ?>"
+                                   title="<?php echo $this->_('View Listings'); ?>">
+                                    <span data-feather="database"></span>
+                                    <?php echo $this->_('Listings'); ?>
+                                </a>
+                                <a class="btn btn-sm btn-gold confirm-box mb-1"
+                                   href="<?php echo $this->url(array('controller' => 'users', 'action' => 'login-as', 'id' => $user['id'])); ?>"
+                                   data-message="<?php echo sprintf($this->_("You will be logged in as '%s'. Proceed?"),
+                                       $user['username']); ?>"
+                                   title="<?php echo $this->_('Login as User'); ?>">
+                                    <span data-feather="log-in"></span>
+                                    <?php echo $this->_('Log in'); ?>
+                                </a>
+
+                                <?php if ($user->userPaymentMode() == 'account' && $user['balance'] > 0) { ?>
+                                    <a class="btn btn-sm btn-secondary confirm-box mb-1"
+                                       href="<?php echo $this->url(array('controller' => 'users', 'action' => 'payment-reminder', 'id' => $user['id'])); ?>"
+                                       data-message="<?php echo sprintf($this->_("Send payment reminder to user '%s'?"),
+                                           $user['username']); ?>"
+                                       title="<?php echo $this->_('Send Payment Reminder'); ?>">
+                                        <span data-feather="dollar-sign"></span>
+                                        <?php echo $this->_('Send Payment Reminder'); ?>
+                                    </a>
+                                <?php } ?>
+
+                                <a class="btn btn-sm btn-default jq-popup-form mb-1"
+                                   href="<?php echo $this->url(array('controller' => 'users', 'action' => 'send-message', 'receiver_id' => $user['id'])); ?>"
+                                   title="<?php echo $this->_('Send Message To User'); ?>">
+                                    <span data-feather="mail"></span>
+                                    <?php echo $this->_('Message User'); ?>
+                                </a>
+
+
+                            </div>
+                        <?php } ?>
+                    </td>
+                    <td>
+                        <?php echo $this->userDetails()->status(); ?>
+                    </td>
+                    <td>
+                        <?php if (
+                            !in_array($user['role'], $adminRoles) ||
+                            $this->loggedInUser['role'] == \Ppb\Service\Users::ADMIN_ROLE_PRIMARY
+                        ) {
+                            ?>
+                            <a class="btn btn-secondary mb-1"
+                               href="<?php echo $this->url(array('controller' => 'users', 'action' => 'manage', 'view' => $this->section, 'id' => $user['id'])); ?>"
+                               title="<?php echo $this->_('Edit User'); ?>">
+                                <span data-feather="folder"></span>
+                                <?php echo $this->_('Edit'); ?>
+                            </a>
+
+                            <a class="btn btn-danger mb-1 confirm-box"
+                               href="<?php echo $this->url(array('controller' => 'users', 'action' => 'delete', 'id' => $user['id']),
+                                   null, true); ?>"
+                               title="<?php echo $this->_('Delete User'); ?>"
+                               data-message="<?php echo $this->_('Are you sure you want to delete this account?'); ?>">
+                                <span data-feather="x"></span>
+                                <?php echo $this->_('Delete'); ?>
+                            </a>
+                        <?php } ?>
+                    </td>
+                </tr>
+            <?php } ?>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="buttons-sticky-bottom"
+         data-message="<?php echo $this->_('Check the boxes above to display the available management options.'); ?>" Ø>
+        <?php if ($this->paginator->getPages()->totalItemCount) { ?>
+            <button class="btn btn-success confirm-form" value="activate"
+                    data-message="<?php echo $this->_('Are you sure you want to activate the selected user accounts?'); ?>"><?php echo $this->_('Activate'); ?></button>
+            <button class="btn btn-warning confirm-form" value="suspend"
+                    data-message="<?php echo $this->_('Are you sure you want to suspend the selected user accounts?'); ?>"><?php echo $this->_('Suspend'); ?></button>
+            <button class="btn btn-info confirm-form" value="approve"
+                    data-message="<?php echo $this->_('Are you sure you want to approve the selected user accounts?'); ?>"><?php echo $this->_('Approve'); ?></button>
+            <button class="btn btn-dark confirm-form" value="verifyEmail"
+                    data-message="<?php echo $this->_('Are you sure you want to verify the email addresses of the selected user accounts?'); ?>"><?php echo $this->_('Verify Email Addresses'); ?></button>
+            <button class="btn btn-danger confirm-form" value="delete"
+                    data-message="<?php echo $this->_('Are you sure you want to delete the selected user accounts?'); ?>"><?php echo $this->_('Delete'); ?></button>
+        <?php } ?>
+    </div>
+</form>
+
+<?php echo $this->pagination($this->paginator, 'sliding', 'partials/pagination.phtml'); ?>

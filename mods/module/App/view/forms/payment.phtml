@@ -1,0 +1,42 @@
+<?php
+/**
+ * @version 8.2 [rev.8.2.01]
+ */
+/**
+ * MOD:- STRIPE GATEWAY INTEGRATION
+ */
+ 
+$logo = $this->form->getGatewayLogo();
+$name = $this->form->getGatewayName();
+?>
+
+<form action="<?php echo $this->form->getAction(); ?>" method="<?php echo $this->form->getMethod(); ?>"
+      class="form-horizontal" id="<?php echo $name; ?>">
+        <?php echo $this->form->hiddenElements; ?>
+
+    <div class="media mb-3 payment-box">
+        <?php if ($logo !== null) { ?>
+            <img src="<?php echo $this->baseUrl . $logo; ?>" alt="<?php echo $name; ?>" class="d-none d-md-block payment-logo">
+        <?php } ?>
+
+        <div class="media-body">
+            <div class="d-md-flex justify-content-between">
+                <div class="mx-md-3 pb-3 pb-md-0">
+                    <?php echo $this->form->getGatewayDescription(); ?>
+                    <?php
+                    /** @var \Cube\Form\Element $element */
+                    foreach ($this->form->getElements() as $element) { ?>
+                        <?php if ($element->getType() != 'submit') { ?>
+                            <?php echo $this->partial('partials/form-element.phtml', array('element' => $element)); ?>
+                        <?php } ?>
+                    <?php } ?>
+                </div>
+                <div>
+                   <!-- ## -- START :: CHANGE -- [ MOD:- STRIPE GATEWAY INTEGRATION ] -->
+                    <?php echo $this->form->make_payment; ?>
+                    <!-- ## -- END :: CHANGE -- [ MOD:- STRIPE GATEWAY INTEGRATION ] -->
+                </div>
+            </div>
+        </div>
+        </div>
+    </form>

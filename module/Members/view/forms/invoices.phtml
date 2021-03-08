@@ -1,0 +1,96 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.01]
+ */
+if ($this->form->hasElements()) {
+    /** @var \Ppb\Db\Table\Rowset\Sales $sales */
+    $sales = $this->form->getSales();
+
+    /** @var \Ppb\Db\Table\Row\Sale $sale */
+    $sale = $sales->getRow(0);
+    ?>
+    <?php $nbColumns = count($this->columns); ?>
+
+    <form method="<?php echo $this->form->getMethod(); ?>" action="<?php echo $this->form->getAction(); ?>"
+          class="form-invoices">
+        <?php echo $this->form->hiddenElements; ?>
+        <div class="table-responsive">
+            <table class="table">
+                <thead class="thead-light">
+                <tr>
+                    <?php foreach ($this->columns as $column) { ?>
+                        <th<?php echo (isset($column['class'])) ? ' class="' . $column['class'] . '"' : ''; ?>><?php echo $this->_($column['label']); ?></th>
+                    <?php } ?>
+                </tr>
+                </thead>
+                <tbody>
+                <!-- list table data -->
+                <?php
+                $checkboxCounter = 0;
+                $elementsToSkip = array();
+
+                foreach ((array)$this->form->getData() as $data) {
+                    if (array_key_exists('id', (array)$data)) {
+                        ?>
+                        <tr>
+                            <?php foreach ($this->columns as $column) { ?>
+                                <td<?php echo (isset($column['class'])) ? ' class="' . $column['class'] . '"' : ''; ?>>
+                                    <?php foreach ((array)$column['element_id'] as $elementId) {
+                                        $elementsToSkip[] = $elementId;
+
+                                        /** @var \Cube\Form\Element $element */
+                                        $element = $this->form->getElement($elementId);
+
+                                        if ($elementId == 'price') {
+                                            $element->setPrefix($sale['currency']);
+                                        }
+
+                                        if ($elementId == 'id' && $element->getType() == 'checkbox') {
+                                            $element->setMultiOptions(array($data['id'] => null));
+                                        }
+                                        if (isset($data[$elementId])) {
+                                            $element->setData($data[$elementId]);
+                                        }
+
+                                        $element->setBrackets('[' . $checkboxCounter . ']');
+
+                                        echo $element;
+                                    } ?>
+                                </td>
+                            <?php } ?>
+                        </tr>
+                        <?php $checkboxCounter++;
+                    }
+                } ?>
+
+                <tr>
+                    <td></td>
+                    <td colspan="<?php echo($nbColumns - 3); ?>">
+                        <?php
+                        /* @var \Cube\Form\Element $element */
+                        foreach ($this->form->getElements() as $element) { ?>
+                            <?php if (!$element->isHidden() && $element->getType() != 'submit' && !in_array($element->getName(), $elementsToSkip)) {
+                                $partial = ($partial = $element->getPartial()) ? $partial : 'partials/form-element.phtml';
+                                ?>
+                                <?php echo $this->partial($partial, array('element' => $element)); ?>
+                            <?php } ?>
+                        <?php } ?>
+                    </td>
+                    <td colspan="2" class="pr-0">
+                        <div class="au-invoice-totals mt-2">
+                        </div>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td></td>
+                    <td colspan="<?php echo($nbColumns - 1); ?>">
+                        <?php echo $this->form->getElement(\App\Form\Tables::BTN_SUBMIT)->render(); ?>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </form>
+<?php } ?>
+

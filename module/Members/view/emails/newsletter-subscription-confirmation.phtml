@@ -1,0 +1,23 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.01]
+ */
+?>
+
+<h4>
+    <?php echo $this->_('Confirm Newsletter Subscription'); ?>
+</h4>
+<p>
+    <?php echo $this->_('Thank you for subscribing to our newsletter.'); ?>
+</p>
+<p>
+    <?php echo $this->_('Please'); ?>
+    [ <a href="<?php echo $this->sitePath . $this->url($this->data['confirmation_link'], null, false, null, false, false); ?>">
+        <?php echo $this->_('click here'); ?>
+    </a> ]
+    <?php echo $this->_('to confirm your email address.'); ?>
+</p>
+<p>
+    <?php echo $this->_('Best regards'); ?> <br>
+    <?php echo $this->siteName; ?>
+</p>

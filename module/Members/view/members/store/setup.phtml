@@ -1,0 +1,15 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.01]
+ */
+/** @var \Ppb\Db\Table\Row\User $user */
+?>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <?php echo $this->partial('partials/store-information.phtml', array('user' => $user)); ?>
+    </div>
+</div>
+
+<?php echo $this->form; ?>
+

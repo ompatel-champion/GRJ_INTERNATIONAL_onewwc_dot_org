@@ -1,0 +1,263 @@
+<?php
+/**
+ * @version 8.1 [rev.8.1.01]
+ */
+/** @var array $elements */
+/** @var array $data */
+/** @var array $paymentGateways */
+/** @var array $offlinePaymentMethods */
+?>
+
+<?php
+$container = $this->navigation()->getContainer();
+
+echo $this->navigation()
+    ->setContainer($container->findOneBy('label', $this->_('Bulk Lister Tabs')))
+    ->setPartial('navigation/filter-tabs.phtml')
+    ->menu();
+
+$this->navigation()->setContainer($container);
+?>
+
+<nav class="navbar p-0 mb-4">
+    <a class="btn btn-outline-secondary ml-auto"
+       href="<?php echo $this->url(array('option' => 'download-sample')); ?>">
+        <?php echo $this->_('Download Sample CSV File'); ?>
+    </a>
+</nav>
+
+<?php if ($filter == '') { ?>
+    <?php echo $this->form; ?>
+<?php } ?>
+<?php if ($filter == 'description') { ?>
+    <div class="well">
+        <p>
+            <?php echo $this->_('The bulk lister tool allows the mass uploading of listings using a csv file that follows a set '
+                . 'structure as detailed in the "File Structure" tab.'); ?>
+        </p>
+
+        <h5 class="subtitle">
+            <?php echo $this->_('CSV File Format'); ?>
+            <small>[ <a href="https://tools.ietf.org/html/rfc4180"
+                        target="_blank"><?php echo $this->_('RFC 4180'); ?></a> ]
+            </small>
+        </h5>
+
+        <p>
+            <?php echo $this->_('1. Each record is located on a separate line, delimited by a line '
+                . 'break (CRLF). For example:'); ?>
+        </p>
+
+        <pre class="rounded border-light">
+            aaa,bbb,ccc CRLF
+            zzz,yyy,xxx CRLF
+        </pre>
+
+        <p>
+            <?php echo $this->_('2. There maybe an optional header line appearing as the first line '
+                . 'of the file with the same format as normal record lines. This '
+                . 'header will contain names corresponding to the fields in the file '
+                . 'and should contain the same number of fields as the records in '
+                . 'the rest of the file (the presence or absence of the header line '
+                . 'should be indicated via the optional "header" parameter of this '
+                . 'MIME type). For example:'); ?>
+        </p>
+
+        <pre>
+            field_name,field_name,field_name CRLF
+            aaa,bbb,ccc CRLF
+            zzz,yyy,xxx CRLF
+        </pre>
+
+        <p>
+            <?php echo $this->_('3. Within the header and each record, there may be one or more '
+                . 'fields, separated by commas. Each line should contain the same '
+                . 'number of fields throughout the file. Spaces are considered part '
+                . 'of a field and should not be ignored. The last field in the '
+                . 'record must not be followed by a comma. For example:'); ?>
+        </p>
+
+        <pre>
+            aaa,bbb,ccc
+        </pre>
+
+        <p>
+            <?php echo $this->_('4. Each field may or may not be enclosed in double quotes (however '
+                . 'some programs, such as Microsoft Excel, do not use double quotes '
+                . 'at all). If fields are not enclosed with double quotes, then '
+                . 'double quotes may not appear inside the fields. For example:'); ?>
+        </p>
+
+        <pre>
+            "aaa","bbb","ccc" CRLF
+            zzz,yyy,xxx
+        </pre>
+
+        <p>
+            <?php echo $this->_('5. Fields containing line breaks (CRLF), double quotes, and commas '
+                . 'should be enclosed in double-quotes. For example:'); ?>
+        </p>
+
+        <pre>
+            "aaa","b CRLF
+            bb","ccc" CRLF
+            zzz,yyy,xxx
+        </pre>
+
+        <p>
+            <?php echo $this->_('6. If double-quotes are used to enclose fields, then a double-quote '
+                . 'appearing inside a field must be escaped by preceding it with '
+                . 'another double quote. For example:'); ?>
+        </p>
+
+        <pre>
+            "aaa","b""bb","ccc"
+        </pre>
+
+    </div>
+<?php } ?>
+
+<?php if ($filter == 'structure') { ?>
+    <div class="alert alert-info">
+        <div>
+            <?php echo $this->_('The structure of the CSV bulk lister file needs to follow the format detailed below:'); ?>
+        </div>
+        <hr>
+
+        <div>
+            <?php echo sprintf(
+                $this->_('Important: The "%s" character set is reserved for separating selected values for columns that accept multiple selections.'),
+                \Ppb\Service\Listings\BulkLister::ARRAY_SEPARATOR); ?>
+        </div>
+    </div>
+
+    <table class="table table-bordered table-hover">
+        <thead class="thead-light">
+        <tr>
+            <th class="size-small"><?php echo $this->_('Label'); ?></th>
+            <th class="size-small"><?php echo $this->_('ID / Name'); ?></th>
+            <th class="size-tiny"><?php echo $this->_('Type'); ?></th>
+            <th class="size-tiny"><?php echo $this->_('Required'); ?></th>
+            <th><?php echo $this->_('Field Details'); ?></th>
+        </tr>
+        </thead>
+        <tbody>
+        <?php foreach ($elements as $element) { ?>
+            <tr>
+                <td>
+                    <?php echo (!empty($element['label'])) ? $this->_($element['label']) : $this->_('n/a'); ?>
+
+                </td>
+                <td>
+                    <span class="badge badge-light"><?php echo (!empty($element['id'])) ? $this->_($element['id']) : $this->_('n/a'); ?></span>
+                </td>
+                <td>
+                    <?php echo (!empty($element['bulk']['type'])) ? $element['bulk']['type'] : $this->_('string'); ?>
+                </td>
+                <td>
+                    <?php echo (array_key_exists('required', $element) && $element['required']) ?
+                        '<span class="text-success">' . $this->_('Yes') . '</span>' :
+                        '<span class="text-danger">' . $this->_('No') . '</span>'; ?>
+                </td>
+                <td>
+                    <?php if (!empty($element['multiOptions'])) { ?>
+                        <h6><?php echo $this->_('Allowed Values'); ?></h6>
+                        <p>
+                            <?php echo $this->fieldDisplay(array_keys($element['multiOptions'])); ?>
+                        </p>
+                    <?php } ?>
+                    <?php if (!empty($element['bulk']['notes'])) { ?>
+                        <h6><?php echo $this->_('Notes'); ?></h6>
+                        <p><?php echo (!empty($element['bulk']['notes'])) ? $element['bulk']['notes'] : ''; ?></p>
+                    <?php } ?>
+                </td>
+            </tr>
+        <?php } ?>
+        </tbody>
+    </table>
+<?php } ?>
+
+<?php if ($filter == 'categories' || $filter == 'locations') { ?>
+    <table class="table table-bordered">
+        <caption class="p-0">
+            <div class="input-group mb-4">
+                <div class="input-group-prepend">
+                    <span class="input-group-text"><?php echo $this->_('Filter by ID / Name'); ?></span>
+                </div>
+
+                <input type="text" class="form-control table-filter"
+                       placeholder="<?php echo $this->_('Search...'); ?>">
+            </div>
+        </caption>
+        <thead class="thead-light">
+        <tr>
+            <th class="size-mini"><?php echo $this->_('ID'); ?></th>
+            <th><?php echo $this->_('Name'); ?></th>
+        </tr>
+        </thead>
+        <tbody class="searchable">
+        <?php foreach ($data as $key => $value) { ?>
+            <tr>
+                <td>
+                    <?php echo $key; ?>
+                </td>
+                <td>
+                    <?php echo $value; ?>
+                </td>
+            </tr>
+        <?php } ?>
+        </tbody>
+    </table>
+<?php } ?>
+
+<?php if ($filter == 'payment_methods') { ?>
+    <table class="table table-bordered">
+        <caption class="p-0">
+            <div class="input-group mb-4">
+                <div class="input-group-prepend">
+                    <span class="input-group-text"><?php echo $this->_('Filter by ID / Name'); ?></span>
+                </div>
+
+                <input type="text" class="form-control table-filter"
+                       placeholder="<?php echo $this->_('Search...'); ?>">
+            </div>
+        </caption>
+        <thead class="thead-light">
+        <tr>
+            <th class="size-mini"><?php echo $this->_('ID'); ?></th>
+            <th><?php echo $this->_('Name'); ?></th>
+            <th class="size-medium"><?php echo $this->_('Type'); ?></th>
+        </tr>
+        </thead>
+        <tbody class="searchable">
+        <?php foreach ($paymentGateways as $key => $value) { ?>
+            <tr>
+                <td>
+                    <?php echo $key; ?>
+                </td>
+                <td>
+                    <?php echo $value; ?>
+                </td>
+                <td>
+                    <?php echo $this->_('Direct Payment'); ?>
+                </td>
+            </tr>
+        <?php } ?>
+        <?php foreach ($offlinePaymentMethods as $key => $value) { ?>
+            <tr>
+                <td>
+                    <?php echo $key; ?>
+                </td>
+                <td>
+                    <?php echo $value; ?>
+                </td>
+                <td>
+                    <?php echo $this->_('Offline Payment'); ?>
+                </td>
+            </tr>
+        <?php } ?>
+        </tbody>
+    </table>
+<?php } ?>
+
+

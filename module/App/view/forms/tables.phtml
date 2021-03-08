@@ -1,0 +1,149 @@
+<?php
+/**
+ * @version 8.2 [rev.8.2.01]
+ */
+/** @var bool $inAdmin */
+
+if (method_exists($service, 'getBreadcrumbs')) { ?>
+    <?php $breadcrumbs = $service->getBreadcrumbs($parentId); ?>
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="<?php echo $this->url(array('parent_id' => 0), null, true); ?>">
+                <span data-feather="home"></span>
+            </a>
+        </li>
+
+        <?php foreach ((array)$breadcrumbs as $id => $name) { ?>
+            <li class="breadcrumb-item">
+                <a href="<?php echo $this->url(array('parent_id' => $id), null, true); ?>"><?php echo $name; ?></a>
+            </li>
+        <?php } ?>
+    </ol>
+<?php } ?>
+
+<form method="<?php echo $this->form->getMethod(); ?>" action="<?php echo $this->form->getAction(); ?>">
+    <?php
+    if ($this->form->hasElement('parent_id')) {
+        $this->form->getElement('parent_id')->setValue($parentId);
+    }
+    echo $this->form->hiddenElements;
+    ?>
+
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="thead-light">
+            <tr>
+                <?php foreach ($this->columns as $column) { ?>
+                    <th<?php echo (isset($column['class'])) ? ' class="' . $column['class'] . '"' : ''; ?>><?php echo $this->_($column['label']); ?></th>
+                <?php } ?>
+            </tr>
+            </thead>
+            <tbody>
+            <!-- list table data -->
+            <?php
+            $checkboxCounter = 0;
+            $formData = (array)$this->form->getData();
+            $countFormData = count($formData);
+
+            foreach ($formData as $data) {
+                if (is_array($data)) {
+                    ?>
+                    <tr>
+                        <?php foreach ($this->columns as $column) { ?>
+                            <td class="<?php echo (isset($column['class'])) ? $column['class'] : ''; ?>">
+                                <div class="align-items-center d-flex">
+                                    <?php foreach ((array)$column['element_id'] as $elementId) {
+
+                                        /** @var \Cube\Form\Element $element */
+                                        $element = $this->form->getElement($elementId);
+
+                                        if (in_array($elementId, array('delete'))) {
+                                            $element->setMultiOptions(array($data['id'] => null));
+                                        }
+
+                                        $element->setData(''); // reset previous value in case of a select element
+                                        if (isset($data[$elementId])) {
+                                            $element->setData($data[$elementId]);
+                                        }
+
+                                        $element->setBrackets('[' . $checkboxCounter . ']');
+
+                                        echo $element;
+                                    }
+
+                                    if (isset($column['children'])) {
+                                        ?>
+                                        <a class="btn btn-secondary"
+                                           href="<?php echo $this->url(array($column['children']['key'] => $data[$column['children']['value']]),
+                                               null, true); ?>">
+                                            <span data-feather="share-2"></span>
+                                        </a>
+                                        <?php
+                                    }
+
+                                    if (isset($column['popup']) && $inAdmin) {
+                                        ?>
+                                        <a class="btn btn-secondary ml-1 jq-popup-form"
+                                           href="<?php echo $this->url(array('action' => $column['popup']['action'], 'id' => $data['id'])); ?>"
+                                           title="<?php echo $this->_('Edit Options'); ?>">
+                                            <span data-feather="settings"></span>
+                                        </a>
+                                    <?php } ?>
+                                </div>
+
+                                <?php
+                                if (isset($column['popup']) && $inAdmin) {
+                                    $userId = (!empty($data['user_id'])) ? $data['user_id'] : null;
+                                    if ($userId) { ?>
+                                        <div>
+                                            <div>
+                                                <small>
+                                                    <?php
+                                                    $link = $this->url(array('controller' => 'users', 'action' => 'browse', 'view' => 'site', 'id' => $userId));
+                                                    echo sprintf(
+                                                        $this->_('Store Category - Owner: %s'),
+                                                        '<a href="' . $link . '">' . $this->userDetails($data['user_id'])->getUser()->username . '</a>'); ?>
+                                                </small>
+                                            </div>
+                                        </div>
+                                    <?php } ?>
+                                <?php } ?>
+                            </td>
+                        <?php } ?>
+                    </tr>
+                    <?php
+                    $checkboxCounter++;
+                }
+            }
+
+            if ($this->insertRows > 0) {
+                ?>
+                <!-- add new row(s) to the table -->
+                <tr>
+                    <th colspan="<?php echo count($this->columns); ?>"><?php echo $this->translate('Insert New Data'); ?></th>
+                </tr>
+
+                <?php for ($i = 0; $i < $this->insertRows; $i++) { ?>
+                    <tr>
+                        <?php foreach ($this->columns as $column) { ?>
+                            <td<?php echo (isset($column['class'])) ? ' class="' . $column['class'] . '"' : ''; ?>>
+                                <?php foreach ((array)$column['element_id'] as $elementId) {
+                                    $element = $this->form->getElement($elementId);
+                                    if ($element->getType() != 'checkbox') {
+                                        echo $element->setBrackets('[' . $checkboxCounter . ']')->setData('')->render();
+                                    }
+                                } ?>
+                            </td>
+                        <?php } ?>
+                    </tr>
+                    <?php
+                    $checkboxCounter++;
+                }
+            } ?>
+            </tbody>
+        </table>
+    </div>
+    <?php if ($countFormData > 0 || $this->insertRows > 0) { ?>
+        <div class="buttons-sticky-bottom"><?php echo $this->form->getElement(\App\Form\Tables::BTN_SUBMIT)->render(); ?></div>
+    <?php } ?>
+</form>

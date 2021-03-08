@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- @version 7.4 -->
+<config>
+    <navigation>
+
+        <pages>
+            <main_navigation>
+                <pages>
+                    <settings>
+                        <pages>
+                            <listing_settings>
+                                <pages>
+                                    <listing_settings_classifieds>
+                                        <label>Classifieds</label>
+                                        <uri>admin/settings/classifieds_settings</uri>
+                                        <pages>
+                                            <classifieds_settings>
+                                                <label>Classifieds Settings</label>
+                                                <uri>admin/settings/classifieds_settings</uri>
+                                            </classifieds_settings>
+                                        </pages>
+                                    </listing_settings_classifieds>
+                                </pages>
+                            </listing_settings>
+                        </pages>
+                    </settings>
+                    <listings>
+                        <pages>
+                            <classifieds>
+                                <label>Classifieds</label>
+                                <module>admin</module>
+                                <controller>listings</controller>
+                                <action>browse</action>
+                                <params>
+                                    <listing_type>classified</listing_type>
+                                </params>
+                            </classifieds>
+                        </pages>
+                    </listings>
+
+                    <custom_fields>
+                        <pages>
+                            <classifieds>
+                                <label>Classifieds</label>
+                                <uri>admin/custom-fields/browse/type/classified</uri>
+                            </classifieds>
+                        </pages>
+                    </custom_fields>
+
+                    <fees>
+                        <pages>
+                            <fees_management>
+                                <pages>
+                                    <auctions_products>
+                                        <pages>
+                                            <classified_setup>
+                                                <hidden>true</hidden>
+                                            </classified_setup>
+                                        </pages>
+                                    </auctions_products>
+                                    <classifieds>
+                                        <label>Classifieds</label>
+                                        <uri>admin/fees/classified/classified_setup</uri>
+                                        <pages>
+                                            <classified_setup>
+                                                <label>Classified Setup Fee</label>
+                                                <uri>admin/fees/classified/classified_setup</uri>
+                                            </classified_setup>
+                                            <classified_hpfeat>
+                                                <label>Home Page Featuring Fee</label>
+                                                <uri>admin/fees/classified/hpfeat</uri>
+                                            </classified_hpfeat>
+                                            <classified_catfeat>
+                                                <label>Category Pages Featuring Fee</label>
+                                                <uri>admin/fees/classified/catfeat</uri>
+                                            </classified_catfeat>
+                                            <classified_highlighted>
+                                                <label>Highlighted Listing Fee</label>
+                                                <uri>admin/fees/classified/highlighted</uri>
+                                            </classified_highlighted>
+                                            <listing_short_description>
+                                                <label>Short Description Fee</label>
+                                                <uri>admin/fees/classified/short_description</uri>
+                                            </listing_short_description>
+                                            <classified_images>
+                                                <label>Listing Images Fee</label>
+                                                <uri>admin/fees/classified/images</uri>
+                                            </classified_images>
+                                            <classified_media>
+                                                <label>Media Upload Fee</label>
+                                                <uri>admin/fees/classified/media</uri>
+                                            </classified_media>
+                                            <classified_addlcat>
+                                                <label>Additional Category Listing Fee</label>
+                                                <uri>admin/fees/classified/addl_category</uri>
+                                            </classified_addlcat>
+                                        </pages>
+                                    </classifieds>
+                                </pages>
+                            </fees_management>
+
+
+                        </pages>
+                    </fees>
+                </pages>
+            </main_navigation>
+        </pages>
+    </navigation>
+</config>

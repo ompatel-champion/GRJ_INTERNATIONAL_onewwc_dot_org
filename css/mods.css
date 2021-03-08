@@ -1,0 +1,31 @@
+/* @version 7.5 */
+/**
+ * MOD:- DISCOUNT RULES
+ *
+ * @version 2.0
+ */
+.currency-selector-dropdown .feather {
+  width: 18px;
+  height: 18px; }
+.currency-selector-dropdown > .btn {
+  background-color: transparent; }
+  .currency-selector-dropdown > .btn:hover, .currency-selector-dropdown > .btn:focus {
+    box-shadow: none; }
+.currency-selector-dropdown .dropdown-menu {
+  width: 300px;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  font-size: 90%; }
+  @media (max-width: 575.98px) {
+    .currency-selector-dropdown .dropdown-menu {
+      width: 100%; } }
+  .currency-selector-dropdown .dropdown-menu .badge {
+    width: 40px; }
+
+.original-price {
+    font-size: 85%;
+    color: #777;
+    font-weight: 300;
+    font-style: italic;
+    text-decoration: line-through;
+}/*# sourceMappingURL=mods.css.map */

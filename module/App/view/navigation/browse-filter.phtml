@@ -1,0 +1,48 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.03]
+ */
+
+$btnGroupClass = ($this->btnGroupClass) ? $this->btnGroupClass : 'btn-group';
+$btnClass = ($this->btnClass) ? $this->btnClass : 'btn btn-outline-secondary';
+
+$buttonLabel = $this->_('Filter');
+$filteringVariables = array('show', 'filter', 'sort', 'limit', 'listing_type');
+
+/* @var \Ppb\Navigation\Page\ContentSection $page */
+foreach ($this->menu->pages as $page) {
+    $params = $page->get('params');
+    foreach ($filteringVariables as $key) {
+        if (isset($params[$key])) {
+            if ($params[$key] == $this->request()->getRequest()->getParam($key)) {
+                $buttonLabel = $page->label;
+            }
+        }
+    }
+}
+?>
+<div class="<?php echo $btnGroupClass; ?>">
+    <button class="<?php echo $btnClass; ?>"><?php echo $buttonLabel; ?></button>
+    <button type="button" class="<?php echo $btnClass; ?> dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <span class="sr-only"><?php echo $this->_('Toggle Dropdown'); ?></span>
+    </button>
+
+    <div class="dropdown-menu dropdown-menu-right">
+        <?php
+        /* @var \Ppb\Navigation\Page\ContentSection $page */
+        foreach ($this->menu->pages as $page) {
+            if ($page->filter == 'true') {
+                if ((!$page->settings || (intval($this->settings[(string)$page->settings['name']]) == $page->settings['value']))) {
+                    ?>
+                    <a class="dropdown-item" href="<?php echo $this->url($page->params, null, true,
+                            array('page', 'submit')); ?>"><?php echo $page->label; ?></a>
+
+                    <?php if ($page->caret == 'true') { ?>
+                        <div class="dropdown-divider"></div>
+                    <?php } ?>
+                <?php
+                }
+            }
+        } ?>
+    </div>
+</div>

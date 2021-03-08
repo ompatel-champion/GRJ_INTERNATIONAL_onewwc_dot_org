@@ -1,0 +1,136 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.01]
+ */
+
+/* @var array $translations */
+/* @var \Ppb\Service\Translations $translationsService */
+
+if (!function_exists('flagClass')) {
+
+    /**
+     *
+     * format locale to be used by the flag icons library
+     *
+     * @param string $locale
+     *
+     * @return string
+     */
+    function flagClass($locale)
+    {
+        $array = explode('_', $locale);
+
+        return strtolower(end($array));
+    }
+}
+
+$headlineButtons = null;
+
+$headlineButtons .= '<a class="btn btn-outline-secondary" '
+    . 'href="' . $this->url(array('action' => 'create-translation')) . '">'
+    . $this->_('Create Translation') . '</a>';
+
+$this->setGlobal('headlineButtons', $headlineButtons);
+?>
+<form method="post" action="">
+
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <caption>
+                <?php echo sprintf(
+                    $this->pluralize(
+                        $count = count($translations),
+                        $this->_('<strong>%s</strong> translation found.'),
+                        $this->_('<strong>%s</strong> translations found.')
+                    ), $count); ?>
+            </caption>
+            <?php if ($count) { ?>
+                <thead class="thead-light">
+                <tr>
+                    <th class="size-large"><?php echo $this->_('Translation'); ?></th>
+                    <th><?php echo $this->_('Label'); ?></th>
+                    <th class="size-medium"><?php echo $this->_('Last Update'); ?></th>
+                    <th class="size-mini"><?php echo $this->_('Active'); ?></th>
+                    <th class="size-large"><?php echo $this->_('Actions'); ?></th>
+                </tr>
+                </thead>
+            <?php } ?>
+            <tbody>
+            <?php
+            $checkboxCounter = 0;
+
+            /** @var array $translation */
+            foreach ($translations as $translation) {
+                ?>
+                <tr>
+                    <td>
+                        <span class="flag-icon flag-icon-<?php echo flagClass($translation['locale']); ?> mr-2"></span>
+                        <?php echo $translation['name']; ?>
+                    </td>
+                    <td>
+                        <?php echo $this->formElement('text', 'desc')
+                            ->setValue($translation['desc'])
+                            ->setAttributes(array(
+                                'class' => 'form-control input-default'
+                            ))
+                            ->setBrackets('[' . $checkboxCounter . ']')
+                            ->setMultiple()
+                            ->render();
+                        ?>
+                    </td>
+                    <td>
+                        <?php echo $this->date($translation['date']); ?>
+                    </td>
+                    <td>
+                        <?php echo $this->formElement('hidden', 'id')
+                            ->setBrackets('[' . $checkboxCounter . ']')
+                            ->setMultiple()
+                            ->setValue($translation['locale'])
+                            ->render();
+                        ?>
+                        <?php echo $this->formElement('checkbox', 'active')
+                            ->setValue($translation['active'])
+                            ->setMultiOptions(array(1 => null))
+                            ->setBrackets('[' . $checkboxCounter . ']')
+                            ->setMultiple()
+                            ->render();
+                        ?>
+                    </td>
+                    <td>
+                        <a class="btn btn-default mb-1"
+                           href="<?php echo $this->url(array('action' => 'download-translation', 'locale' => $translation['locale']), null, false, null, true, false); ?>"
+                           title="<?php echo $this->_('Download Translation'); ?>">
+                            <span data-feather="download"></span>
+                            <?php echo $this->_('Download'); ?>
+                        </a>
+                        <a class="btn btn-default mb-1"
+                           href="<?php echo $this->url(array('action' => 'upload-translation', 'locale' => $translation['locale']), null, false, null, true, false); ?>"
+                           title="<?php echo $this->_('Upload Translation'); ?>">
+                            <span data-feather="upload"></span>
+                            <?php echo $this->_('Upload'); ?>
+                        </a>
+                        <?php if ($translationsService->canDelete($translation['locale'])) { ?>
+                            <a class="btn btn-danger mb-1 confirm-box"
+                               href="<?php echo $this->url(array('action' => 'delete-translation', 'locale' => $translation['locale']),
+                                   null, true); ?>"
+                               title="<?php echo $this->_('Delete Translation'); ?>"
+                               data-message="<?php echo $this->_('Are you sure you want to delete this translation?'); ?>">
+                                <span data-feather="x"></span>
+                                <?php echo $this->_('Delete'); ?>
+                            </a>
+                        <?php } ?>
+                    </td>
+                </tr>
+                <?php $checkboxCounter++; ?>
+            <?php } ?>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="buttons-sticky-bottom">
+        <?php echo $this->formElement('submit', 'submit', $this->_('Update'))
+            ->setAttributes(array('class' => 'btn btn-primary btn-lg'))
+            ->render();
+        ?>
+    </div>
+</form>

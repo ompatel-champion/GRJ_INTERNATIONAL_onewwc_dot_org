@@ -1,0 +1,82 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.02]
+ */
+/* @var \Ppb\Db\Table\Row\User $user */
+/* @var \Ppb\Db\Table\Row\StoreSubscription $subscription */
+$subscription = null;
+if ($user['store_subscription_id']) {
+    $subscription = $user->findParentRow('\Ppb\Db\Table\StoresSubscriptions');
+}
+
+$this->storeSubscription($subscription);
+?>
+
+<?php if ($user['store_name']) { ?>
+    <div class="h5 mb-2">
+        <a href="<?php echo $this->url($user->storeLink()); ?>"><?php echo $user->storeName(); ?></a>
+    </div>
+<?php } ?>
+
+<p class="lead">
+    <?php echo $this->_('Status:'); ?>
+    <?php echo ($user['store_active']) ?
+        '<span class="text-success">' . $this->_('Enabled') . '</span>' :
+        '<span class="text-danger">' . $this->_('Disabled') . '</span>'; ?>
+</p>
+<div class="mb-4">
+    <?php if ($user['store_active']) { ?>
+        <?php if ($user['store_subscription_id']) { ?>
+            <a href="<?php echo $this->url(array('module' => 'app', 'controller' => 'payment', 'action' => 'store-subscription', 'option' => 'renew')); ?>"
+               class="btn btn-primary"><?php echo $this->_('Renew'); ?></a>
+        <?php } ?>
+        <a href="<?php echo $this->url(array('module' => 'members', 'controller' => 'store', 'action' => 'disable')); ?>"
+           class="btn btn-danger"><?php echo $this->_('Disable'); ?></a>
+        <?php
+    }
+    else if ($user['store_subscription_id']) {
+        ?>
+        <a href="<?php echo $this->url(array('module' => 'app', 'controller' => 'payment', 'action' => 'store-subscription')); ?>"
+           class="btn btn-success"><?php echo $this->_('Enable'); ?></a>
+    <?php } ?>
+</div>
+
+<dl class="dl-indented mt-1 mb-3">
+    <?php if ($user['store_subscription_id'] && $user['store_active']) { ?>
+        <dd>
+            <?php echo sprintf($this->_('%s listings in store'), $user->countStoreListings()); ?>
+        </dd>
+    <?php } ?>
+
+    <dt><?php echo $this->_('Subscription'); ?></dt>
+    <?php if ($user['store_subscription_id']) { ?>
+        <dd>
+            <span class="h6 text-info"><?php echo $this->_($subscription['name']); ?></span>
+        </dd>
+        <dd>
+            <?php echo $this->storeSubscription()->description(); ?>
+        </dd>
+        <?php if ($user['store_next_payment']) {
+            $storeNextPayment = $this->date($user['store_next_payment'], true);
+            ?>
+            <dd>
+                <em><?php echo sprintf(((strtotime($user['store_next_payment']) > time()) ? $this->_('expires on %s') : $this->_('expired on %s')), $storeNextPayment); ?></em>
+            </dd>
+        <?php } ?>
+        <?php
+    }
+    else {
+        ?>
+        <dd>
+            <?php echo ($user['store_active']) ? $this->_('Default Account') : $this->_('none'); ?>
+        </dd>
+    <?php } ?>
+
+    <?php if ($user['store_active']) { ?>
+        <dt><?php echo $this->_('Store URL'); ?></dt>
+        <dd>
+            <?php $storeLink = $this->url($user->storeLink()); ?>
+            <a href="<?php echo $storeLink; ?>" target="_blank"><?php echo $storeLink; ?></a>
+        </dd>
+    <?php } ?>
+</dl>

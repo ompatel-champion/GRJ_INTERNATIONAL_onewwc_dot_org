@@ -1,0 +1,211 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.04]
+ */
+
+/** @var boolean $inAdmin */
+/** @var string $filter */
+/** @var string $listingId */
+/** @var string $username */
+
+$formPost = ($inAdmin) ? '' : $this->url(array('action' => 'post'));
+?>
+
+<?php if ($inAdmin) { ?>
+    <nav class="navbar p-0 mb-4">
+        <form class="form-inline ml-auto"
+              action="<?php echo $this->url(null, null, true, array('username', 'listingId', 'page', 'submit')); ?>"
+              method="get">
+            <div class="mr-1">
+                <?php echo $this->formElement('text', 'listingId', $listingId)
+                    ->setAttributes(array('placeholder' => $this->_('Listing ID'), 'class' => 'form-control input-small'))
+                    ->render();
+                ?>
+            </div>
+            <div class="mr-1">
+                <?php echo $this->formElement('text', 'username', $username)
+                    ->setAttributes(array('placeholder' => $this->_('Username'), 'class' => 'form-control input-default'))
+                    ->render();
+                ?>
+            </div>
+
+            <?php echo $this->formElement('submit', 'submit', $this->_('Search'))
+                ->setAttributes(array('class' => 'btn btn-secondary'))
+                ->render();
+            ?>
+        </form>
+    </nav>
+<?php } ?>
+
+<form action="<?php echo $formPost; ?>" method="post">
+    <?php echo $this->formElement('hidden', 'option', '')->render(); ?>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <caption>
+                <?php echo sprintf(
+                    $this->pluralize(
+                        $count = $this->paginator->getPages()->totalItemCount,
+                        $this->_('<strong>%s</strong> entry found.'),
+                        $this->_('<strong>%s</strong> entries found.')
+                    ), $count); ?>
+
+                <?php if ($this->paginator->getPages()->totalItemCount > 1) { ?>
+                    <?php echo sprintf(
+                        $this->_('Showing results <strong>%s</strong> to <strong>%s</strong>'),
+                        $this->paginator->getPages()->firstItemNumber,
+                        $this->paginator->getPages()->lastItemNumber); ?>
+                <?php } ?>
+            </caption>
+            <?php if ($this->paginator->getPages()->totalItemCount) { ?>
+                <thead class="thead-light">
+                <tr>
+                    <?php if ($filter == 'pending' || $inAdmin === true) { ?>
+                        <th class="size-tiny">
+                            <?php echo $this->formElement('checkbox', 'selectAll')
+                                ->setMultiOptions(array(1 => null))
+                                ->render();
+                            ?>
+                        </th>
+                    <?php } ?>
+                    <th><?php echo $this->_('Feedback'); ?></th>
+                    <th class="size-medium">
+                        <?php echo (in_array($filter, array('pending', 'left'))) ? $this->_('To') : $this->_('From'); ?>
+                    </th>
+                    <?php if ($inAdmin) { ?>
+                        <th class="size-medium">
+                            <?php echo $this->_('To'); ?>
+                        </th>
+                    <?php } ?>
+                </tr>
+                </thead>
+            <?php } ?>
+            <tbody>
+            <?php
+            /** @var \Ppb\Db\Table\Row\Reputation $reputation */
+            foreach ($this->paginator as $reputation) {
+                $listingLink = null;
+                $listingName = null;
+                $listingImage = null;
+
+                if ($reputation['sale_listing_id'] != null) {
+                    /** @var \Ppb\Db\Table\Row\Listing $listing */
+                    $saleListing = $reputation->findParentRow('\Ppb\Db\Table\SalesListings');
+                    $listing = null;
+                    if ($saleListing) {
+                        $listing = $saleListing->findParentRow('\Ppb\Db\Table\Listings');
+                    }
+
+                    if ($listing) {
+                        $listingLink = $listing->link();
+                        $listingName = $listing['name'];
+                        $listingImage = $listing->getMainImage();
+                    }
+                }
+
+                if (empty($listingName)) {
+                    $listingName = ($reputation['listing_name']) ? $reputation['listing_name'] : $this->_('Listing Deleted');
+                }
+
+                $this->reputation()->setReputation($reputation);
+                ?>
+                <tr>
+                    <?php if ($filter == 'pending' || $inAdmin === true) { ?>
+                        <td>
+
+                            <?php echo $this->formElement('checkbox', 'id')
+                                ->setMultiOptions(array($reputation['id'] => null))
+                                ->setAttributes(array('class' => 'select-all'))
+                                ->setMultiple()
+                                ->render();
+                            ?>
+                        </td>
+                    <?php } ?>
+
+                    <td>
+                        <div class="media">
+                            <?php echo $this->thumbnail($listingImage, 128, true,
+                                array('alt' => $listingName, 'class' => 'mr-3 img-sm')); ?>
+
+                            <div class="media-body">
+                                <h6 class="mt-0">
+                                    <?php if ($listingLink) { ?>
+                                        <a href="<?php echo $this->url($listingLink); ?>">
+                                            <?php echo $listingName; ?>
+                                        </a>
+                                        <?php
+                                    }
+                                    else {
+                                        ?>
+                                        <em><?php echo $listingName; ?></em>
+                                    <?php } ?>
+                                </h6>
+                                <?php if ($reputation['posted']) { ?>
+                                    <?php echo $this->reputation()->score(); ?>
+                                    <?php echo $this->reputation()->comments($inAdmin); ?>
+
+                                    <small class="text-muted"><?php echo $this->date($reputation['updated_at']); ?></small>
+                                <?php } ?>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <?php
+                        if ((in_array($filter, array('pending', 'left')))) {
+                            $userKey = 'User';
+                            $userLabel = ($reputation['reputation_type'] == 'sale') ? 'Seller' : 'Buyer';
+                        }
+                        else {
+                            $userKey = 'Poster';
+                            $userLabel = ($reputation['reputation_type'] == 'sale') ? 'Buyer' : 'Seller';
+                        }
+
+                        /** @var \Ppb\Db\Table\Row\User $user */
+                        $user = $reputation->findParentRow('\Ppb\Db\Table\Users', $userKey);
+
+                        echo '<strong>' . $this->_($userLabel) . '</strong><br>' . $this->userDetails()->setUser($user)->display();
+                        ?>
+                    </td>
+                    <?php if ($inAdmin) { ?>
+                        <td>
+                            <?php
+                            if ((in_array($filter, array('pending', 'left')))) {
+                                $userKey = 'Poster';
+                                $userLabel = ($reputation['reputation_type'] == 'sale') ? 'Buyer' : 'Seller';
+                            }
+                            else {
+                                $userKey = 'User';
+                                $userLabel = ($reputation['reputation_type'] == 'sale') ? 'Seller' : 'Buyer';
+                            }
+
+                            $user = $reputation->findParentRow('\Ppb\Db\Table\Users', $userKey);
+
+                            echo '<strong>' . $this->_($userLabel) . '</strong><br>' . $this->userDetails()->setUser($user)->display();
+                            ?>
+                        </td>
+                    <?php } ?>
+                </tr>
+            <?php } ?>
+
+
+            </tbody>
+        </table>
+    </div>
+
+    <div class="buttons-sticky-bottom">
+        <?php if ($this->paginator->getPages()->totalItemCount) { ?>
+            <?php if (in_array($filter, array('pending'))) { ?>
+                <button class="btn btn-secondary"
+                        value="close"><?php echo $this->_('Leave Feedback'); ?></button>
+            <?php } ?>
+            <?php if ($inAdmin) { ?>
+                <button class="btn btn-danger confirm-form" value="delete"
+                        data-message="<?php echo $this->_('Are you sure you want to delete the reputation comments you have selected?'); ?>">
+                    <?php echo $this->_('Delete'); ?>
+                </button>
+            <?php } ?>
+        <?php } ?>
+    </div>
+</form>
+
+<?php echo $this->pagination($this->paginator, 'sliding', 'partials/pagination.phtml'); ?>
+

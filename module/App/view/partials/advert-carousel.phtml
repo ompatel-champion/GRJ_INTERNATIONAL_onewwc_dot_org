@@ -1,0 +1,26 @@
+<?php
+/**
+ * @version 8.2 [rev.8.2.01]
+ */
+?>
+
+<div class="jq-rs-slider jq-loading-slider mt-0 mb-5">
+    <?php
+    /** @var \Ppb\Db\Table\Row\Advert $advert */
+    foreach ($this->adverts as $advert) { ?>
+        <div class="jq-slide hidden">
+<!--            <div class="slide-center">-->
+                <?php if ($advert['type'] == 'image') { ?>
+                    <a href="<?php echo $this->advert()->url($advert); ?>"
+                       target="<?php echo ($advert->getData('new_tab')) ? '_blank' : '_self'; ?>">
+                        <img src="<?php echo $this->thumbnail()->generateImagePath($advert['content']); ?>"
+                             class="img-fluid" style="width: 100vw;" alt="<?php echo $advert->imageTitle(); ?>">
+                    </a>
+                <?php }
+                else { ?>
+                    <?php echo $advert['content']; ?>
+                <?php } ?>
+<!--            </div>-->
+        </div>
+    <?php } ?>
+</div>

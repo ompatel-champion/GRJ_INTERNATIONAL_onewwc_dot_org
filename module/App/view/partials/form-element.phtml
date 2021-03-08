@@ -1,0 +1,33 @@
+<?php
+/**
+ * @version 8.1 [rev.8.1.01]
+ */
+
+/* @var \Cube\Form\Element $element */
+$label = $element->getLabel();
+$description = $element->getDescription();
+$subtitle = $element->getSubtitle();
+
+if (!$element->isHidden()) { ?>
+    <div class="form-group row">
+        <?php if (!empty($subtitle)) { ?>
+            <h5 class="subtitle col-12">
+                <?php echo $subtitle; ?>
+            </h5>
+        <?php } ?>
+
+        <label for="" class="col-lg-3 col-form-label">
+            <?php if (!empty($label)) { ?>
+                <?php echo $label; ?>
+            <?php } ?>
+        </label>
+        <div class="col-lg-9 col-form-input">
+            <?php echo $element->render(); ?>
+            <?php if (!empty($description)) { ?>
+                <small class="form-text text-muted">
+                    <?php echo $description; ?>
+                </small>
+            <?php } ?>
+        </div>
+    </div>
+<?php } ?>

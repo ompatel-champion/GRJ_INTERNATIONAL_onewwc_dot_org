@@ -1,0 +1,134 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.02]
+ */
+
+/* @var array $recipients */
+
+$headlineButtons = null;
+
+$headlineButtons .= '<a class="btn btn-outline-secondary mr-1" '
+    . 'href="' . $this->url(array('action' => 'add-newsletter')) . '">'
+    . $this->_('Create Newsletter') . '</a>';
+
+$this->setGlobal('headlineButtons', $headlineButtons);
+?>
+<nav class="navbar p-0 mb-4">
+    <form class="form-inline ml-auto"
+          action="<?php echo $this->url(null, null, true, array('title', 'submit')); ?>"
+          method="get">
+        <div class="mr-1">
+            <?php echo $this->formElement('text', 'title', $this->title)
+                ->setAttributes(array('placeholder' => $this->_('Newsletter Title'), 'class' => 'form-control input-default'))
+                ->render();
+            ?>
+        </div>
+        <?php echo $this->formElement('submit', 'submit', 'Search')
+            ->setAttributes(array('class' => 'btn btn-secondary'))
+            ->render();
+        ?>
+    </form>
+</nav>
+
+<div class="table-responsive">
+    <table class="table table-hover">
+        <caption>
+            <?php echo sprintf(
+                $this->pluralize(
+                    $count = $this->paginator->getPages()->totalItemCount,
+                    $this->_('<strong>%s</strong> newsletter found.'),
+                    $this->_('<strong>%s</strong> newsletters found.')
+                ), $count); ?>
+
+            <?php if ($this->paginator->getPages()->totalItemCount > 1) { ?>
+                <?php echo sprintf(
+                    $this->_('Showing results <strong>%s</strong> to <strong>%s</strong>'),
+                    $this->paginator->getPages()->firstItemNumber,
+                    $this->paginator->getPages()->lastItemNumber); ?>
+            <?php } ?>
+        </caption>
+        <?php if ($this->paginator->getPages()->totalItemCount) { ?>
+            <thead class="thead-light">
+            <tr>
+                <th><?php echo $this->_('Title'); ?></th>
+                <th class="size-medium"><?php echo $this->_('Send To'); ?></th>
+                <th class="size-small"><?php echo $this->_('Date'); ?></th>
+                <th class="size-medium"><?php echo $this->_('Actions'); ?></th>
+            </tr>
+            </thead>
+        <?php } ?>
+        <tbody>
+        <?php
+        /** @var \Cube\Db\Table\Row $newsletter */
+        foreach ($this->paginator as $newsletter) {
+            ?>
+            <tr>
+                <td>
+                    <?php echo $newsletter['title']; ?>
+                </td>
+                <td>
+                    <?php if ($newsletter['updated_at']) { ?>
+                        <small class="text-success">
+                            <?php echo $this->_('Sent on'); ?>
+                            <strong><?php echo $this->date($newsletter['updated_at']); ?></strong>
+                        </small>
+                        <?php
+                    }
+                    else if ($newsletter['recipients']) {
+                        ?>
+                        <small class="text-primary">
+                            <?php echo $this->_('Sending in progress'); ?> <br>
+                            <?php echo $newsletter['recipients']; ?> <?php echo $this->_('recipients remaining'); ?>
+                        </small>
+                        <?php
+                    }
+                    else {
+                        ?>
+                        <div class="btn-group">
+                            <button class="btn btn-outline-secondary"><?php echo $this->_('Select Recipients'); ?></button>
+                            <button type="button"
+                                    class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="sr-only"><?php echo $this->_('Toggle Dropdown'); ?></span>
+                            </button>
+
+                            <div class="dropdown-menu dropdown-menu-right">
+                                <?php foreach ($recipients as $key => $recipient) { ?>
+                                    <a class="dropdown-item"
+                                       href="<?php echo $this->url(array('send' => $key, 'id' => $newsletter['id']), null, true); ?>">
+                                        <?php echo $recipient['name']; ?>
+                                    </a>
+                                <?php } ?>
+                            </div>
+                        </div>
+
+                    <?php } ?>
+                </td>
+                <td>
+                    <?php echo $this->date(max(array($newsletter['created_at'], $newsletter['updated_at'])),
+                        true); ?>
+                </td>
+                <td>
+                    <a class="btn btn-secondary mb-1"
+                       href="<?php echo $this->url(array('action' => 'edit-newsletter', 'id' => $newsletter['id'])); ?>"
+                       title="<?php echo $this->_('Edit Newsletter'); ?>">
+                        <span data-feather="folder"></span>
+                        <?php echo $this->_('Edit'); ?>
+                    </a>
+                    <a class="btn btn-danger mb-1 confirm-box"
+                       href="<?php echo $this->url(array('action' => 'delete-newsletter', 'id' => $newsletter['id']),
+                           null, true); ?>"
+                       title="<?php echo $this->_('Delete Newsletter'); ?>"
+                       data-message="<?php echo $this->_('Are you sure you want to delete this newsletter?'); ?>">
+                        <span data-feather="x"></span>
+                        <?php echo $this->_('Delete'); ?>
+                    </a>
+                </td>
+            </tr>
+        <?php } ?>
+        </tbody>
+    </table>
+</div>
+
+<?php echo $this->pagination($this->paginator, 'sliding', 'partials/pagination.phtml'); ?>
+

@@ -1,0 +1,23 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.04]
+ */
+?>
+
+<?php if (!$this->canPost) { ?>
+    <div class="alert alert-danger">
+        <?php echo $this->canPostMsg; ?>
+    </div>
+<?php }
+else {
+    if ($this->form->isRedirectParent()) {
+        echo json_encode(array(
+            'redirectUrl' => $this->form->getRedirectUrl()
+        ));
+    }
+    else {
+        $wrapper = ($this->form->isAsyncWrapper()) ? '<div class="form-async-wrapper">%s</div>' : '%s';
+        echo sprintf($wrapper, $this->form);
+    }
+}
+?>

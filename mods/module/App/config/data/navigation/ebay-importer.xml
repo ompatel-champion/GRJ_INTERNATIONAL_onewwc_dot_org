@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- MOD:- EBAY IMPORTER -->
+
+<config>
+    <navigation>
+        <pages>
+            <members_menu>
+                <pages>
+                    <selling>
+                        <pages>
+                            <drafts>
+                                <label>Drafts / Bulk Listings</label>
+                            </drafts>
+                            <seller_tools>
+                                <pages>
+                                    <ebay_import>
+                                        <label>Ebay Import</label>
+                                        <module>members</module>
+                                        <controller>tools</controller>
+                                        <action>ebay-import</action>
+                                        <resource>Tools</resource>
+                                        <privilege>EbayImport</privilege>
+                                    <settings>
+                                            <name>enable_ebay_importer</name>
+                                            <value>1</value>
+                                        </settings>
+                                    </ebay_import>
+                                </pages>
+                            </seller_tools>
+                        </pages>
+                    </selling>
+                </pages>
+            </members_menu>
+        </pages>
+    </navigation>
+</config>

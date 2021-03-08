@@ -1,0 +1,172 @@
+/* version 8.0 [rev.8.0.01] */
+.theme-red a:not(.btn),
+.theme-red .btn-link {
+  color: #9A3334; }
+.theme-green a:not(.btn), .theme-green .btn-link {
+  color: #2C6700; }
+.theme-gray a:not(.btn), .theme-gray .btn-link {
+  color: #007BFF; }
+.theme-red a:not(.btn):hover, .theme-red .btn-link:hover {
+  color: #861F20; }
+.theme-green a:not(.btn):hover, .theme-green .btn-link:hover {
+  color: #185300; }
+.theme-gray a:not(.btn):hover, .theme-gray .btn-link:hover {
+  color: #0056b3; }
+
+.theme-red .h1, .theme-red .h2, .theme-red .h3, .theme-red .h4, .theme-red .h5, .theme-red .h6, .theme-red h1, .theme-red h2, .theme-red h3, .theme-red h4, .theme-red h5, .theme-red h6 {
+  color: #212529; }
+.theme-green .h1, .theme-green .h2, .theme-green .h3, .theme-green .h4, .theme-green .h5, .theme-green .h6, .theme-green h1, .theme-green h2, .theme-green h3, .theme-green h4, .theme-green h5, .theme-green h6 {
+  color: #212529; }
+.theme-gray .h1, .theme-gray .h2, .theme-gray .h3, .theme-gray .h4, .theme-gray .h5, .theme-gray .h6, .theme-gray h1, .theme-gray h2, .theme-gray h3, .theme-gray h4, .theme-gray h5, .theme-gray h6 {
+  color: #212529; }
+
+.theme-red .border-bottom {
+  border-bottom-color: #dee2e6 !important; }
+.theme-green .border-bottom {
+  border-bottom-color: #dee2e6 !important; }
+.theme-gray .border-bottom {
+  border-bottom-color: #dee2e6 !important; }
+
+.theme-red .btn-primary,
+.theme-red .nav-pills .nav-link.active,
+.theme-red .nav-pills .show > .nav-link,
+.theme-red .page-item.active .page-link {
+  color: #fff;
+  background-color: #8f0000;
+  border-color: #8f0000; }
+.theme-green .btn-primary, .theme-green .nav-pills .nav-link.active, .theme-green .nav-pills .show > .nav-link, .theme-green .page-item.active .page-link {
+  color: #fff;
+  background-color: #2C6700;
+  border-color: #2C6700; }
+.theme-gray .btn-primary, .theme-gray .nav-pills .nav-link.active, .theme-gray .nav-pills .show > .nav-link, .theme-gray .page-item.active .page-link {
+  color: #fff;
+  background-color: #0067EB;
+  border-color: #0067EB; }
+.theme-red .btn-primary:hover, .theme-red .nav-pills .nav-link.active:hover, .theme-red .nav-pills .show > .nav-link:hover, .theme-red .page-item.active .page-link:hover {
+  color: #fff;
+  background-color: #5c0000;
+  border-color: #5c0000; }
+.theme-green .btn-primary:hover, .theme-green .nav-pills .nav-link.active:hover, .theme-green .nav-pills .show > .nav-link:hover, .theme-green .page-item.active .page-link:hover {
+  color: #fff;
+  background-color: #185300;
+  border-color: #185300; }
+.theme-gray .btn-primary:hover, .theme-gray .nav-pills .nav-link.active:hover, .theme-gray .nav-pills .show > .nav-link:hover, .theme-gray .page-item.active .page-link:hover {
+  color: #fff;
+  background-color: #0056b3;
+  border-color: #0056b3; }
+
+/* HEADER */
+.theme-red header .bg-light {
+  background-color: #f8f9fa !important; }
+.theme-green header .bg-light {
+  background-color: #f8f9fa !important; }
+.theme-gray header .bg-light {
+  background-color: #f8f9fa !important; }
+.theme-red header a#category-select-btn {
+  color: #21282F; }
+.theme-green header a#category-select-btn {
+  color: #21282F; }
+.theme-gray header a#category-select-btn {
+  color: #21282F; }
+.theme-red header a#category-select-btn:hover {
+  color: #21282F; }
+.theme-green header a#category-select-btn:hover {
+  color: #21282F; }
+.theme-gray header a#category-select-btn:hover {
+  color: #21282F; }
+.theme-red header .desktop-navbar .bg-search {
+  background-color: rgba(245, 0, 0, 0.1); }
+.theme-green header .desktop-navbar .bg-search {
+  background-color: #E0FFB4; }
+.theme-gray header .desktop-navbar .bg-search {
+  background-color: #fbfbfb; }
+.theme-red header .desktop-navbar .nav-search {
+  background-color: rgba(245, 0, 0, 0.3); }
+.theme-green header .desktop-navbar .nav-search {
+  background-color: #9AD56E; }
+.theme-gray header .desktop-navbar .nav-search {
+  background-color: #e6e6e6; }
+.theme-red header .desktop-navbar .nav-search a {
+  color: #21282F; }
+.theme-green header .desktop-navbar .nav-search a {
+  color: #21282F; }
+.theme-gray header .desktop-navbar .nav-search a {
+  color: #21282F; }
+.theme-red header .desktop-navbar .nav-search a:hover {
+  color: #21282F; }
+.theme-green header .desktop-navbar .nav-search a:hover {
+  color: #21282F; }
+.theme-gray header .desktop-navbar .nav-search a:hover {
+  color: #21282F; }
+.theme-red header .desktop-navbar .navbar-nav.nav-main-menu .active .nav-link {
+  color: #861F20; }
+.theme-green header .desktop-navbar .navbar-nav.nav-main-menu .active .nav-link {
+  color: #185300; }
+.theme-gray header .desktop-navbar .navbar-nav.nav-main-menu .active .nav-link {
+  color: #0056b3; }
+
+/* /HEADER */
+/* SIDEBAR & CORRESPONDING MAIN ELEMENT */
+.theme-red .sidebar-menu .nav-item.open > a,
+.theme-red .sidebar-menu .nav-item > a:hover {
+  color: #861F20; }
+.theme-green .sidebar-menu .nav-item.open > a, .theme-green .sidebar-menu .nav-item > a:hover {
+  color: #185300; }
+.theme-gray .sidebar-menu .nav-item.open > a, .theme-gray .sidebar-menu .nav-item > a:hover {
+  color: #0056b3; }
+.theme-red .sidebar-menu .nav-link.active {
+  color: #861F20; }
+.theme-green .sidebar-menu .nav-link.active {
+  color: #185300; }
+.theme-gray .sidebar-menu .nav-link.active {
+  color: #0056b3; }
+
+/* /SIDEBAR & CORRESPONDING MAIN ELEMENT */
+/* LISTING & STORES CARDS */
+.listing-card {
+  /* card grid */
+  /* /card grid */ }
+  .theme-red .listing-card .card-highlighted {
+    background-color: rgba(255, 67, 67, 0.1); }
+  .theme-green .listing-card .card-highlighted {
+    background-color: white; }
+  .theme-gray .listing-card .card-highlighted {
+    background-color: white; }
+
+/* /LISTING & STORES CARDS */
+/* STORE HEADER */
+/* /STORE HEADER */
+/* CATEGORIES CARD COLUMNS */
+.theme-red .categories-card-columns .card .card-title a {
+  color: #861F20; }
+.theme-green .categories-card-columns .card .card-title a {
+  color: #185300; }
+.theme-gray .categories-card-columns .card .card-title a {
+  color: #0056b3; }
+
+/* /CATEGORIES CARD COLUMNS */
+/* LISTING DETAILS PAGE */
+.listing-details {
+  /* breadcrumbs */
+  /* /breadcrumbs */ }
+  .listing-details .breadcrumb a {
+    color: #343a40; }
+
+/* /LISTING DETAILS PAGE */
+/* FOOTER */
+.theme-red footer a:not(.btn) {
+  color: #535A61 !important; }
+.theme-green footer a:not(.btn) {
+  color: #535A61 !important; }
+.theme-gray footer a:not(.btn) {
+  color: #535A61 !important; }
+.theme-red footer a:not(.btn):hover {
+  color: #353C43 !important; }
+.theme-green footer a:not(.btn):hover {
+  color: #353C43 !important; }
+.theme-gray footer a:not(.btn):hover {
+  color: #353C43 !important; }
+
+/* /FOOTER */
+
+/*# sourceMappingURL=colors.css.map */

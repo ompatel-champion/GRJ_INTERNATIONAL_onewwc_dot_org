@@ -1,0 +1,180 @@
+<?php
+
+/**
+ *
+ * PHP Pro Bid
+ *
+ * @link        http://www.phpprobid.com
+ * @copyright   Copyright (c) 2020 Online Ventures Software & CodeCube SRL
+ * @license     http://www.phpprobid.com/license Commercial License
+ *
+ * @version     8.2 [rev.8.2.01]
+ */
+/**
+ * payment form
+ */
+/**
+ * MOD:- STRIPE GATEWAY INTEGRATION
+ */
+
+namespace App\Form;
+
+use Ppb\Form\AbstractBaseForm,
+    Ppb\Model\PaymentGateway\AbstractPaymentGateway;
+
+class Payment extends AbstractBaseForm
+{
+
+    ## -- START :: CHANGE -- [ MOD:- STRIPE GATEWAY INTEGRATION ]            
+    const BTN_SUBMIT = 'make_payment';
+    ## -- END :: CHANGE -- [ MOD:- STRIPE GATEWAY INTEGRATION ]            
+
+    /**
+     *
+     * submit buttons values
+     *
+     * @var array
+     */
+    protected $_buttons = array(
+        self::BTN_SUBMIT => 'Make Payment',
+    );
+
+    /**
+     *
+     * payment gateway logo
+     *
+     * @var string
+     */
+    protected $_gatewayLogo = null;
+
+    /**
+     *
+     * payment gateway description
+     *
+     * @var string
+     */
+    protected $_gatewayDescription = null;
+
+    /**
+     *
+     * payment gateway name
+     *
+     * @var string
+     */
+    protected $_gatewayName = null;
+
+    /**
+     *
+     * class constructor
+     *
+     * @param \Ppb\Model\PaymentGateway\AbstractPaymentGateway $gateway gateway model object
+     */
+    public function __construct(AbstractPaymentGateway $gateway)
+    {
+        parent::__construct();
+
+        // 7.8: needed to generate any custom descriptions etc
+        $this->addElements($gateway->formElements());
+
+        $this->setAction($gateway->getPostUrl());
+
+        $this->setMethod(self::METHOD_POST);
+        $this->setGatewayLogo($gateway['logo_path'])
+            ->setGatewayDescription($gateway->getDescription())
+            ->setGatewayName($gateway['name']);
+
+        if ($this->hasElement('csrf')) {
+            $this->removeElement('csrf');
+        }
+
+        $element = $this->createElement('submit', self::BTN_SUBMIT)
+            ->setAttributes(array(
+                'class' => 'btn btn-lg btn-success',
+            ))
+            ->setValue($this->_buttons[self::BTN_SUBMIT]);
+
+        $this->addElement($element);
+
+        $this->setPartial('forms/payment.phtml');
+    }
+
+    /**
+     *
+     * get gateway logo path
+     *
+     * @return string
+     */
+    public function getGatewayLogo()
+    {
+        return $this->_gatewayLogo;
+    }
+
+    /**
+     *
+     * set gateway logo path
+     *
+     * @param string $gatewayLogo logo path
+     *
+     * @return \App\Form\Payment
+     */
+    public function setGatewayLogo($gatewayLogo)
+    {
+        $this->_gatewayLogo = (string)$gatewayLogo;
+
+        return $this;
+    }
+
+    /**
+     *
+     * get gateway description
+     *
+     * @return string
+     */
+    public function getGatewayDescription()
+    {
+        return $this->_gatewayDescription;
+    }
+
+    /**
+     *
+     * set gateway description
+     *
+     * @param string $gatewayDescription
+     *
+     * @return \App\Form\Payment
+     */
+    public function setGatewayDescription($gatewayDescription)
+    {
+        $this->_gatewayDescription = (string)$gatewayDescription;
+
+        return $this;
+    }
+
+    /**
+     *
+     * set gateway name
+     *
+     * @param string $gatewayName
+     *
+     * @return $this
+     */
+    public function setGatewayName($gatewayName)
+    {
+        $this->_gatewayName = (string)$gatewayName;
+
+        return $this;
+    }
+
+    /**
+     *
+     * get gateway name
+     *
+     * @return string
+     */
+    public function getGatewayName()
+    {
+        return $this->_gatewayName;
+    }
+
+
+}

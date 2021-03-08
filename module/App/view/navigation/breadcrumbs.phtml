@@ -1,0 +1,45 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.03]
+ */
+?>
+
+<?php if (count($this->breadcrumbs) > 0) { ?>
+    <ol class="breadcrumb">
+        <?php if ($this->home) { ?>
+            <li class="breadcrumb-item">
+                <a href="<?php echo $this->url($this->home['params']); ?>"><?php echo $this->home['label']; ?></a>
+            </li>
+        <?php } ?>
+
+        <?php
+        /* @var \Cube\Navigation\Page\AbstractPage $page */
+        foreach ($this->breadcrumbs as $page) {
+            $class = array('breadcrumb-item');
+
+            if ($page->isActive() && !$this->end) {
+                $class[] = 'active';
+            }
+            ?>
+            <li class="<?php echo implode(' ', $class); ?>">
+                <?php if ($page->hidden) { ?>
+                    <?php echo $page->label; ?>
+                <?php }
+                else { ?>
+                    <a href="<?php echo $this->url($page->params); ?>"><?php echo $page->label; ?></a>
+                <?php } ?>
+            </li>
+        <?php } ?>
+
+        <?php if ($this->end) { ?>
+            <li class="breadcrumb-item active">
+                <?php if (empty($this->end['params'])) { ?>
+                    <?php echo $this->end['label']; ?>
+                <?php }
+                else { ?>
+                    <a href="<?php echo $this->url($this->end['params']); ?>"><?php echo $this->end['label']; ?></a>
+                <?php } ?>
+            </li>
+        <?php } ?>
+    </ol>
+<?php } ?>

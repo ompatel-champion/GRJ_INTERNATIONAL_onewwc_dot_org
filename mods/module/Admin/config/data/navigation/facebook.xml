@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- MOD:- FACEBOOK LOGIN -->
+<config>
+    <navigation>
+        <pages>
+            <main_navigation>
+                <pages>
+                    <settings>
+                        <pages>
+                            <user_settings>
+                                <pages>
+                                    <facebook_connect>
+                                        <label>Facebook Login [ Mod ]</label>
+                                        <uri>admin/settings/facebook_login</uri>
+                                    </facebook_connect>
+                                </pages>
+                            </user_settings>
+                        </pages>
+                    </settings>
+                </pages>
+            </main_navigation>
+        </pages>
+    </navigation>
+</config>

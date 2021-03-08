@@ -1,0 +1,115 @@
+<?php
+/**
+ * @version 8.1 [rev.8.1.01]
+ */
+
+$initialContainer = $this->navigation()->getContainer();
+$initialAcl = $this->navigation()->getAcl();
+$membersAreaMenu = $this->navigation()->getInitialContainer()->findOneBy('label', $this->_('Members Area'));
+$membersAcl = new \Members\Model\Acl();
+
+$membersRole = 'Guest';
+if (!empty($this->loggedInUser['id'])) {
+    $membersRole = $this->userDetails($this->loggedInUser['id'])->getUser()->getRole();
+}
+
+?>
+
+<ul class="navbar-nav nav-links-desktop">
+    <li class="nav-item">
+        <?php if (!empty($this->loggedInUser['id'])) { ?>
+            <a class="nav-link"
+               href="<?php echo $this->url(null, 'members-index'); ?>"
+               title="<?php echo $this->_('My Account'); ?>"><?php echo $this->_('My Account'); ?></a>
+        <?php }
+        else { ?>
+            <a class="nav-link"
+               href="<?php echo $this->url(array('module' => 'members', 'controller' => 'user', 'action' => 'register')); ?>"
+               title="<?php echo $this->_('Sign Up'); ?>"><?php echo $this->_('Sign Up'); ?> </a>
+        <?php } ?>
+    </li>
+    <li class="nav-item">
+        <?php if (!empty($this->loggedInUser['id'])) { ?>
+            <a class="nav-link"
+               href="<?php echo $this->url(null, 'members-logout'); ?>"
+               title="<?php echo $this->_('Sign Out'); ?>"><?php echo $this->_('Sign Out'); ?></a>
+        <?php }
+        else { ?>
+            <a class="nav-link dialog-box" rel="nofollow"
+               href="<?php echo $this->url(array('module' => 'members', 'controller' => 'user', 'action' => 'login', 'async' => 1)); ?>"
+               title="<?php echo $this->_('Sign In'); ?>"><?php echo $this->_('Sign In'); ?></a>
+        <?php } ?>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link"
+           href="<?php echo $this->url(array('module' => 'members', 'controller' => 'tools', 'action' => 'watched-items')); ?>"
+           title="<?php echo $this->_('Wish List'); ?>"><?php echo $this->_('Wish List'); ?></a>
+    </li>
+</ul>
+
+<div class="dropdown user-dropdown">
+    <button class="btn dropdown-toggle" type="button"
+            id="myAccountDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                            <span class="badge badge-text badge-slim"><?php echo (!empty($this->loggedInUser['id'])) ?
+                                    $this->userDetails($this->loggedInUser['id'])->display() : $this->_('My Account'); ?></span>
+    </button>
+
+    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="myAccountDropdown">
+
+        <?php
+        $this->navigation()->setContainer($membersAreaMenu)
+            ->setRole($membersRole)
+            ->setAcl($membersAcl);
+        ?>
+
+        <?php foreach ($membersAreaMenu->pages as $key => $page) { ?>
+            <?php if ((!$page->settings || (intval($this->settings[(string)$page->settings['name']]) == $page->settings['value'])) &&
+                $this->navigation()->accept($page) &&
+                $page->hidden != 'true'
+            ) {
+                ?>
+                <a class="dropdown-item" href="<?php echo $this->url($page->params); ?>">
+                    <?php echo $page->label; ?>
+                </a>
+            <?php } ?>
+        <?php } ?>
+
+        <?php if (empty($this->loggedInUser['id'])) { ?>
+            <a class="dropdown-item"
+               href="<?php echo $this->url(array('module' => 'members', 'controller' => 'user', 'action' => 'register')); ?>"
+               title="<?php echo $this->_('Sign Up'); ?>">
+                <?php echo $this->_('Sign Up'); ?> </a>
+        <?php } ?>
+
+        <?php
+        $this->navigation()->setContainer($initialContainer)
+            ->setAcl($initialAcl);
+        ?>
+
+        <?php if (!empty($this->loggedInUser['id'])) {
+            if ($membersRole == 'Incomplete') { ?>
+                <a class="dropdown-item"
+                   href="<?php echo $this->url(null, 'members-index'); ?>"
+                   title="<?php echo $this->_('Activate Account'); ?>"><?php echo $this->_('Activate Account'); ?></a>
+            <?php } ?>
+
+            <a class="dropdown-item"
+               href="<?php echo $this->url(null, 'members-logout'); ?>"
+               title="<?php echo $this->_('Sign Out'); ?>"><?php echo $this->_('Sign Out'); ?></a>
+        <?php }
+        else { ?>
+            <a class="dropdown-item dialog-box"
+               href="<?php echo $this->url(array('module' => 'members', 'controller' => 'user', 'action' => 'login', 'async' => 1)); ?>"
+               title="<?php echo $this->_('Sign In'); ?>"><?php echo $this->_('Sign In'); ?></a>
+        <?php } ?>
+    </div>
+</div>
+
+<?php
+$this->script()->addBodyCode('<script type="text/javascript">
+    $(\'.dropdown-toggle\').dropdown();
+</script>');
+?>
+
+

@@ -1,0 +1,107 @@
+<?php
+/**
+ * @version 8.2 [rev.8.2.01]
+ */
+/** @var \Ppb\Db\Table\Row\Listing $listingModel */
+/** @var string $currentStep */
+/** @var array $listingFees */
+/** @var \Ppb\Service\Fees\ListingSetup $listingSetupService */
+?>
+<?php
+$listingModel
+    ->addData('id', 0)
+    ->addData('user_id', $this->loggedInUser['id'])
+    ->addData('active', 0)
+    ->addData('approved', 0);
+?>
+
+<?php if ($currentStep == 'preview') {
+    $includedForms = array();
+
+    if ($listingModel->isAuction()) {
+        array_push($includedForms, 'bid');
+    }
+
+    if ($listingModel->isBuyOut()) {
+        if ($listingModel->isShoppingCart() === true) {
+            array_push($includedForms, 'cart');
+        }
+        else {
+            array_push($includedForms, 'buy');
+        }
+    }
+
+    if ($listingModel->isMakeOffer()) {
+        array_push($includedForms, 'offer');
+    }
+
+    $purchaseForm = new \Listings\Form\Purchase($includedForms, $listingModel);
+    $purchaseForm->setDetails(true);
+    ?>
+    <h5 class="subtitle">
+        <?php echo $this->_('Listing Preview'); ?>
+    </h5>
+
+    <div class="mb-5">
+        <?php
+        echo $this->partial('listings/listing/details.phtml', array(
+            'listing'      => $listingModel,
+            'seller'       => $listingModel->findParentRow('\Ppb\Db\Table\Users'),
+            'purchaseForm' => $purchaseForm,
+            'live'         => false
+        )); ?>
+    </div>
+
+<?php } ?>
+
+
+<form action="<?php echo $this->form->getAction(); ?>" method="<?php echo $this->form->getMethod(); ?>"
+      enctype="multipart/form-data" class="form-horizontal">
+    <?php echo $this->form->getHiddenElements(true); ?>
+
+    <?php if ($currentStep == 'preview') { ?>
+        <div class="mb-4">
+            <h5 class="subtitle">
+                <?php echo $this->_('Listing Setup Fees'); ?>
+            </h5>
+
+            <div class="mb-3">
+                <?php echo $this->partial('partials/voucher-code.phtml', array('userId' => null)); ?>
+            </div>
+
+            <dl class="row dl-lg">
+                <?php if (count($listingFees) > 0) { ?>
+                    <?php foreach ($listingFees as $row) { ?>
+                        <dt class="col-3 col-sm-2"><?php echo $this->_($row['name']); ?></dt>
+                        <dd class="col-9 col-sm-10"><?php echo $this->amount($row['amount']); ?></dd>
+                    <?php } ?>
+                <?php } ?>
+                <dt class="col-3 col-sm-2 fees-total"><?php echo $this->_('Total'); ?></dt>
+                <dd class="col-9 col-sm-10 fees-total"><?php echo $this->amount($listingSetupService->getTotalAmount()); ?>
+                </dd>
+            </dl>
+        </div>
+
+        <?php if ($this->settings['listing_terms_box']) { ?>
+            <h5 class="subtitle">
+                <?php echo $this->_('Terms and Conditions'); ?>
+            </h5>
+            <div class="card mb-4">
+                <div class="card-body well-scrollable">
+                    <?php
+                    $listingTerms = explode("\n", $this->settings['listing_terms_content']);
+                    foreach ($listingTerms as $key => $paragraph) {
+                        $listingTerms[$key] = $this->_(trim($paragraph));
+                    }
+
+                    echo implode('<br>', $listingTerms);
+                    ?>
+                </div>
+            </div>
+        <?php } ?>
+    <?php } ?>
+
+    <?php foreach ($this->form->getElements() as $element) { ?>
+        <?php echo $this->partial('partials/form-element.phtml', array('element' => $element)); ?>
+    <?php } ?>
+</form>

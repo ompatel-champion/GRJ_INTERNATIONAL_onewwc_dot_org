@@ -1,0 +1,15 @@
+/**
+ * MOD:- ESCROW PAYMENTS
+ */
+.btn-payment-in-escrow {
+    background-color: #2b7bad;
+    color: #fff;
+}
+.btn-shipping-sent-to-admin {
+    background-color: #E42217;
+    color: #fff;
+}
+.btn-shipping-received {
+    background-color: #4cae4c;
+    color: #fff;
+}

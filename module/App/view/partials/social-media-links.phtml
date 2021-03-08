@@ -1,0 +1,47 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.02]
+ */
+
+$icons = array(
+    'Facebook'  => array(
+        'icon'  => 'facebook',
+        'style' => 'background-color: #3b5998;',
+    ),
+    'Twitter'   => array(
+        'icon'  => 'twitter',
+        'style' => 'background-color: #00aced;',
+    ),
+    'Instagram' => array(
+        'icon'  => 'instagram',
+        'style' => 'background-color: #517fa4;',
+    ),
+    'LinkedIn'  => array(
+        'icon'  => 'linkedin',
+        'style' => 'background-color: #0077b5;',
+    ),
+);
+
+if ($this->settings['enable_rss']) {
+    $icons['RSS'] = array(
+        'icon'  => 'rss',
+        'style' => 'background-color: #ff6600;'
+    );
+}
+?>
+
+<div>
+    <?php foreach ($this->socialMediaLinks as $key => $link) { ?>
+        <?php if (array_key_exists($key, $icons)) { ?>
+            <?php if (!empty($link)) { ?>
+                <a href="<?php echo $link; ?>"
+                   title="<?php echo $key; ?>"
+                   target="_blank"
+                   class="btn text-white" style="<?php echo $icons[$key]['style']; ?>">
+                    <span data-feather="<?php echo $icons[$key]['icon']; ?>"></span>
+                </a>
+            <?php } ?>
+        <?php } ?>
+    <?php } ?>
+</div>
+

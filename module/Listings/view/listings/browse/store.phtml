@@ -1,0 +1,105 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.05]
+ */
+
+/* @var \Ppb\Db\Table\Row\User $store */
+$this->userDetails($store);
+$storeSettings = $store->getStoreSettings();
+$logo = $store->storeLogo();
+$storeLink = $store->storeLink();
+?>
+<header class="store-header mb-4">
+    <div class="row mb-3">
+        <div class="col-6 col-sm-2">
+            <?php echo $this->thumbnail($logo, 300, true, array('alt' => $store->storeName(), 'class' => 'img-fluid rounded', 'crop' => false)); ?>
+        </div>
+
+        <div class="col-6 col-sm-3">
+            <dl>
+                <dt><?php echo $this->_('Owner'); ?></dt>
+                <dd>
+                    <h6><?php echo $this->userDetails()->display(); ?></h6>
+                </dd>
+                <dd>
+                    <span data-feather="globe"></span>
+                    <?php echo $this->userDetails()->location(); ?>
+                </dd>
+
+                <dt><?php echo $this->_('Member Since'); ?></dt>
+                <dd><?php echo $this->date($store->getData('created_at'), true); ?></dd>
+            </dl>
+
+            <?php echo $this->social()->socialMediaLinks($store); ?>
+        </div>
+
+        <div class="col-12 col-sm-7">
+            <?php
+            $headlineButtons = null;
+
+            if (!empty($this->loggedInUser['id'])) {
+                $headlineButtons .= '<a class="btn btn-outline-secondary" '
+                    . 'href="' . $this->url(array('action' => 'favorite-store', 'id' => $store['id'])) . '">'
+                    . (($store->isFavoriteStore($this->loggedInUser['id'])) ? $this->_('Remove from Favorites') : $this->_('Add to Favorites'))
+                    . '</a>';
+            }
+
+            echo $this->navigation()->setPartial('navigation/headline.phtml')->headline(array(
+                'headline'        => $store->storeName(),
+                'headlineButtons' => $headlineButtons,
+            ));
+            ?>
+
+            <div class="my-2">
+                <?php echo !empty($storeSettings['store_description']) ? $storeSettings['store_description'] : null; ?>
+            </div>
+        </div>
+    </div>
+
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <a class="navbar-brand"
+           href="<?php echo $this->url($storeLink); ?>"><?php echo $store->storeName(); ?></a>
+
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#storeNav"
+                aria-controls="storeNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="storeNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="<?php echo $this->url($storeLink); ?>">
+                        <?php echo $this->_('Home'); ?>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="<?php echo $this->url($storeLink + array('page' => 'store_about')); ?>">
+                        <?php echo $this->_('About Us'); ?>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link"
+                       href="<?php echo $this->url($storeLink + array('page' => 'store_shipping_information')); ?>">
+                        <?php echo $this->_('Shipping Information'); ?>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link"
+                       href="<?php echo $this->url($storeLink + array('page' => 'store_company_policies')); ?>">
+                        <?php echo $this->_('Company Policies'); ?>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+</header>
+
+
+<?php if (!empty($page) && !is_numeric($page)) {
+    if (isset($storeSettings[$page])) {
+        echo $this->renderHtml($storeSettings[$page], false, false);
+    }
+}
+else {
+    echo $this->action('index', 'browse', 'listings');
+}
+?>

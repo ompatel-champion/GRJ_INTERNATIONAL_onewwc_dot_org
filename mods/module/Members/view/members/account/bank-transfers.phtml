@@ -1,0 +1,224 @@
+<?php
+/**
+ * MOD:- BANK TRANSFER
+ *
+ * @version 1.1
+ */
+/** @var bool $inAdmin */
+/** @var int $userId */
+/** @var array $totals */
+
+$this->script()->addHeaderCode('<link href="' . $this->baseUrl . '/css/bank-account.css" rel="stylesheet">');
+
+$headlineButtons = null;
+
+$container = $this->navigation()->getInitialContainer()
+    ->findOneBy('label', $this->_('Bank Transfers Filter'));
+
+$headlineButtons .= $this->navigation($container, 'navigation/browse-filter.phtml')->menu();
+
+$this->setGlobal('headlineButtons', $headlineButtons);
+
+/** @var \Ppb\Form\Element\DateTime $dateTimeFrom */
+$dateTimeFrom = $this->formElement('\Ppb\Form\Element\DateTime', 'date_from', $this->dateFrom)
+    ->setAttributes(array(
+        'placeholder' => $this->_('From..'),
+        'class'       => 'form-control input-default'
+    ))
+    ->setCustomData(array(
+        'formData' => array(
+            'format'     => '"YYYY-MM-DD HH:mm"',
+            'maxDate'    => 'new Date()',
+            'useCurrent' => 'false',
+            'stepping'   => '5',
+            'showClear'  => 'true',
+        ),
+    ));
+
+/** @var \Ppb\Form\Element\DateTime $dateTimeTo */
+$dateTimeTo = $this->formElement('\Ppb\Form\Element\DateTime', 'date_to', $this->dateTo)
+    ->setAttributes(array(
+        'placeholder' => $this->_('To..'),
+        'class'       => 'form-control input-default'
+    ))
+    ->setCustomData(array(
+        'formData' => array(
+            'format'     => '"YYYY-MM-DD HH:mm"',
+            'maxDate'    => 'new Date()',
+            'useCurrent' => 'false',
+            'stepping'   => '5',
+            'showClear'  => 'true',
+        ),
+    ));
+
+$this->script()->addBodyCode(
+    $dateTimeFrom->getBodyCode());
+$this->script()->addBodyCode(
+    $dateTimeTo->getBodyCode());
+
+?>
+
+<nav class="navbar p-0 mb-4">
+    <form class="form-inline ml-auto" action="" method="get">
+        <?php echo $this->formElement('hidden', 'filter', $this->filter)->render(); ?>
+        <?php echo $this->formElement('hidden', 'user_id', $userId)->render(); ?>
+
+        <?php echo $dateTimeFrom->render(); ?>
+        <?php echo $dateTimeTo->render(); ?>
+
+        <?php echo $this->formElement('submit', 'submit', $this->_('Show'))
+            ->setAttributes(array('class' => 'btn btn-secondary'))
+            ->render();
+        ?>
+    </form>
+</nav>
+
+<p class="text-right">
+    <span class="badge badge-info">
+        <?php echo $this->_('Pending:'); ?>
+        <?php echo $this->amount($totals['pending'], null, null, true); ?>
+    </span>
+    <span class="badge badge-success">
+        <?php echo $this->_('Paid:'); ?>
+        <?php echo $this->amount($totals['paid'], null, null, true); ?>
+    </span>
+    <span class="badge badge-danger">
+        <?php echo $this->_('Declined:'); ?>
+        <?php echo $this->amount($totals['declined'], null, null, true); ?>
+    </span>
+    <span class="badge badge-warning">
+        <?php echo $this->_('Cancelled:'); ?>
+        <?php echo $this->amount($totals['cancelled'], null, null, true); ?>
+    </span>
+</p>
+
+<div class="table-responsive">
+    <table class="table table-hover">
+        <caption>
+            <?php echo sprintf(
+                $this->pluralize(
+                    $count = $this->paginator->getPages()->totalItemCount,
+                    $this->_('<strong>%s</strong> result found.'),
+                    $this->_('<strong>%s</strong> results found.')
+                ), $count); ?>
+
+            <?php if ($this->paginator->getPages()->totalItemCount > 1) { ?>
+                <?php echo sprintf(
+                    $this->_('Showing results <strong>%s</strong> to <strong>%s</strong>'),
+                    $this->paginator->getPages()->firstItemNumber,
+                    $this->paginator->getPages()->lastItemNumber); ?>
+            <?php } ?>
+        </caption>
+        <?php if ($this->paginator->getPages()->totalItemCount) { ?>
+            <thead class="thead-light">
+            <tr>
+                <th><?php echo $this->_('Transfer Details'); ?></th>
+                <th class="size-medium"><?php echo $this->_('Transfer Date / Submission'); ?></th>
+                <th class="size-actions"><?php echo $this->_('Actions'); ?></th>
+            </tr>
+            </thead>
+        <?php } ?>
+        <tbody>
+
+        <?php
+        /** @var \Ppb\Db\Table\Row\BankTransfer $bankTransfer */
+        foreach ($this->paginator as $bankTransfer) {
+            /** @var \Ppb\Db\Table\Row\Transaction $transaction */
+            $transaction = $bankTransfer->findParentRow('\Ppb\Db\Table\Transactions');
+            /** @var \Cube\Db\Table\Row $bankAccount */
+            $bankAccount = $bankTransfer->findParentRow('\Ppb\Db\Table\BankAccounts');
+            ?>
+            <tr>
+                <td>
+                    <dl class="dl-variable">
+                        <dt><span><?php echo $this->_('Transaction'); ?></span></dt>
+                        <dd><?php echo ($transaction) ? $transaction->displayName() : '<em>' . $this->_('Transaction Deleted') . '</em>'; ?></dd>
+
+                        <dt><span><?php echo $this->_('Amount'); ?></span></dt>
+                        <dd><?php echo ($transaction) ? $this->amount(abs($transaction['amount']), $transaction['currency']) : '<em>' . $this->_('N/A') . '</em>'; ?></dd>
+
+                        <dt><span><?php echo $this->_('Status'); ?></span></dt>
+                        <dd><?php echo $this->bankTransfer($bankTransfer)->status(); ?></dd>
+
+                        <dt><span><?php echo $this->_('Bank Account'); ?></span></dt>
+                        <dd><?php echo $this->bankAccount($bankAccount)->display(', '); ?></dd>
+
+                        <dt><span><?php echo $this->_('Account Holder Name'); ?></span></dt>
+                        <dd><?php echo $bankTransfer['account_holder_name']; ?></dd>
+
+                        <dt><span><?php echo $this->_('Transfer Type'); ?></span></dt>
+                        <dd><?php echo $this->bankTransfer()->type(); ?></dd>
+
+                        <dt><span><?php echo $this->_('Reference Number'); ?></span></dt>
+                        <dd><?php echo $bankTransfer['reference_number']; ?></dd>
+
+                        <?php if (!empty($bankTransfer['additional_information'])) { ?>
+                            <dt><span><?php echo $this->_('Additional Information'); ?></span></dt>
+                            <dd><?php echo $bankTransfer['additional_information']; ?></dd>
+                        <?php } ?>
+                    </dl>
+                </td>
+                <td>
+                    <span class="badge badge-text badge-slim"><?php echo $this->date($bankTransfer['transfer_date']); ?></span>
+                    <span class="badge badge-text badge-slim"><?php echo $this->date($bankTransfer['created_at']); ?></span>
+                </td>
+                <td>
+
+                    <?php
+                    $canAccept = $bankTransfer->canAccept();
+                    $canDecline = $bankTransfer->canDecline();
+                    $canCancel = $bankTransfer->canCancel();
+                    $canDelete = $bankTransfer->canDelete();
+
+                    if ($canAccept || $canDecline || $canCancel || $canDelete) {
+                        ?>
+
+
+                        <?php if ($canAccept) { ?>
+                            <a class="btn btn-success mb-1 confirm-box"
+                               href="<?php echo $this->url(array('option' => 'accept', 'id' => $bankTransfer['id'])); ?>"
+                               title="<?php echo $this->_('Accept Bank Transfer'); ?>"
+                               data-message="<?php echo $this->_('Are you sure you want to accept this bank transfer?'); ?>">
+                                <span data-feather="check"></span>
+                                <?php echo $this->_('Accept'); ?>
+                            </a>
+                        <?php } ?>
+                        <?php if ($canDecline) { ?>
+                            <a class="btn btn-danger mb-1 confirm-box"
+                               href="<?php echo $this->url(array('option' => 'decline', 'id' => $bankTransfer['id'])); ?>"
+                               title="<?php echo $this->_('Decline Bank Transfer'); ?>"
+                               data-message="<?php echo $this->_('Are you sure you want to decline this bank transfer?'); ?>">
+                                <span data-feather="x-square"></span>
+                                <?php echo $this->_('Decline'); ?>
+                            </a>
+                        <?php } ?>
+                        <?php if ($canCancel) { ?>
+                            <a class="btn btn-warning mb-1 confirm-box"
+                               href="<?php echo $this->url(array('option' => 'cancel', 'id' => $bankTransfer['id'])); ?>"
+                               title="<?php echo $this->_('Cancel Bank Transfer'); ?>"
+                               data-message="<?php echo $this->_('Are you sure you want to cancel this bank transfer?'); ?>">
+                                <span data-feather="x-circle"></span>
+
+                                <?php echo $this->_('Cancel'); ?>
+                            </a>
+                        <?php } ?>
+                        <?php if ($canDelete) { ?>
+                            <a class="btn btn-secondary mb-1 confirm-box"
+                               href="<?php echo $this->url(array('option' => 'delete', 'id' => $bankTransfer['id'])); ?>"
+                               title="<?php echo $this->_('Delete Transfer'); ?>"
+                               data-message="<?php echo $this->_('Are you sure you want to delete this bank transfer?'); ?>">
+                                <span data-feather="x"></span>
+                                <?php echo $this->_('Delete'); ?>
+                            </a>
+                        <?php } ?>
+                    <?php } ?>
+
+                </td>
+            </tr>
+        <?php } ?>
+        </tbody>
+    </table>
+</div>
+
+<?php echo $this->pagination($this->paginator, 'sliding', 'partials/pagination.phtml'); ?>
+

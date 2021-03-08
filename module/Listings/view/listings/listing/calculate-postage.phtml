@@ -1,0 +1,59 @@
+<?php
+/**
+ * @version 8.2 [rev.8.2.01]
+ */
+if ($this->errors) { ?>
+    <div class="alert alert-danger">
+        <?php echo $this->errors; ?>
+    </div>
+    <?php
+}
+else {
+    $currencyTo = null;
+    ?>
+    <table class="table">
+        <thead>
+        <tr>
+            <?php if ($this->enableSelection) { ?>
+                <th class="size-tiny px-0"></th>
+            <?php } ?>
+            <th class="size-mini"><?php echo $this->_('Price'); ?></th>
+            <?php if ($this->postageType === \Ppb\Model\Shipping::POSTAGE_TYPE_CARRIERS) { ?>
+                <th class="size-mini"><?php echo $this->_('Carrier'); ?></th>
+            <?php } ?>
+            <th><?php echo $this->_('Shipping Method'); ?></th>
+        </tr>
+        </thead>
+        <tbody>
+        <?php foreach ($this->postage as $key => $row) {
+            $currencyTo = $row['currency'];
+            ?>
+            <tr>
+                <?php if ($this->enableSelection) { ?>
+                    <td class="px-0">
+                        <input type="radio" name="postage_id" value="<?php echo $key; ?>"
+                               data-price="<?php echo $row['price']; ?>"
+                            <?php echo ($this->formSubmit === 'true') ? 'onchange="this.form.submit();"' : ''; ?>
+                            <?php echo ((string)$key === $this->postageId) ? 'checked' : ''; ?>>
+                    </td>
+                <?php } ?>
+                <td><?php echo $this->amount($row['price'], $row['currency']); ?></td>
+                <?php if ($this->postageType === \Ppb\Model\Shipping::POSTAGE_TYPE_CARRIERS) { ?>
+                    <td><?php echo $this->_($row['carrier']); ?></td>
+                <?php } ?>
+                <td><?php echo $this->_($row['method']); ?></td>
+            </tr>
+        <?php } ?>
+
+        <?php if ($this->postageSettings[\Ppb\Model\Shipping::SETUP_FREE_POSTAGE]) { ?>
+            <tr>
+                <td colspan="4" class="px-0">
+                    <?php echo sprintf(
+                        $this->_('* Free postage on orders over %s'),
+                        $this->amount($this->postageSettings[\Ppb\Model\Shipping::SETUP_FREE_POSTAGE_AMOUNT], null, null, false, $currencyTo)); ?></td>
+            </tr>
+        <?php } ?>
+        </tbody>
+    </table>
+<?php } ?>
+

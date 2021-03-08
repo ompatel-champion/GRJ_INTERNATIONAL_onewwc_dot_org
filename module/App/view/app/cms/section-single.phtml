@@ -1,0 +1,27 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.02]
+ */
+
+/* @var \Ppb\Db\Table\Row\ContentSection $section */
+/* @var \Ppb\Db\Table\Row\ContentEntry $entry */
+/* @var \Ppb\Db\Table\Rowset\ContentEntries $entries */
+/* @var array $params */
+/* @var bool $inAdmin */
+
+$headlineButtons = null;
+
+if ($inAdmin) {
+    if ($sectionEntryStatus = $this->sectionEntryStatus($section, $entry)) {
+        $headlineButtons = '<div class="mb-1 text-right">' . $sectionEntryStatus . '</div>';
+    }
+} ?>
+
+<?php
+echo $this->navigation()->setPartial('navigation/headline.phtml')->headline(array(
+    'headline'        => $entry['title'],
+    'headlineButtons' => $headlineButtons,
+));
+?>
+
+<?php echo $this->renderHtml($entry['content'], true); ?>

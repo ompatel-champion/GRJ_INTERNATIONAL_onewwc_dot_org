@@ -1,0 +1,61 @@
+<?php
+/**
+ * @version 8.2 [rev.8.2.01]
+ */
+if ($this->pageCount) { ?>
+    <nav aria-label="Pagination">
+        <ul class="pagination justify-content-center">
+            <!-- Previous page link -->
+            <?php if ($this->previous) { ?>
+                <li class="page-item">
+                    <a class="page-link" href="<?php echo $this->url(array('page' => $this->previous), null, true); ?>"
+                       aria-label="<?php echo $this->_('Previous'); ?>" rel="nofollow">
+                        <span aria-hidden="true">&laquo;</span>
+                        <span class="sr-only"><?php echo $this->_('Previous'); ?></span>
+                    </a>
+                </li>
+            <?php } ?>
+
+            <?php if (min($this->pagesInRange) > 1) { ?>
+                <li class="page-item">
+                    <a class="page-link" href="<?php echo $this->url(array('page' => 1), null, true); ?>" rel="nofollow">1</a>
+                </li>
+            <?php } ?>
+
+            <?php if (min($this->pagesInRange) > 2) { ?>
+                <li class="page-item disabled">
+                    <span class="page-link">...</span>
+                </li>
+            <?php } ?>
+            <!-- Numbered page links -->
+            <?php foreach ($this->pagesInRange as $page) { ?>
+                <li class="page-item <?php echo ($page == $this->current) ? 'active' : ''; ?>">
+                    <a class="page-link"
+                       href="<?php echo $this->url(array('page' => $page), null, true); ?>"><?php echo $page; ?></a>
+                </li>
+            <?php } ?>
+
+            <?php if (max($this->pagesInRange) < ($this->last - 1)) { ?>
+                <li class="page-item disabled">
+                    <span class="page-link">...</span>
+                </li>
+            <?php } ?>
+            <?php if (max($this->pagesInRange) < $this->last) { ?>
+                <li class="page-item">
+                    <a class="page-link"
+                       href="<?php echo $this->url(array('page' => $this->last), null, true); ?>"><?php echo $this->last; ?></a>
+                </li>
+            <?php } ?>
+            <!-- Next page link -->
+            <?php if ($this->next) { ?>
+                <li class="page-item">
+                    <a class="page-link" href="<?php echo $this->url(array('page' => $this->next), null, true); ?>"
+                       aria-label="<?php echo $this->_('Next'); ?>" rel="nofollow">
+                        <span aria-hidden="true">&raquo;</span>
+                        <span class="sr-only"><?php echo $this->_('Next'); ?></span>
+                    </a>
+                </li>
+            <?php } ?>
+        </ul>
+    </nav>
+<?php } ?>

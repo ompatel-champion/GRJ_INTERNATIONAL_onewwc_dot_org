@@ -1,0 +1,31 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.01]
+ */
+
+$listing = $this->data['listing'];
+?>
+
+<p>
+    <?php echo $this->_('A new listing which requires admin approval has been posted.'); ?>
+</p>
+
+<div class="my-4">
+    <?php echo $this->listing($listing, 'partials/listing-list.phtml')
+        ->setDisplaySeller()
+        ->setDisplayEnhanced()
+        ->render(array(
+            'email'    => true,
+            'sitePath' => $this->sitePath,
+        )); ?>
+</div>
+
+<div>
+    [ <a
+        href="<?php echo $this->sitePath . $this->url(array('module' => 'admin', 'controller' => 'listings', 'action' => 'browse', 'listing_type' => 'all', 'filter' => 'awaiting-approval'), null, false, null, false); ?>">
+        <?php echo $this->_('Click here'); ?>
+    </a> ]
+    <?php echo $this->_('to access the admin control panel listings awaiting approval page.'); ?>
+    <?php echo $this->_('Please note that you will have to sign in first.'); ?>
+</div>
+

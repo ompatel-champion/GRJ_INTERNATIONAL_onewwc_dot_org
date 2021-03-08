@@ -1,0 +1,51 @@
+<?php
+/**
+ * MOD:- PRODUCT BUNDLES
+ *
+ * @UNUSED
+ */
+
+/** @var \Ppb\Db\Table\Row\Listing $listing */
+$bundledProducts = $listing->getBundledProducts();
+
+if (count($bundledProducts) > 0) {
+    foreach ($bundledProducts as $key => $data) {
+        if (!empty($data['products'])) {
+            $nbProducts = count($data['products']);
+            $type = ($nbProducts > 1) ? 'select' : 'checkbox';
+
+            /** @var \Cube\Form\Element $element */
+            $element = $this->formElement($type, 'bundled_products')
+                ->setAttributes(array(
+                    'class' => 'form-control',
+                ))
+                ->setMultiple();
+
+            if ($nbProducts > 1) {
+                $element->addMultiOption('', '-- none --');
+            }
+
+            /** @var \Ppb\Db\Table\Row\Listing $product */
+            foreach ($data['products'] as $product) {
+                if ($type != 'select') {
+                    $productDescription = $this->partial('partials/listing-list.phtml',
+                        array('listing' => $product));
+
+                }
+                else {
+                    $productDescription = '[#' . $product['id'] . '] ' . $product['name'] . ' (+' . $this->amount($listing['buyout_price'], $product['currency']) . ')';
+                }
+                $element->addMultiOption($product['id'], $productDescription);
+            }
+
+            echo '<h5 class="headline"><span>' . ((!empty($data['title'])) ? $data['title'] : '') . '</span></h5>'
+                . '<div class="mb-3 bundled-products">' . $element->render() . '</div>';
+        }
+    }
+}
+
+$this->script()->addHeaderCode('<style type="text/css">
+.bundled-products .form-check-label {
+    width: 100%;
+}
+</style>');

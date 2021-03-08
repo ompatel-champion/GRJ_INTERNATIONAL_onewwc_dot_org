@@ -1,0 +1,87 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.05]
+ */
+/** @var mixed $listings */
+
+$attributes = array(
+    'class'           => (isset($class)) ? $class : 'row listings-cards',
+    'data-grid-class' => (isset($gridClass)) ? $gridClass : 'col-6 col-md-3 card-grid',
+    'data-list-class' => (isset($listClass)) ? $listClass : 'col-12 card-list',
+);
+
+$cardClass = null;
+
+$listGridToggle = (isset($listGridToggle)) ? $listGridToggle : false;
+
+if ($listGridToggle) {
+    $attributes['id'] = 'listGridToggle';
+
+    if (!empty($_COOKIE['list_grid'])) {
+        if ($_COOKIE['list_grid'] == 'list') {
+            $cardClass = $attributes['data-list-class'];
+        }
+    }
+}
+else if ($cardClass === null) {
+    $cardType = (isset($cardType)) ? $cardType : false;
+    $cardClass = ($cardType == 'list') ? $attributes['data-list-class'] : $attributes['data-grid-class'];
+}
+
+$carouselId = (isset($carouselId)) ? $carouselId : null;
+$itemsPerRow = (isset($itemsPerRow)) ? $itemsPerRow : 4;
+
+$divAttributes = implode(' ', array_map(function ($k, $v) {
+    return $k . '="' . $v . '"';
+}, array_keys($attributes), $attributes));
+?>
+<?php if ($carouselId) {
+    $nbListings = count($listings);
+
+    $counter = 0;
+    $active = 'active';
+    ?>
+    <div id="<?php echo $carouselId; ?>" class="carousel slide" data-ride="carousel">
+        <div class="carousel-inner">
+
+            <?php
+            /** @var \Ppb\Db\Table\Row\Listing $listing */
+            foreach ($listings as $listing) { ?>
+                <?php if (($counter % $itemsPerRow) == 0) { ?>
+                    <div class="carousel-item <?php echo $active; ?>">
+                    <div <?php echo $divAttributes; ?>>
+                    <?php $active = null; ?>
+                <?php } ?>
+
+                <div class="<?php echo $cardClass; ?>">
+                    <?php echo $this->listing($listing, 'partials/listing-card.phtml')->render(); ?>
+                </div>
+
+                <?php if ((++$counter % $itemsPerRow) == 0 || $counter >= $nbListings) { ?>
+                    </div>
+                    </div>
+                <?php } ?>
+            <?php } ?>
+        </div>
+
+        <a class="carousel-control-prev" href="#<?php echo $carouselId; ?>" role="button" data-slide="prev">
+            <span class="glyphicon glyphicon-chevron-left"></span>
+            <span class="sr-only"><?php echo $this->_('Previous'); ?></span>
+        </a>
+        <a class="carousel-control-next" href="#<?php echo $carouselId; ?>" role="button" data-slide="next">
+            <span class="glyphicon glyphicon-chevron-right"></span>
+            <span class="sr-only"><?php echo $this->_('Next'); ?></span>
+        </a>
+    </div>
+<?php }
+else { ?>
+    <div <?php echo $divAttributes; ?>>
+        <?php
+        /** @var \Ppb\Db\Table\Row\Listing $listing */
+        foreach ($listings as $listing) { ?>
+            <div class="<?php echo $cardClass; ?>">
+                <?php echo $this->listing($listing, 'partials/listing-card.phtml')->render(); ?>
+            </div>
+        <?php } ?>
+    </div>
+<?php } ?>

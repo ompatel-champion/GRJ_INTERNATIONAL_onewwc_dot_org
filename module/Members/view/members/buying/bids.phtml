@@ -1,0 +1,125 @@
+<?php
+/**
+ * @version 8.2 [rev.8.2.01]
+ */
+/* @var \Ppb\Service\Listings $listingsService */
+/** @var bool $summary */
+
+if (!$summary) {
+    ?>
+    <nav class="navbar p-0 mb-4">
+
+        <form class="form-inline ml-auto"
+              action="<?php echo $this->url(null, null, true,
+                  array('listing_id', 'keywords', 'option', 'page', 'submit')); ?>" method="get">
+
+            <div class="mr-1">
+                <?php echo $this->formElement('text', 'listing_id', $this->listingId)
+                    ->setAttributes(array('placeholder' => $this->_('Listing ID'), 'class' => 'form-control input-small'))
+                    ->render();
+                ?>
+            </div>
+            <div class="mr-1">
+                <?php echo $this->formElement('text', 'keywords', $this->keywords)
+                    ->setAttributes(array('placeholder' => $this->_('Listing Title'), 'class' => 'form-control input-medium'))
+                    ->render();
+                ?>
+            </div>
+            <?php echo $this->formElement('submit', 'submit', $this->_('Search'))
+                ->setAttributes(array('class' => 'btn btn-secondary'))
+                ->render();
+            ?>
+        </form>
+    </nav>
+<?php } ?>
+
+<div class="table-responsive">
+    <table class="table table-hover">
+        <caption>
+            <?php echo sprintf(
+                $this->pluralize(
+                    $count = $this->paginator->getPages()->totalItemCount,
+                    $this->_('<strong>%s</strong> bid found.'),
+                    $this->_('<strong>%s</strong> bids found.')
+                ), $count); ?>
+
+            <?php if ($this->paginator->getPages()->totalItemCount > 1) { ?>
+                <?php echo sprintf(
+                    $this->_('Showing results <strong>%s</strong> to <strong>%s</strong>'),
+                    $this->paginator->getPages()->firstItemNumber,
+                    $this->paginator->getPages()->lastItemNumber); ?>
+            <?php } ?>
+        </caption>
+        <?php if ($this->paginator->getPages()->totalItemCount) { ?>
+            <thead class="thead-light">
+            <tr>
+                <th><?php echo $this->_('Listing'); ?></th>
+                <th class="size-medium"><?php echo $this->_('Bid Details'); ?></th>
+                <?php if (!$summary) { ?>
+                    <th class="size-actions"><?php echo $this->_('Actions'); ?></th>
+                <?php } ?>
+            </tr>
+            </thead>
+        <?php } ?>
+        <tbody>
+        <?php
+        /** @var \Ppb\Db\Table\Row\Listing $listing */
+        foreach ($this->paginator as $listing) {
+            $select = $listingsService->getTable()->getAdapter()->select()
+                ->where('user_id = ?', $this->loggedInUser['id'])
+                ->order(array('amount DESC', 'created_at DESC'));
+
+            /** @var \Ppb\Db\Table\Row\Bid $bid */
+            $bid = $listing->findDependentRowset('\Ppb\Db\Table\Bids', null, $select)->getRow(0);
+            ?>
+            <tr>
+                <td>
+                    <?php echo $this->listing($listing, 'partials/listing-list.phtml')
+                        ->setDisplaySeller()
+                        ->setDisplayEnhanced()
+                        ->render(); ?>
+                </td>
+                <td>
+                    <dl class="dl-variable">
+                        <dt><span><?php echo $this->_('Amount'); ?></span></dt>
+                        <dd><?php echo $this->amount($bid['amount'], $listing['currency']); ?></dd>
+
+                        <?php if ($listing->isProxyBidding()) { ?>
+                            <dt><span><?php echo $this->_('Proxy Bid'); ?></span></dt>
+                            <dd><?php echo $this->amount($bid['maximum_bid'],
+                                    $listing['currency']); ?></dd>
+                        <?php } ?>
+
+                        <dt><span><?php echo $this->_('Status'); ?></span></dt>
+                        <dd><?php echo $this->bidStatus($bid); ?></dd>
+
+                        <dt><span><?php echo $this->_('Date'); ?></span></dt>
+                        <dd><?php echo $this->date($bid['created_at']); ?></dd>
+                    </dl>
+
+                </td>
+                <?php if (!$summary) { ?>
+                    <td>
+                        <?php if ($bid->canRetract($listing)) { ?>
+                            <a class="btn btn-danger confirm-box"
+                               href="<?php echo $this->url(array('action' => 'retract-bid', 'id' => $bid['id']), null,
+                                   true); ?>"
+                               title="<?php echo $this->_('Retract Bid'); ?>"
+                               data-message="<?php echo $this->_('Are you sure you want to retract this bid?'); ?>">
+                                <span data-feather="x"></span>
+                                <?php echo $this->_('Retract'); ?>
+                            </a>
+                        <?php } ?>
+                    </td>
+                <?php } ?>
+            </tr>
+        <?php } ?>
+        </tbody>
+    </table>
+</div>
+
+<?php if (!$summary) { ?>
+    <?php echo $this->pagination($this->paginator, 'sliding', 'partials/pagination.phtml'); ?>
+<?php } ?>
+
+

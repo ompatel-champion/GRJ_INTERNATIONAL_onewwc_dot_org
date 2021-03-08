@@ -1,0 +1,735 @@
+<?php
+/**
+ * @version 8.2 [rev.8.2.01]
+ */
+
+use Ppb\Model\Shipping as ShippingModel;
+
+/* @var bool $live */
+/* @var \Ppb\Db\Table\Row\Listing $listing */
+$this->listing($listing);
+/* @var \Ppb\Db\Table\Row\User $seller */
+$this->userDetails($seller);
+
+/** @var \Ppb\Service\Table\Relational\Categories $categoriesService */
+$categoriesService = $this->categories()->getCategories();
+
+$isClosed = ($listing->getStatus() == \Ppb\Db\Table\Row\Listing::CLOSED) ? true : false;
+
+$this->script()->addBodyCode("
+    <script type=\"text/javascript\">
+        $(document).ready(function() {
+            $('.tab-link').click(function() {
+                var href = $(this).attr('data-href');
+                $('#' + href).trigger('click');
+                $(this).trigger('click');
+            });
+        });
+    </script>");
+?>
+
+<div itemscope itemtype="http://schema.org/Product" class="listing-details" id="print-area"
+     data-listing-id="<?php echo $listing['id']; ?>">
+    <meta itemprop="url" content="<?php echo $this->url($listing->link()); ?>">
+
+    <div class="d-flex px-2 mb-3 justify-content-between">
+        <!-- CATEGORY BREADCRUMBS -->
+        <?php $categoryBreadcrumbs = $categoriesService->getBreadcrumbs($listing['category_id'], true, true); ?>
+
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="<?php echo $this->url(null, 'app-home'); ?>"><?php echo $this->_('Home'); ?></a>
+            </li>
+            <?php
+            /** @var \Ppb\Db\Table\Row\Category $category */
+            foreach ($categoryBreadcrumbs as $id => $category) {
+                ?>
+                <li class="breadcrumb-item">
+                    <a href="<?php echo $this->url($category->link()); ?>"><?php echo $this->_($category['name']); ?></a>
+                </li>
+            <?php } ?>
+        </ol>
+        <!-- /CATEGORY BREADCRUMBS -->
+
+        <?php if ($live === true) { ?>
+            <!-- LISTING ID AND STATUS -->
+            <div class="nowrap">
+                <span class="badge badge-light"><?php echo $this->_('ID:') . ' ' . $listing['id']; ?></span>
+                <span class="au-status"><?php echo $this->listing()->status(false); ?></span>
+            </div>
+            <!-- /LISTING ID AND STATUS -->
+        <?php } ?>
+    </div>
+
+    <?php if (($vacationMode = $this->userDetails()->vacationMode()) !== false) { ?>
+        <!-- IN VACATION ALERT -->
+        <div class="alert alert-warning alert-dismissable">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">
+                <span data-feather="x"></span>
+            </button>
+            <?php echo $vacationMode; ?>
+        </div>
+        <!-- /IN VACATION ALERT -->
+    <?php } ?>
+
+    <?php
+    echo $this->actionMessages()->setMessages($this->messages)->render();
+    $this->messages = null;
+    ?>
+
+    <div class="row">
+        <!-- IMAGES / MEDIA -->
+        <div class="col-md-6 col-xl-7 mb-5">
+            <?php $media = $listing->getMedia(array('image', 'video')); ?>
+            <?php
+            $counter = 0;
+            $mediaCount = count($media);
+
+            if ($mediaCount > 0) { ?>
+
+                <div id="jq-mainImage" class="jq-loading-slider">
+                    <?php foreach ($media as $file) { ?>
+                        <div class="item jq-slide hidden">
+                            <?php
+                            if ($file['type'] == \Ppb\Service\ListingsMedia::TYPE_VIDEO) {
+                                echo $this->videoPlayer($file);
+                            }
+                            else {
+                                echo $this->thumbnail($file['value'], 800, true,
+                                    array(
+                                        'alt'             => $listing['name'],
+                                        'type'            => $file['type'],
+                                        'data-gallery-id' => $counter++,
+                                        'itemprop'        => 'image',
+                                    ));
+                            } ?>
+
+                        </div>
+                    <?php } ?>
+                </div>
+
+                <?php if ($mediaCount > 1) { ?>
+                    <div id="jq-thumbnails" class="jq-loading-slider mt-2 mx-4 no-print">
+                        <?php foreach ($media as $file) { ?>
+                            <div class="item jq-slide hidden">
+                                <?php echo $this->thumbnail($file['value'], 250, true,
+                                    array('alt' => $listing['name'], 'type' => $file['type'])); ?>
+                            </div>
+                        <?php } ?>
+                    </div>
+                <?php } ?>
+
+                <?php foreach ($media as $file) {
+                    if ($file['type'] == \Ppb\Service\ListingsMedia::TYPE_IMAGE) { ?>
+                        <a class="jq-gallery"
+                           href="<?php echo $this->thumbnail()->generateImagePath($file['value']); ?>"></a>
+                    <?php }
+                } ?>
+            <?php } ?>
+        </div>
+        <!-- /IMAGES / MEDIA -->
+
+        <div class="col-md-6 col-xl-5 mb-5">
+            <?php
+            $tabs = array();
+
+            $tabs[] = array(
+                'tabId' => 'details',
+                'title' => $this->_('Details'),
+            );
+
+            $tabs[] = array(
+                'tabId' => 'seller',
+                'title' => $this->_('Seller'),
+            );
+
+            if ($live === true) {
+                $tabs[] = array(
+                    'tabId' => 'history',
+                    'title' => $this->_('History'),
+                );
+            }
+
+            ?>
+
+            <?php $activeTab = 'active'; ?>
+
+            <ul class="nav nav-pills nav-fill pb-2 mb-4 border-bottom no-print" role="tablist">
+                <?php foreach ($tabs as $tab) {
+                    ?>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo $activeTab; ?>" href="#<?php echo $tab['tabId']; ?>"
+                           data-toggle="tab"
+                           role="tab"><?php echo $tab['title']; ?></a>
+                    </li>
+                    <?php
+                    $activeTab = '';
+                } ?>
+            </ul>
+
+            <?php $activeTab = 'show active'; ?>
+
+            <div class="tab-content">
+                <?php foreach ($tabs as $tab) { ?>
+                    <div class="tab-pane fade <?php echo $activeTab; ?>" id="<?php echo $tab['tabId']; ?>"
+                         role="tabpanel">
+                        <?php if ($tab['tabId'] == 'details') { ?>
+                            <h1 class="title" itemprop="name"><?php echo $listing['name']; ?></h1>
+                            <?php if (!empty($listing['short_description'])) { ?>
+                                <p class="short-description"><?php echo $this->renderHtml($listing['short_description']); ?></p>
+                            <?php } ?>
+
+                            <h3 class="au-price price">
+                                <?php echo $this->partial('partials/current-price.phtml', array('listing' => $listing, 'id' => 'product-price')); ?>
+                            </h3>
+
+                            <?php if (($taxType = $listing->getTaxType()) !== false) { ?>
+                                <div class="text-secondary"><?php echo $this->taxType($taxType)->display(); ?></div>
+                            <?php } ?>
+
+                            <?php if ($listing->isAuction()) { ?>
+                                <?php if ($listing['reserve_price'] > 0) { ?>
+                                    <div>
+                                        <?php if ($live === true) { ?>
+                                            <span class="au-reserve">
+                                                <?php echo $this->listing()->reserveMessage(); ?>
+                                            </span>
+                                            <?php
+                                        }
+                                        else {
+                                            ?>
+                                            <small class="text-danger">
+                                                <?php echo $this->_('Reserve Price:'); ?>
+                                                <?php echo $this->amount($listing['reserve_price'], $listing['currency']); ?>
+                                            </small>
+                                        <?php } ?>
+                                    </div>
+                                <?php } ?>
+
+                                <div class="au-your-bid mt-1 mb-2">
+                                    <?php echo $this->listing()->yourBid(); ?>
+                                </div>
+                            <?php } ?>
+
+                            <?php if ($listing['end_time'] != null && !$listing['draft']) { ?>
+                                <dl class="dl-variable dl-lg mt-1">
+                                    <dt>
+                                        <span data-feather="clock" title="<?php echo $this->_('Countdown'); ?>"></span>
+                                    </dt>
+                                    <dd class="au-countdown">
+                                        <?php echo $this->listing()->countdown(true); ?>
+                                    </dd>
+                                </dl>
+                            <?php } ?>
+
+                            <?php if ($listing->isProduct() && $live === true) { ?>
+                                <dl class="dl-variable mt-3">
+                                    <dt><span><?php echo $this->_('Quantity'); ?></span></dt>
+                                    <dd>
+                                        <span id="quantity-available">
+                                            <?php echo $this->listing()->availableQuantity(); ?>
+                                        </span>
+                                    </dd>
+                                </dl>
+                            <?php } ?>
+
+                            <?php if ($listing->isClassified()) { ?>
+                                <div class="mt-4 no-print">
+                                    <a href="#questions"
+                                       data-href="questionsTab"
+                                       class="btn btn-gold tab-link" <?php echo ($live != true) ? 'disabled' : ''; ?>>
+                                        <?php echo $this->_('Contact Seller'); ?>
+                                    </a>
+                                </div>
+                            <?php } ?>
+
+                            <!-- PURCHASE FORM -->
+                            <div class="mt-4 no-print">
+                                <?php echo $this->purchaseForm; ?>
+                            </div>
+                            <!-- /PURCHASE FORM -->
+
+                            <?php if ($live === true && $this->settings['enable_shipping'] && !$listing->isClassified()) {
+                                $seller->getShipping()->clearData()->addData($listing);
+                                $shippableLocations = $seller->getShipping()->getShippableLocations();
+                                $postageTypeCarriers = ($seller->getShipping()->getPostageType() == ShippingModel::POSTAGE_TYPE_CARRIERS) ? true : false;
+                                $showShippingCalculator = (count($shippableLocations) > 0 && !$listing->pickUpOnly()) ? true : false;
+                                ?>
+                                <dl class="dl-variable mt-3 mb-1">
+                                    <dt><span><?php echo $this->_('Postage'); ?></span></dt>
+                                    <dd>
+                                        <?php echo (!$postageTypeCarriers || $listing->pickUpOnly()) ? $this->listing()->defaultPostage($seller->getShipping()) : ''; ?>
+                                        <?php if ($showShippingCalculator) { ?>
+                                            <?php echo (!$postageTypeCarriers) ? '<br>' : ''; ?>
+                                            <a data-toggle="collapse" href="#calculateShippingForm"
+                                               role="button" aria-expanded="false"
+                                               aria-controls="calculateShippingForm" class="no-print">
+                                                <?php echo (!$postageTypeCarriers) ? $this->_('Get Additional Rates') : $this->_('Get Rates'); ?>
+                                                <span data-feather="chevron-down"></span>
+                                            </a>
+                                        <?php } ?>
+                                    </dd>
+                                </dl>
+
+                                <?php if ($showShippingCalculator) { ?>
+                                    <div class="collapse calculate-shipping mt-3" id="calculateShippingForm">
+                                        <?php echo $this->partial('partials/shipping-calculator.phtml', array(
+                                            'quantity'  => 1,
+                                            'listingId' => $listing['id'],
+                                            'user'      => $seller)); ?>
+                                    </div>
+                                <?php } ?>
+                            <?php } ?>
+
+                            <?php if ($listing->isBuyOut()) { ?>
+                                <!-- schema.org microdata price -->
+                                <div class="d-none" itemprop="offers" itemscope itemtype="http://schema.org/Offer">
+                                    <meta itemprop="priceCurrency" content="<?php echo $listing['currency']; ?>">
+                                    <span itemprop="price">
+                                            <?php echo $this->amount($listing['buyout_price'], $listing['currency']); ?>
+                                        </span>
+                                </div>
+                                <!-- /schema.org microdata price -->
+                            <?php } ?>
+
+                            <?php if ($live === true) { ?>
+                                <div class="listing-buttons mt-5 no-print">
+                                    <!-- wish list button -->
+                                    <a class="btn btn-wishlist-async <?php echo ($listing->isWatched()) ? 'btn-gold' : 'btn-default'; ?>"
+                                       href="<?php echo $this->url(array('module' => 'listings', 'controller' => 'listing', 'action' => 'watch', 'id' => $listing['id'])); ?>"
+                                       data-class-active="btn-gold"
+                                       data-class-default="btn-default"
+                                       data-bootbox="true"
+                                       title="<?php echo $this->_('Wish List'); ?>">
+                                        <span data-feather="heart"></span>
+                                        <?php echo $this->_('Wish List'); ?>
+                                    </a>
+                                    <!-- /wish list button -->
+
+                                    <?php if ($this->settings['enable_listings_sharing'] && !$listing->isDraft() && $live === true) { ?>
+                                        <!-- listing share button -->
+                                        <div class="btn-group">
+                                            <button type="button" class="btn dropdown-toggle" data-toggle="dropdown"
+                                                    aria-haspopup="true" aria-expanded="false">
+                                                <span data-feather="share"></span>
+                                                <?php echo $this->_('Share'); ?>
+                                            </button>
+
+                                            <div class="dropdown-menu nowrap">
+                                                <div class="mx-3 my-2">
+                                                    <?php echo $this->social()->listingShareLinks($listing); ?>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- /listing share button -->
+                                    <?php } ?>
+
+                                    <!-- print button -->
+                                    <?php
+                                    echo $this->formElement('\Ppb\Form\Element\PrintButton', 'printButton', '<span data-feather="printer"></span> ' . $this->_('Print'))
+                                        ->setAttributes(array(
+                                            'class' => 'btn btn-default',
+                                            'rel'   => 'print-area',
+                                        ))
+                                        ->render();
+                                    ?>
+                                    <!-- /print button -->
+
+
+                                    <?php if ($listing->isOwner()) { ?>
+                                        <!-- listing management button & dropdown -->
+                                        <div class="btn-group">
+                                            <button type="button" class="btn dropdown-toggle" data-toggle="dropdown"
+                                                    aria-haspopup="true" aria-expanded="false">
+                                                <span data-feather="settings"></span>
+                                                <?php echo $this->_('Manage'); ?>
+                                            </button>
+
+                                            <div class="dropdown-menu dropdown-menu-right">
+                                                <?php echo $this->partial('partials/buttons-listing-manage.phtml',
+                                                    array(
+                                                        'listing'  => $listing,
+                                                        'dropdown' => true,
+                                                        'all'      => true,
+                                                    )); ?>
+                                            </div>
+                                        </div>
+                                        <!-- /listing management button & dropdown -->
+                                    <?php }
+                                    else { ?>
+                                        <!-- report abuse -->
+                                        <a class="btn btn-default"
+                                           href="<?php echo $this->url(array('module' => 'members', 'controller' => 'messaging', 'action' => 'create', 'listing_id' => $listing['id'], 'topic_type' => \Ppb\Service\Messaging::ABUSE_REPORT_LISTING)); ?>"
+                                           title="<?php echo $this->_('Report Abuse'); ?>" rel="nofollow">
+                                            <span data-feather="voicemail"></span>
+                                            <?php echo $this->_('Report'); ?>
+                                        </a>
+                                        <!-- /report abuse -->
+                                    <?php } ?>
+                                </div>
+
+                                <?php
+                                $isVisitorsCounter = $seller->getGlobalSettings('visitors_counter');
+                                $isListingWatchedByBox = $seller->getGlobalSettings('listing_watched_by_box');
+
+                                if ($isVisitorsCounter || $isListingWatchedByBox) { ?>
+                                    <div class="d-flex justify-content-between mt-3 pt-2 border-top no-print">
+                                        <?php if ($isListingWatchedByBox) { ?>
+                                            <small class="text-red">
+                                                <?php echo sprintf($this->_('%s watching'), $listing->countWatchers()); ?>
+                                            </small>
+                                        <?php } ?>
+
+                                        <?php if ($isVisitorsCounter) { ?>
+                                            <small class="text-green">
+                                                <?php echo sprintf(
+                                                    $this->pluralize(
+                                                        $count = $listing['nb_clicks'],
+                                                        $this->_('%s view'),
+                                                        $this->_('%s views')
+                                                    ), $count); ?>
+                                            </small>
+                                        <?php } ?>
+                                    </div>
+                                <?php }
+                            } ?>
+                        <?php } ?>
+
+                        <?php if ($tab['tabId'] == 'seller') { ?>
+                            <h4 class="subtitle print-only mt-3">
+                                <?php echo $this->_('Seller Info'); ?>
+                            </h4>
+
+                            <h6><?php echo $this->userDetails()->display(); ?></h6>
+
+                            <dl class="mb-3">
+                                <dt><?php echo $this->_('Registered Since'); ?></dt>
+                                <dd><?php echo $this->date($seller->getData('created_at')); ?></dd>
+
+                                <dt><?php echo $this->_('Feedback'); ?></dt>
+                                <dd><?php echo $this->fieldDisplay($seller->getReputationPercentage(), null, $this->_('n/a')); ?></dd>
+
+                                <dd>
+                                    <a class="btn btn-secondary no-print"
+                                       href="<?php echo $this->url($seller->otherItemsLink()); ?>">
+                                        <?php echo $this->_('View Other Items'); ?>
+                                    </a>
+                                </dd>
+                                <?php if ($seller->getData('store_active')) { ?>
+                                    <dt><?php echo $this->_('Store'); ?></dt>
+                                    <dd>
+                                        <a href="<?php echo $this->url($seller->storeLink()); ?>">
+                                            <?php echo $seller->storeName(); ?>
+                                        </a>
+                                    </dd>
+                                <?php } ?>
+                            </dl>
+
+                            <?php echo $this->social()->socialMediaLinks($seller); ?>
+
+                        <?php } ?>
+
+                        <?php if ($tab['tabId'] == 'history') { ?>
+                            <?php
+                            $historyTabs = array();
+
+                            if ($listing->isAuction()) {
+                                $historyTabs[] = array(
+                                    'tabId'   => 'bids',
+                                    'title'   => $this->_('Bids'),
+                                    'class'   => 'au-bids-history',
+                                    'content' => $this->partial('listings/history/bids.phtml',
+                                        array('listing' => $listing)),
+                                );
+                            }
+
+                            if ($listing->isMakeOffer()) {
+                                $historyTabs[] = array(
+                                    'tabId'   => 'offers',
+                                    'title'   => $this->_('Offers'),
+                                    'class'   => 'au-offers-history',
+                                    'content' => $this->partial('listings/history/offers.phtml',
+                                        array('listing' => $listing)),
+                                );
+                            }
+
+                            $historyTabs[] = array(
+                                'tabId'   => 'sales',
+                                'title'   => $this->_('Sales'),
+                                'class'   => 'au-sales-history',
+                                'content' => $this->partial('listings/history/sales.phtml',
+                                    array('listing' => $listing)),
+                            );
+                            ?>
+
+                            <div class="no-print">
+                                <?php if (count($historyTabs) > 1) {
+                                    $activeHistoryTab = 'active'; ?>
+                                    <ul class="nav nav-pills pb-2 mb-4 border-bottom <?php echo $activeHistoryTab; ?>"
+                                        role="tablist">
+                                        <?php foreach ($historyTabs as $historyTab) {
+                                            ?>
+                                            <li class="nav-item">
+                                                <a class="nav-link <?php echo $activeHistoryTab; ?>"
+                                                   href="#<?php echo $historyTab['tabId']; ?>"
+                                                   data-toggle="tab"
+                                                   role="tab"><?php echo $historyTab['title']; ?></a>
+                                            </li>
+                                            <?php
+                                            $activeHistoryTab = '';
+                                        } ?>
+                                    </ul>
+                                <?php } ?>
+
+                                <div class="tab-content">
+                                    <?php $activeHistoryTab = 'active'; ?>
+                                    <?php foreach ($historyTabs as $historyTab) { ?>
+                                        <div class="tab-pane <?php echo $historyTab['class']; ?> <?php echo $activeHistoryTab; ?>"
+                                             id="<?php echo $historyTab['tabId']; ?>">
+                                            <?php echo $historyTab['content']; ?>
+                                        </div>
+                                        <?php $activeHistoryTab = null; ?>
+                                        <?php
+                                    } ?>
+                                </div>
+                            </div>
+                        <?php } ?>
+                    </div>
+                    <?php $activeTab = '';
+                } ?>
+            </div>
+        </div>
+    </div>
+
+    <?php
+    $customFields = $listing->getCustomFields();
+
+    $tabs = array();
+
+    $tabs[] = array(
+        'tabId' => 'description',
+        'title' => $this->_('Description'),
+    );
+
+    if (count($customFields) > 0) {
+        $tabs[] = array(
+            'tabId' => 'specifications',
+            'title' => $this->_('Specifications'),
+        );
+    }
+
+    $tabs[] = array(
+        'tabId' => 'payments',
+        'title' => $this->_('Payment'),
+    );
+
+    if ($this->settings['enable_shipping'] && !$listing->isClassified()) {
+        $tabs[] = array(
+            'tabId' => 'shipping',
+            'title' => $this->_('Shipping & Returns'),
+        );
+    }
+
+    if ($live === true) {
+        if ($this->settings['enable_messaging']) {
+            $tabs[] = array(
+                'id'    => 'questionsTab',
+                'tabId' => 'questions',
+                'title' => $this->_('Questions & Answers'),
+            );
+        }
+
+        if ($this->settings['other_items_seller']) {
+            $tabs[] = array(
+                'tabId' => 'otherItems',
+                'title' => $this->_('Seller\'s Other Items'),
+            );
+        }
+    }
+    ?>
+
+    <?php $activeTab = 'active'; ?>
+
+    <ul class="nav nav-pills nav-fill pb-2 mb-4 border-bottom no-print" role="tablist">
+        <?php foreach ($tabs as $tab) {
+            ?>
+            <li class="nav-item">
+                <a class="nav-link <?php echo $activeTab; ?>" href="#<?php echo $tab['tabId']; ?>"
+                    <?php echo (!empty($tab['id'])) ? 'id="' . $tab['id'] . '"' : ''; ?>
+                   data-toggle="tab" role="tab"><?php echo $tab['title']; ?></a>
+            </li>
+            <?php
+            $activeTab = '';
+        } ?>
+    </ul>
+
+    <?php $activeTab = 'show active'; ?>
+
+    <div class="tab-content">
+        <?php foreach ($tabs as $tab) {
+            ?>
+            <div class="tab-pane fade <?php echo $activeTab; ?>" id="<?php echo $tab['tabId']; ?>" role="tabpanel">
+                <?php if ($tab['tabId'] == 'description') { ?>
+                    <h5 class="subtitle print-only">
+                        <span><?php echo $this->_('Description'); ?></span>
+                    </h5>
+                    <div itemprop="description">
+                        <?php echo $this->renderHtml($listing['description'], false, false); ?>
+                    </div>
+                <?php } ?>
+
+                <?php if ($tab['tabId'] == 'specifications') { ?>
+                    <h5 class="subtitle print-only mt-4">
+                        <span><?php echo $this->_('Specifications'); ?></span>
+                    </h5>
+                    <dl>
+                        <?php foreach ($customFields as $field) { ?>
+                            <dt><?php echo $this->_($field['label']); ?></dt>
+                            <dd><?php echo $this->fieldDisplay($field['display'], null, '-'); ?></dd>
+                        <?php } ?>
+                    </dl>
+                <?php } ?>
+
+                <?php if ($tab['tabId'] == 'payments') { ?>
+                    <h5 class="subtitle print-only mt-4">
+                        <span><?php echo $this->_('Payments & Returns'); ?></span>
+                    </h5>
+
+                    <dl>
+                        <dt><?php echo $this->_('Payment Methods'); ?></dt>
+                        <dd><?php
+                            $object = $this;
+                            echo $this->fieldDisplay(array_map(function ($array) use (&$object) {
+                                return $object->_($array['name']);
+                            }, $listing->getPaymentMethods()), null, 'N/A'); ?></dd>
+                    </dl>
+                <?php } ?>
+
+                <?php if ($tab['tabId'] == 'shipping') {
+                    $shipsTo = $this->listing()->shipsTo($seller->getShipping());
+                    ?>
+                    <h5 class="subtitle print-only mt-4">
+                        <span><?php echo $this->_('Postage & Shipping'); ?></span>
+                    </h5>
+
+                    <dl>
+                        <dt><?php echo $this->_('Item Location'); ?></dt>
+                        <dd><?php echo $this->fieldDisplay($this->listing()->location(), null,
+                                $this->_('n/a')); ?></dd>
+
+                        <?php if (!$listing->pickUpOnly()) { ?>
+                            <dt><?php echo $this->_('Ships To'); ?></dt>
+                            <dd><?php echo $this->fieldDisplay($shipsTo, null, $this->_('No shipping available.')); ?></dd>
+                        <?php } ?>
+                        <?php if ($this->settings['enable_pickups']) { ?>
+                            <dt><?php echo $this->_('Pick-ups'); ?></dt>
+                            <dd>
+                                <?php echo $this->_(
+                                    $this->fieldDisplay(\Ppb\Model\Shipping::getPickupOptions($listing->getData(\Ppb\Model\Shipping::FLD_PICKUP_OPTIONS)),
+                                        null, 'n/a')); ?>
+                            </dd>
+                        <?php } ?>
+                        <?php if (!$listing->pickUpOnly()) { ?>
+                            <?php if (!empty($listing[\Ppb\Model\Shipping::FLD_INSURANCE]) && $listing[\Ppb\Model\Shipping::FLD_INSURANCE] > 0) { ?>
+                                <dt><?php echo $this->_('Insurance'); ?></dt>
+                                <dd>
+                                    <?php echo $this->amount($listing[\Ppb\Model\Shipping::FLD_INSURANCE],
+                                        $listing['currency']); ?>
+                                </dd>
+                            <?php } ?>
+                            <?php if (\Ppb\Model\Shipping::POSTAGE_TYPE_CARRIERS == $seller->getShipping()->getPostageType()) { ?>
+                                <dt><?php echo $this->_('Item Weight'); ?></dt>
+                                <dd><?php echo $this->listing()->weight(); ?></dd>
+
+                                <dt><?php echo $this->_('Dimensions'); ?></dt>
+                                <dd><?php echo $this->fieldDisplay($this->listing()->dimensions()); ?></dd>
+                            <?php } ?>
+                            <dt><?php echo $this->_('Shipping Instructions'); ?></dt>
+                            <dd>
+                                <?php echo $this->fieldDisplay($this->renderText($listing[\Ppb\Model\Shipping::FLD_SHIPPING_DETAILS], true), null,
+                                    '-'); ?>
+                            </dd>
+                        <?php } ?>
+                    </dl>
+
+                    <dl>
+                        <dt><?php echo $this->_('Returns Accepted'); ?></dt>
+                        <dd><?php echo $this->fieldDisplay($listing['accept_returns'], $this->_('Yes'), $this->_('No')); ?></dd>
+                        <?php if (!empty($listing['returns_policy'])) { ?>
+                            <dt><?php echo $this->_('Returns Policy'); ?></dt>
+                            <dd><?php echo $listing['returns_policy']; ?></dd>
+                        <?php } ?>
+                    </dl>
+                <?php } ?>
+
+                <div class="no-print">
+                    <?php if ($tab['tabId'] == 'questions') { ?>
+                        <?php if ($acceptPublicQuestions = $seller->acceptPublicQuestions()) { ?>
+                            <h5 class="subtitle">
+                                <?php echo $this->_('Public Questions'); ?>
+                            </h5>
+
+                            <div class="mb-4">
+                                <?php echo $this->partial('partials/messages.phtml', array(
+                                    'listing' => $listing)); ?>
+                            </div>
+                        <?php } ?>
+
+                        <h5 class="subtitle">
+                            <?php echo $this->_('Post Message'); ?>
+                        </h5>
+
+                        <?php if (empty($this->loggedInUser['id'])) { ?>
+                            <div class="text-center">
+                                <?php
+                                echo sprintf($this->_('%s to ask the seller a question.'),
+                                    '<a class="dialog-box"
+                                       href="' . $this->url(array('module' => 'members', 'controller' => 'user', 'action' => 'login', 'async' => 1)) . '"
+                                       title="' . $this->_('Sign In') . '">' . $this->_('Sign in') . '</a>'); ?>
+                            </div>
+
+                            <?php
+                        }
+                        else if ($this->loggedInUser['id'] != $listing['user_id']) {
+                            ?>
+                            <?php echo $this->action('create', 'messaging', 'members', array(
+                                'receiver_id'             => $listing['user_id'],
+                                'listing_id'              => $listing['id'],
+                                'topic_type'              => \Ppb\Service\Messaging::PRIVATE_QUESTION,
+                                'accept_public_questions' => $acceptPublicQuestions,
+                            )); ?>
+                        <?php }
+                        else { ?>
+                            <div class="text-center text-danger">
+                                <?php echo $this->_('You are the owner of this listing.'); ?>
+                            </div>
+                        <?php } ?>
+                    <?php } ?>
+
+                    <?php if ($tab['tabId'] == 'otherItems') {
+                        $otherItems = $this->listings('partials/listings-cards.phtml')
+                            ->fetchListings(array(
+                                'filter'             => array('active', 'open', 'other-items'),
+                                'user_id'            => $listing['user_id'],
+                                'current_listing_id' => $listing['id'],
+                                'sort'               => 'rand',
+                                'limit'              => 4
+                            ), Ppb\Service\Listings::SELECT_SIMPLE)
+                            ->getListings();
+
+                        if (count($otherItems) > 0) { ?>
+                            <?php echo $this->listings()->render(); ?>
+                        <?php }
+                        else { ?>
+                            <div class="py-4 text-center">
+                                <?php echo $this->_('No listings found.'); ?>
+                            </div>
+                        <?php }
+                    } ?>
+                </div>
+            </div>
+            <?php $activeTab = '';
+        } ?>
+    </div>
+</div>
+

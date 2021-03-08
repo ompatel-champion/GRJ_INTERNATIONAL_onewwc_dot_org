@@ -1,0 +1,262 @@
+<?php
+/**
+ * @version 8.2 [rev.8.2.02]
+ */
+/** @var bool $inAdmin */
+/** @var string $type */
+/** @var bool $summary */
+
+if (!$summary) {
+    $headlineButtons = null;
+
+    $container = $this->navigation()->getInitialContainer()
+        ->findOneBy('label', $this->_('Sale Invoices Filter'));
+
+    $headlineButtons .= $this->navigation($container, 'navigation/browse-filter.phtml')->menu();
+
+    $this->setGlobal('headlineButtons', $headlineButtons);
+
+    /** @var \Ppb\Form\Element\DateTime $dateTimeFrom */
+    $dateTimeFrom = $this->formElement('\Ppb\Form\Element\DateTime', 'date_from', $this->dateFrom)
+        ->setAttributes(array(
+            'placeholder' => $this->_('From..'),
+            'class'       => 'form-control input-default'
+        ))
+        ->setCustomData(array(
+            'formData' => array(
+                'maxDate'    => 'new Date()',
+                'useCurrent' => 'false',
+                'stepping'   => '5',
+                'showClear'  => 'true',
+            ),
+        ));
+
+    /** @var \Ppb\Form\Element\DateTime $dateTimeTo */
+    $dateTimeTo = $this->formElement('\Ppb\Form\Element\DateTime', 'date_to', $this->dateTo)
+        ->setAttributes(array(
+            'placeholder' => $this->_('To..'),
+            'class'       => 'form-control input-default'
+        ))
+        ->setCustomData(array(
+            'formData' => array(
+                'maxDate'    => 'new Date()',
+                'useCurrent' => 'false',
+                'stepping'   => '5',
+                'showClear'  => 'true',
+            ),
+        ));
+
+    $this->script()->addBodyCode(
+        $dateTimeFrom->getBodyCode());
+    $this->script()->addBodyCode(
+        $dateTimeTo->getBodyCode());
+    ?>
+    <nav class="navbar p-0 mb-4">
+
+        <form class="form-inline ml-auto"
+              action="<?php echo $this->url(null, null, true,
+                  array('sale_id', 'listing_id', 'keywords', 'option', 'page', 'submit')); ?>" method="get">
+
+            <div class="mr-1">
+                <?php echo
+                $this->formElement('text', 'sale_id', $this->saleId)
+                    ->setAttributes(array('placeholder' => $this->_('Invoice ID'), 'class' => 'form-control input-small'))
+                    ->render();
+                ?>
+            </div>
+
+            <div class="mr-1">
+                <?php echo
+                $this->formElement('text', 'listing_id', $this->listingId)
+                    ->setAttributes(array('placeholder' => $this->_('Listing ID'), 'class' => 'form-control input-small'))
+                    ->render();
+                ?>
+            </div>
+
+            <div class="mr-1">
+                <?php echo
+                $this->formElement('text', 'username', $this->username)
+                    ->setAttributes(array(
+                        'placeholder' => ($inAdmin || $type == 'sold') ? $this->_('Buyer Username') : $this->_('Seller Username'),
+                        'class'       => 'form-control input-default'))
+                    ->render();
+                ?>
+            </div>
+
+            <?php echo $dateTimeFrom->render(); ?>
+            <?php echo $dateTimeTo->render(); ?>
+
+            <?php echo
+            $this->formElement('submit', 'submit', $this->_('Search'))
+                ->setAttributes(array('class' => 'btn btn-secondary'))
+                ->render();
+            ?>
+        </form>
+    </nav>
+<?php } ?>
+
+<form action="" method="post" class="form-sticky-buttons">
+    <?php echo $this->formElement('hidden', 'option', '')->render(); ?>
+
+    <div class="table-responsive">
+        <table class="table">
+            <caption>
+                <?php echo sprintf(
+                    $this->pluralize(
+                        $count = $this->paginator->getPages()->totalItemCount,
+                        $this->_('<strong>%s</strong> invoice found.'),
+                        $this->_('<strong>%s</strong> invoices found.')
+                    ), $count); ?>
+
+                <?php if ($this->paginator->getPages()->totalItemCount > 1) { ?>
+                    <?php echo sprintf(
+                        $this->_('Showing results <strong>%s</strong> to <strong>%s</strong>'),
+                        $this->paginator->getPages()->firstItemNumber,
+                        $this->paginator->getPages()->lastItemNumber); ?>
+
+                    <?php if ($type == 'sold') { ?>
+                        <div class="text-danger mt-2">
+                            <?php echo $this->_('To combine invoices, select two or more items purchased by the same buyer - a button will appear at the bottom of the screen.'); ?>
+                        </div>
+                    <?php }
+                    else if ($type == 'bought' && $this->settings['buyer_create_invoices']) { ?>
+                        <div class="text-danger mt-2">
+                            <?php echo $this->_('To combine invoices, select two or more items purchased from the same seller - a button will appear at the bottom of the screen.'); ?>
+                        </div>
+                    <?php } ?>
+                <?php } ?>
+
+
+            </caption>
+            <?php if ($this->paginator->getPages()->totalItemCount) { ?>
+                <thead class="thead-light">
+                <tr>
+                    <?php if (!$summary) { ?>
+                        <th class="size-tiny">
+                            <?php echo $this->formElement('checkbox', 'selectAll')
+                                ->setMultiOptions(array(1 => null))
+                                ->render();
+                            ?>
+                        </th>
+                    <?php } ?>
+                    <th><?php echo $this->_('Sale Details'); ?></th>
+                    <?php if (!$summary) { ?>
+                        <th class="size-actions"><?php echo $this->_('Actions'); ?></th>
+                    <?php } ?>
+                </tr>
+                </thead>
+            <?php } ?>
+            <tbody>
+            <?php
+            /** @var \Ppb\Db\Table\Row\Sale $sale */
+            foreach ($this->paginator as $sale) {
+                $buttons = array();
+
+                if (!$sale->isActive(false) && $inAdmin) {
+                    $buttons[] = 'activate';
+                }
+                else if ($sale->canCombinePurchases($inAdmin)) {
+                    $buttons[] = 'combine_' . $sale->combineHash();
+                }
+
+                $markedBy = ($inAdmin) ? null : (($type == 'sold') ? 'seller' : 'buyer');
+                if ($sale->isMarkedDeleted($markedBy)) {
+                    $buttons[] = 'undelete';
+                }
+
+                if ($sale->canDelete() || $inAdmin) {
+                    $buttons[] = 'delete';
+                }
+                ?>
+                <tr>
+                    <?php if (!$summary) { ?>
+                        <td>
+                            <?php echo $this->formElement('checkbox', 'sale_id')
+                                ->setMultiOptions(array($sale['id'] => null))
+                                ->setAttributes(array(
+                                    'class'        => 'select-all',
+                                    'data-buttons' => implode(' ', $buttons),
+                                ))
+                                ->setMultiple()
+                                ->render();
+                            ?>
+                        </td>
+                    <?php } ?>
+                    <td>
+                        <?php echo $this->partial('partials/sale.phtml', array(
+                            'sale'                => $sale,
+                            'postageDesc'         => true,
+                            'caption'             => true,
+                            'directPaymentButton' => true,
+                            'type'                => $type,
+                            'displayDownloads'    => true,
+                            'inAdmin'             => $inAdmin)); ?>
+                    </td>
+                    <?php if (!$summary) { ?>
+                        <td>
+                            <?php if ($sale->canEdit($inAdmin)) { ?>
+                                <a class="btn btn-secondary mb-1"
+                                   href="<?php echo $this->url($sale->editLink($inAdmin, array('type' => $type))); ?>"
+                                   title="<?php echo $this->_('Edit Invoice'); ?>">
+                                    <span data-feather="folder"></span>
+                                    <?php echo $this->_('Edit'); ?>
+                                </a>
+                            <?php } ?>
+
+                            <?php if ($sale->isActive(false) && $sale->isSeller($inAdmin)) { ?>
+                                <a class="btn btn-gold mb-1 jq-popup-form"
+                                   href="<?php echo $this->url($sale->updateStatusLink($inAdmin)); ?>"
+                                   data-close-redirect="<?php echo $this->url(array('action' => 'browse', 'type' => 'sold')); ?>"
+                                   title="<?php echo $this->_('Update Shipping & Payment Details'); ?>">
+                                    <span data-feather="loader"></span>
+                                    <?php echo $this->_('Update'); ?>
+                                </a>
+                            <?php } ?>
+
+                            <?php if ($sale->canDelete() || $inAdmin) { ?>
+                                <a class="btn btn-danger mb-1 confirm-box"
+                                   href="<?php echo $this->url($sale->deleteLink($inAdmin), null, true); ?>"
+                                   title="<?php echo $this->_('Delete Invoice'); ?>"
+                                   data-message="<?php echo $this->_('Are you sure you want to delete this invoice?'); ?>">
+                                    <span data-feather="x"></span>
+                                    <?php echo $this->_('Delete'); ?>
+                                </a>
+                            <?php } ?>
+                        </td>
+                    <?php } ?>
+                </tr>
+            <?php } ?>
+            </tbody>
+        </table>
+    </div>
+
+    <?php if (!$summary) { ?>
+        <div class="buttons-sticky-bottom"
+             data-message="<?php echo $this->_('Check the boxes above to display the available management options.'); ?>"
+             data-message-no-results="<?php echo $this->_('No available management options for your current selection.'); ?>">
+            <?php if ($this->paginator->getPages()->totalItemCount) {
+                $combineFormAction = ($inAdmin) ?
+                    array('module' => 'admin', 'controller' => 'listings', 'action' => 'edit-invoice') :
+                    array('module' => 'members', 'controller' => 'invoices', 'action' => 'edit');
+                ?>
+                <button class="btn btn-success confirm-form" value="activate"
+                        data-message="<?php echo $this->_('Are you sure you want to activate / mark the sale transaction fee as paid for the selected invoices?'); ?>"><?php echo $this->_('Activate'); ?></button>
+                <button class="btn btn-primary confirm-form" value="combine"
+                        formaction="<?php echo $this->url($combineFormAction); ?>"
+                        data-min-results="2"
+                        data-message="<?php echo $this->_('Are you sure you want to combine the selected invoices?'); ?>"><?php echo $this->_('Combine'); ?></button>
+                <button class="btn btn-secondary confirm-form" value="undelete"
+                        data-message="<?php echo $this->_('Are you sure you want to undelete the selected invoices?'); ?>"><?php echo $this->_('Undelete'); ?></button>
+                <button class="btn btn-danger confirm-form" value="delete"
+                        data-message="<?php echo $this->_('Are you sure you want to delete the selected invoices?'); ?>"><?php echo $this->_('Delete'); ?></button>
+            <?php } ?>
+        </div>
+    <?php } ?>
+</form>
+
+<?php
+if (!$summary) {
+    echo $this->pagination($this->paginator, 'sliding', 'partials/pagination.phtml');
+}
+?>
+

@@ -1,0 +1,40 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.01]
+ */
+
+$listing = $this->data['listing'];
+?>
+
+<p>
+    <?php echo sprintf(
+        $this->_('%s sent you this item from %s. Take a look:'),
+        $this->data['user']['username'],
+        $this->siteName); ?>
+</p>
+
+<div class="my-4">
+    <?php echo $this->listing($listing, 'partials/listing-list.phtml')
+        ->setDisplaySeller()
+        ->setDisplayEnhanced()
+        ->render(array(
+            'email'    => true,
+            'sitePath' => $this->sitePath,
+        )); ?>
+</div>
+
+<?php if (!empty($this->data['message'])) { ?>
+    <dl class="dl-lg dl-indented">
+        <dt>
+            <?php echo $this->_('Message:'); ?>
+        </dt>
+        <dd>
+            <?php echo $this->renderText($this->data['message'], true); ?>
+        </dd>
+    </dl>
+<?php } ?>
+
+<p>
+    <?php echo $this->_('Best regards'); ?> <br>
+    <?php echo $this->siteName; ?>
+</p>

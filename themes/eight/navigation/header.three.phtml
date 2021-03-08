@@ -1,0 +1,401 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.01]
+ */
+/**
+ * MOD:- CURRENCY SELECTOR
+ */
+
+$categories = $this->categories()->getData();
+
+/** @var \Ppb\Service\Table\Relational\Categories $categoriesService */
+$categoriesService = $this->categories()->getCategories();
+if (!count($categories)) {
+    $categories = $this->categories(
+        $categoriesService->getTable()
+            ->select()
+            ->where('parent_id IS NULL')
+            ->where('enable_auctions = ?', 1)
+            ->where('user_id IS NULL')
+            ->order(array('order_id ASC', 'name ASC'))
+    );
+}
+
+$headerMenuCategories = $this->categories(
+    $categoriesService->getTable()
+        ->select()
+        ->where('parent_id IS NULL')
+        ->where('enable_auctions = ?', 1)
+        ->where('user_id IS NULL')
+        ->where('is_header_menu = ?', 1)
+        ->limit(6)
+        ->order(array('order_id ASC', 'name ASC'))
+);
+
+/** @var \Cube\Controller\Request $request */
+$request = $this->request()->getRequest();
+
+$categoryId = $request->getParam('category_id');
+$parentId = $request->getParam('parent_id');
+
+// header links
+$headerLinksWelcomeUser = $this->headerLinks('partials/header-links-welcome-user.phtml')->render();
+$headerLinksDesktop = $this->headerLinks('partials/header-links-desktop.phtml')->render();
+$headerLinksMobile = $this->headerLinks('partials/header-links-mobile.phtml')->render();
+
+// cart dropdown
+$cartDropdown = $this->cart(null, 'partials/cart-dropdown.phtml')->dropdown();
+?>
+
+<!-- NAVIGATION FOR LG & UP -->
+<div class="d-none d-lg-block desktop-navbar">
+    <div class="bg-light mb-1 py-0">
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <div class="mt-2 d-flex align-items-center justify-content-start">
+                        <ul class="navbar-nav nav-top-left mr-3">
+                            <?php foreach ($this->menu->pages as $page) { ?>
+                                <?php if ((!$page->settings || (intval($this->settings[(string)$page->settings['name']]) == $page->settings['value'])) &&
+                                    ($this->navigation()->accept($page)) && $page->hidden != 'true'
+                                ) {
+                                    ?>
+                                    <li class="nav-item <?php echo ($page->isActive(true)) ? 'active' : ''; ?>">
+                                        <a class="nav-link"
+                                           href="<?php echo $this->url($page->params); ?>">
+                                            <?php echo $page->label; ?>
+                                        </a>
+                                    </li>
+                                <?php } ?>
+                            <?php } ?>
+
+                            <li class="nav-item">
+                                <a class="nav-link"
+                                   href="<?php echo $this->url(array('module' => 'members', 'controller' => 'tools', 'action' => 'watched-items')); ?>"
+                                   title="<?php echo $this->_('Wish List'); ?>">
+                                    <?php echo $this->_('Wish List'); ?></a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-lg-auto px-1 au-links-desktop">
+                    <?php echo $headerLinksDesktop; ?>
+                </div>
+
+
+                <!-- ## -- ADD -- [ MOD:- CURRENCY SELECTOR ] -->
+                <?php if ($this->settings['enable_currency_selector']) { ?>
+                    <div class="col-lg-auto px-1">
+                        <?php echo $this->currencySelector()->render(); ?>
+                    </div>
+                <?php } ?>
+                <!-- ## -- ./ADD -- [ MOD:- CURRENCY SELECTOR ] -->
+
+                <div class="col-lg-auto px-1">
+                    <!-- LANGUAGE BAR -->
+                    <?php echo $this->language()->render(); ?>
+                    <!-- /LANGUAGE BAR -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HEADER NAVIGATION -->
+    <div class="container">
+        <div class="row py-1 mb-3">
+            <div class="col-auto">
+                <a href="<?php echo $this->url(null, 'app-home'); ?>"
+                   title="<?php echo $this->settings['sitename']; ?>">
+                    <img src="<?php echo $this->thumbnail()->generateImagePath($this->settings['site_logo_path']); ?>"
+                         class="logo img-fluid"
+                         alt="<?php echo $this->settings['sitename']; ?>">
+                </a>
+            </div>
+            <div class="col">
+                <div class="row mt-3 ml-4">
+                    <div class="col-md">
+                        <!-- SEARCH FORM -->
+                        <form id="form-header-search" class="row"
+                              action="<?php echo $this->url(null, 'listings-search'); ?>"
+                              method="get">
+                            <?php echo $this->formElement('hidden', 'parent_id')
+                                ->setValue($request->getParam('parent_id'))
+                                ->render();
+                            ?>
+                            <div class="col-4 px-0">
+                                <ul id="category-select-content" class="w-100">
+                                    <li>
+                                        <a href="#"
+                                           data-id=""
+                                           data-category-name="<?php echo $this->_('All Categories'); ?>">
+                                            <?php echo $this->_('All Categories'); ?>
+                                        </a>
+                                    </li>
+                                    <?php
+                                    $selectedCategory = $this->_('All Categories');
+                                    $maxChars = 20;
+
+                                    /** @var \Ppb\Db\Table\Row\Category $category */
+                                    foreach ($categories as $category) {
+                                        $shortCategoryName = $this->_($category['name']);
+                                        $length = strlen($shortCategoryName);
+                                        $shortCategoryName = substr($shortCategoryName, 0, $maxChars) . (($length > $maxChars) ? '...' : '');
+
+                                        if ($category['id'] == $request->getParam('parent_id')) {
+                                            $selectedCategory = $shortCategoryName;
+                                        }
+                                        ?>
+                                        <li>
+                                            <a href="<?php echo $this->url($category->link()); ?>"
+                                               data-id="<?php echo $category['id']; ?>"
+                                               data-category-name="<?php echo $shortCategoryName; ?>">
+                                                <?php echo $this->_($category['name']); ?>
+                                            </a>
+                                        </li>
+                                    <?php } ?>
+                                </ul>
+                                <a id="category-select-btn" class="form-control" href="#">
+                                    <span><?php echo $selectedCategory; ?></span> <span
+                                            data-feather="chevron-down"></span>
+                                </a>
+                            </div>
+                            <div class="col px-1">
+                                <input id="basic-search" type="text" name="keywords" class="form-control"
+                                       value="<?php echo $request->getParam('keywords'); ?>"
+                                       placeholder="<?php echo $this->_('Search...'); ?>">
+                            </div>
+                            <div class="col-auto px-0">
+                                <button type="submit"
+                                        class="btn btn-primary"><?php echo $this->_('Search'); ?></button>
+                            </div>
+                        </form>
+                    </div>
+                    <!-- /SEARCH FORM -->
+
+                    <?php if ($this->settings['enable_shopping_cart']) { ?>
+                        <div class="col-md-auto au-cart-dropdown">
+                            <?php echo $this->cart(null, 'partials/cart-dropdown.phtml')->dropdown(); ?>
+                        </div>
+                    <?php } ?>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /HEADER NAVIGATION -->
+
+    <!-- SEARCH BAR -->
+    <div class="bg-search mt-2 mb-4 py-1">
+        <div class="container">
+            <nav class="navbar navbar-expand-md navbar-light nav-search">
+                <ul class="nav navbar-nav navbar-categories">
+                    <?php
+                    /** @var \Ppb\Db\Table\Row\Category $category */
+                    foreach ($headerMenuCategories as $category) {
+                        $counter = $category->getCounter();
+
+                        if ($counter > 0 || !$this->settings['hide_empty_categories']) {
+                            $hasChildren = $category->countDependentRowset('\Ppb\Db\Table\Categories');
+                            $urlParams = ($hasChildren > 0) ? $category->browseLink() : $category->link();
+                            ?>
+
+                            <li class="fs-dropdown">
+                                <a href="<?php echo $this->url($category->link()); ?>"
+                                   class="category-has-children"
+                                   data-category-id="<?php echo $category['id']; ?>">
+                                    <?php echo $this->_($category['name']); ?>
+                                    <?php
+                                    if ($this->settings['category_counters']) {
+                                        echo '<small>(' . $counter . ')</small>';
+                                    }
+                                    ?>
+                                </a>
+                                <div class="dropdown-menu fs-dropdown-menu">
+                                    <div class="row pl-3 pr-5 pb-3">
+                                        <?php
+                                        if ($hasChildren > 0) {
+                                            /** @var \Ppb\Db\Table\Rowset\Categories $children */
+                                            $children = $category->findDependentRowset('\Ppb\Db\Table\Categories');
+                                            ?>
+                                            <div class="col-sm-8">
+                                                <div class="masonry-layout">
+                                                    <?php
+                                                    /** @var \Ppb\Db\Table\Row\Category $subcategory */
+                                                    foreach ($children as $subcategory) {
+                                                        $subcategoryCounter = $subcategory->getCounter();
+
+                                                        if ($subcategoryCounter > 0 || !$this->settings['hide_empty_categories']) {
+                                                            $hasChildren = $subcategory->countDependentRowset('\Ppb\Db\Table\Categories');
+                                                            $urlParams = ($hasChildren > 0) ? $subcategory->browseLink() : $subcategory->link();
+                                                            ?>
+                                                            <div class="masonry-layout__panel">
+                                                                <h5 class="subcategory-header">
+                                                                    <a href="<?php echo $this->url($urlParams); ?>">
+                                                                        <?php echo $this->_($subcategory['name']); ?>
+                                                                        <?php
+                                                                        if ($this->settings['category_counters']) {
+                                                                            echo '<small>(' . $subcategoryCounter . ')</small>';
+                                                                        }
+                                                                        ?>
+                                                                    </a>
+                                                                </h5>
+
+                                                                <?php
+
+                                                                if ($hasChildren > 0) {
+                                                                    $children = $subcategory->findDependentRowset('\Ppb\Db\Table\Categories');
+                                                                    ?>
+                                                                    <div class="mb-2 ml-1">
+                                                                        <?php
+                                                                        foreach ($children as $subsubcategory) {
+                                                                            ?>
+                                                                            <div>
+                                                                                <a href="<?php echo $this->url($subsubcategory->link()); ?>">
+                                                                                    <?php echo $this->_($subsubcategory['name']); ?>
+                                                                                    <?php
+                                                                                    if ($this->settings['category_counters']) {
+                                                                                        echo '<small>(' . $subsubcategory->getCounter() . ')</small>';
+                                                                                    }
+                                                                                    ?>
+                                                                                </a>
+                                                                            </div>
+                                                                        <?php } ?>
+                                                                    </div>
+                                                                <?php } ?>
+                                                            </div>
+                                                            <?php
+                                                        }
+                                                    } ?>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-4">
+                                                <?php
+                                                $advert = $this->advert('partials/advert-single.phtml')
+                                                    ->findBySection('categories-menu', false, array($category['id']))->render();
+
+                                                if (!empty($advert)) {
+                                                    ?>
+                                                    <div class="text-center">
+                                                        <?php echo $advert; ?>
+                                                    </div>
+                                                <?php } ?>
+                                            </div>
+                                        <?php } ?>
+                                    </div>
+                                </div>
+                            </li>
+                            <?php
+                        }
+                    } ?>
+                    <li class="ml-auto">
+                        <a href="<?php echo $this->url(null, 'listings-categories'); ?>" class="text-bold">
+                            <?php echo $this->_('All Categories'); ?>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+    <!-- /SEARCH BAR -->
+
+</div>
+<!-- /NAVIGATION FOR LG & UP -->
+
+<!-- NAVIGATION FOR MD & LOWER -->
+<div class="d-block d-lg-none mobile-navbar">
+    <nav class="navbar" id="mobileNavbar">
+        <button type="button" data-toggle="collapse" data-target="#mobileHeaderMenu"
+                aria-expanded="false" aria-controls="mobileHeaderMenu">
+            <span data-feather="menu"></span>
+        </button>
+
+        <a class="navbar-brand" href="<?php echo $this->url(null, 'app-home'); ?>"
+           title="<?php echo $this->settings['sitename']; ?>">
+            <img src="<?php echo $this->thumbnail()->generateImagePath($this->settings['site_logo_path']); ?>"
+                 class="logo img-fluid"
+                 alt="<?php echo $this->settings['sitename']; ?>">
+        </a>
+
+        <button type="button" data-toggle="collapse" data-target="#mobileSearchForm"
+                aria-expanded="false" aria-controls="mobileSearchForm">
+            <span data-feather="search"></span>
+        </button>
+
+        <?php if ($this->settings['enable_shopping_cart']) { ?>
+            <div class="au-cart-dropdown">
+                <?php echo $this->cartDropdown()->render(); ?>
+            </div>
+        <?php } ?>
+
+        <!-- SEARCH FORM -->
+        <div class="collapse" id="mobileSearchForm">
+            <form action="<?php echo $this->url(null, 'listings-search'); ?>"
+                  method="get">
+
+                <div class="has-icons">
+                    <?php echo $this->formElement('text', 'keywords')
+                        ->setValue($request->getParam('keywords'))
+                        ->setAttributes(array(
+                            'id'          => 'basic-search',
+                            'placeholder' => $this->_('Search...'),
+                            'class'       => 'form-control has-icon-right'
+                        ))->render(); ?>
+                    <span class="glyphicon glyphicon-search btn-icon-search icon-right"></span>
+                </div>
+            </form>
+        </div>
+        <!-- /SEARCH FORM -->
+
+        <!-- HEADER MENU -->
+        <div class="collapse" id="mobileHeaderMenu">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <div class="d-flex justify-content-between">
+                        <small class="au-welcome-user">
+                            <?php echo $headerLinksWelcomeUser; ?>
+                        </small>
+
+                        <!-- LANGUAGE BAR -->
+                        <?php echo $this->language()->render(); ?>
+                        <!-- /LANGUAGE BAR -->
+                    </div>
+                </li>
+
+                <!-- ## -- ADD -- [ MOD:- CURRENCY SELECTOR ] -->
+                <?php if ($this->settings['enable_currency_selector']) { ?>
+                    <li class="nav-item text-right">
+                        <?php echo $this->currencySelector()->render(); ?>
+                    </li>
+                <?php } ?>
+                <!-- ## -- ./ADD -- [ MOD:- CURRENCY SELECTOR ] -->
+
+                <?php foreach ($this->menu->pages as $page) { ?>
+                    <?php if ((!$page->settings || (intval($this->settings[(string)$page->settings['name']]) == $page->settings['value'])) &&
+                        ($this->navigation()->accept($page)) && $page->hidden != 'true'
+                    ) {
+                        ?>
+                        <li class="nav-item <?php echo ($page->isActive(true)) ? 'active' : ''; ?>">
+                            <a class="nav-link"
+                               href="<?php echo $this->url($page->params); ?>">
+                                <?php echo $page->label; ?>
+                            </a>
+                        </li>
+                    <?php } ?>
+                <?php } ?>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                       href="<?php echo $this->url(array('module' => 'members', 'controller' => 'tools', 'action' => 'watched-items')); ?>"
+                       title="<?php echo $this->_('Wish List'); ?>"><?php echo $this->_('Wish List'); ?></a>
+                </li>
+
+                <li class="nav-item au-links-mobile">
+                    <?php echo $headerLinksMobile; ?>
+                </li>
+            </ul>
+        </div>
+        <!-- /HEADER MENU -->
+    </nav>
+
+</div>
+<!-- /NAVIGATION FOR MD & LOWER -->

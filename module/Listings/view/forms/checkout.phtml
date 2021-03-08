@@ -1,0 +1,81 @@
+<?php
+/**
+ * @version 8.2 [rev.8.2.01]
+ */
+/** @var \Listings\Form\Checkout $form */
+$sale = $form->getSale();
+$seller = $form->getSeller();
+?>
+<form action="<?php echo $form->getAction(); ?>" method="<?php echo $form->getMethod(); ?>"
+      class="form-horizontal form-checkout">
+    <?php echo $form->hiddenElements; ?>
+
+    <div class="row">
+        <div class="col-sm-8">
+            <?php if (empty($this->loggedInUser['id'])) { ?>
+                <div class="mb-4">
+                    <a class="dialog-box"
+                       href="<?php echo $this->url(array('module' => 'members', 'controller' => 'user', 'action' => 'login', 'async' => 1)); ?>"
+                       title="<?php echo $this->_('Sign In'); ?>">
+                        <?php echo $this->_('Do you have an account? Click to sign in.'); ?>
+                    </a>
+                </div>
+            <?php } ?>
+
+            <?php
+            /* @var \Cube\Form\Element $element */
+            foreach ($this->form->getElements() as $element) { ?>
+                <?php if (!$element->isHidden()) {
+                    $element->setDescription('');
+                    $partial = ($partial = $element->getPartial()) ? $partial : 'partials/form-element.phtml';
+                    ?>
+                    <?php echo $this->partial($partial, array('element' => $element)); ?>
+                <?php } ?>
+            <?php } ?>
+
+            <h5 class="subtitle">
+                <?php echo $this->_('Voucher'); ?>
+            </h5>
+
+            <div class="form-group row mt-4">
+                <label for="" class="col-lg-3 col-form-label">
+                    <?php echo $this->_('Enter Voucher Code'); ?>
+                </label>
+                <div class="col-lg-9 col-form-input">
+                    <?php
+                    $voucherCode = (($voucher = $sale->getVoucher()) !== null) ? $voucher['code'] : null;
+
+                    echo $this->partial('partials/voucher-code.phtml', array(
+                        'userId'      => $seller['id'],
+                        'voucherCode' => $voucherCode,
+                        'listingId'   => $sale->getListingsIds(),
+                    ));
+                    ?>
+                </div>
+            </div>
+
+            <div class="d-none d-sm-block">
+                <?php echo $this->formElement('submit', \Listings\Form\Checkout::BTN_PLACE_ORDER,
+                    $this->_('Place Order'))
+                    ->setAttributes(array(
+                        'class' => 'btn btn-primary btn-lg btn-block'
+                    ))
+                    ->render(); ?>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="au-checkout-details">
+                <?php echo $this->cart($sale, 'partials/cart-checkout-details.phtml')->checkoutDetails($form); ?>
+            </div>
+
+            <div class="d-block d-sm-none ">
+                <?php echo $this->formElement('submit', \Listings\Form\Checkout::BTN_PLACE_ORDER,
+                    $this->_('Place Order'))
+                    ->setAttributes(array(
+                        'class' => 'btn btn-primary btn-lg btn-block mt-3'
+                    ))
+                    ->render(); ?>
+            </div>
+        </div>
+    </div>
+</form>

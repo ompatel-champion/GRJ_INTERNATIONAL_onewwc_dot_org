@@ -1,0 +1,29 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.02]
+ */
+?>
+<div class="h6 mb-1"><?php echo $this->_('Subscribe to Newsletter'); ?></div>
+<form method="post"
+      action="<?php echo $this->url($this->postUrl); ?>"
+      id="<?php echo $this->formId; ?>">
+
+    <div class="form-inline">
+        <div class="mr-1">
+            <?php echo $this->formElement('text', 'email')
+                ->setAttributes(array('placeholder' => $this->_('Enter your Email Address'), 'class' => 'form-control input-medium'))
+                ->render();
+            ?>
+        </div>
+        <?php echo $this->formElement('submit', 'submit', $this->_('Subscribe'))
+            ->setAttributes(array('class' => 'btn btn-primary'))
+            ->render();
+        ?>
+    </div>
+
+    <div class="w-100"></div>
+    <div class="message"></div>
+</form>
+
+
+

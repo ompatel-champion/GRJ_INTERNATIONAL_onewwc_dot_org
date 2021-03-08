@@ -1,0 +1,41 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.03]
+ */
+/**
+ * MEMBERS AREA SUB LAYOUT - TEMPORARY FILE
+ */
+
+?>
+
+<?php $container = $this->navigation()->getInitialContainer()->findOneBy('label', $this->_('Members Area')); ?>
+
+<?php
+echo $this->navigation()
+    ->setContainer($container)
+    ->setPartial('navigation/breadcrumbs.phtml')->setMinDepth(0)->breadcrumbs();
+?>
+
+<div class="row">
+    <nav class="col-lg-3 sidebar pr-lg-1">
+        <!-- members area side navigation -->
+        <?php
+        echo $this->navigation()
+            ->setPartial('navigation/sidebar.phtml')
+            ->menu();
+        ?>
+    </nav>
+    <main class="col-lg-9 main">
+        <div class="main-content">
+            <?php
+            echo $this->navigation()->setPartial('navigation/headline.phtml')->headline();
+            ?>
+
+            <!-- SITE MESSAGES -->
+            <?php echo $this->actionMessages()->setMessages($this->messages)->render(); ?>
+            <!-- /SITE MESSAGES -->
+
+            <?php echo $this->getContent(); ?>
+        </div>
+    </main>
+</div>

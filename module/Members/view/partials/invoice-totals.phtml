@@ -1,0 +1,82 @@
+<?php
+/**
+ * @version 8.2 [rev.8.2.01]
+ */
+
+/* @var \Members\Form\Invoices $invoicesForm */
+
+$sales = $invoicesForm->getSales();
+
+/** @var \Ppb\Db\Table\Row\Sale $sale */
+$sale = $sales->getRow(0);
+
+$subtotal = $postageAmount = $insuranceAmount = $taxAmount = 0;
+
+$data = $invoicesForm->getData();
+
+foreach ($data['price'] as $key => $price) {
+    $subtotal += $price * $data['quantity'][$key];
+}
+
+$postage = $this->_('N/A');
+
+if ($invoicesForm->hasElement('postage_id')) {
+    $postageAmount = $invoicesForm->getElement('postage_amount')->getValue();
+    $postage = $this->amount($postageAmount, $sale['currency']);
+}
+
+$applyInsurance = $invoicesForm->getData('apply_insurance');
+
+if ($applyInsurance) {
+    $insuranceAmount = $invoicesForm->getElement('insurance_amount')->getValue();
+}
+
+
+$total = $subtotal + floatval($postageAmount) + floatval($insuranceAmount);
+
+$taxRate = $invoicesForm->getData('tax_rate');
+
+if ($taxRate > 0) {
+    $taxAmount = $total * $taxRate / 100;
+}
+
+$total += $taxAmount;
+?>
+
+<div class="bg-light p-3 mb-3">
+    <h5 class="subtitle d-flex justify-content-between">
+        <span><?php echo $this->_('Invoice Totals'); ?></span>
+    </h5>
+
+
+    <dl class="row dl-cart-totals">
+        <dt class="col-4"><?php echo $this->_('Subtotal'); ?></dt>
+        <dd class="col-8"><?php echo $this->amount($subtotal, $sale['currency']); ?></dd>
+
+        <?php if ($this->settings['enable_shipping']) { ?>
+            <dt class="col-4"><?php echo $this->_('Postage'); ?></dt>
+            <dd class="col-8">
+                <?php echo $postage; ?>
+            </dd>
+
+            <?php
+            if ($applyInsurance) {
+                ?>
+                <dt class="col-4"><?php echo $this->_('Insurance'); ?></dt>
+                <dd class="col-8">
+                    <?php echo $this->amount($insuranceAmount, $sale['currency']); ?>
+                </dd>
+            <?php } ?>
+        <?php } ?>
+
+        <?php if ($taxAmount > 0) { ?>
+            <dt class="col-4"><?php echo $this->_('Tax'); ?></dt>
+            <dd class="col-8"><?php echo $this->amount($taxAmount, $sale['currency']); ?></dd>
+        <?php } ?>
+
+        <dt class="col-4 col-total"><?php echo $this->_('Total'); ?></dt>
+        <dd class="col-8 col-total"><?php echo $this->amount($total, $sale['currency']); ?></dd>
+    </dl>
+</div>
+
+

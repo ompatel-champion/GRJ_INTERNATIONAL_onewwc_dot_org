@@ -1,0 +1,62 @@
+<?php
+/**
+ * @version 8.2 [rev.8.2.01]
+ */
+
+/** @var \Ppb\Db\Table\Row\Listing $listing */
+
+$listingLink = $this->url($listing->link());
+?>
+<div class="media" data-listing-id="<?php echo $listing['id']; ?>">
+    <a href="<?php echo $listingLink; ?>">
+        <?php echo $this->thumbnail($listing->getMainImage(), 192, true,
+            array('alt' => $listing['name'], 'class' => 'mr-3 img-md', 'sitePath' => $this->sitePath)); ?>
+    </a>
+
+    <div class="media-body">
+        <h6 class="m-0 d-flex justify-content-between">
+            <a href="<?php echo $listingLink; ?>">
+                <?php echo $listing['name']; ?>
+            </a>
+            <span class="au-price text-lg text-bold">
+                <?php echo $this->partial('partials/current-price.phtml', array(
+                    'listing' => $listing
+                )); ?>
+            </span>
+        </h6>
+        <div class="mb-1 d-flex justify-content-between">
+            <span>
+                <span class="badge badge-light"><?php echo $this->_('ID:') . ' ' . $listing['id']; ?></span>
+                <?php echo $this->listing($listing)->listingType(); ?>
+            </span>
+
+            <?php if ($this->displayEnhanced) { ?>
+                <span class="au-activity"><?php echo $this->listing()->activity(); ?></span>
+            <?php } ?>
+        </div>
+        <?php if ($this->displaySeller) {
+            $seller = $listing->findParentRow('\Ppb\Db\Table\Users');
+            ?>
+            <div class="mb-1">
+                <dl class="dl-variable m-0">
+                    <dt><?php echo(($this->email) ? $this->_('Seller:') : '<span data-feather="user"></span>'); ?></dt>
+                    <dd><?php echo $this->userDetails($seller)->display(); ?></dd>
+                </dl>
+            </div>
+        <?php } ?>
+
+        <?php if ($this->displayEnhanced) { ?>
+            <div>
+                <small><?php echo $this->_('Start Time:'); ?>
+                    <em class="au-start-time"><?php echo $this->date($listing['start_time']); ?></em>
+                </small>
+            </div>
+            <div>
+                <small>
+                    <?php echo $this->_('End Time:'); ?>
+                    <em class="au-end-time"><?php echo $this->date($listing['end_time']); ?></em>
+                </small>
+            </div>
+        <?php } ?>
+    </div>
+</div>

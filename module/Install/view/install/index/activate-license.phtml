@@ -1,0 +1,40 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.01]
+ */
+/** @var bool $connected */
+/** @var bool $submitted */
+/** @var string $httpHost */
+/** @var string $documentRoot */
+
+if ($connected) {
+    if ($submitted) { ?>
+        <div class="alert alert-success">
+            <?php echo sprintf(
+                $this->_('Please <a href="%s">click here</a> to access your website. <br>'
+                    . '<strong>Important</strong>: If the activation key is invalid, you will be redirected back to this page.'),
+                $this->url(null, 'app-home')); ?>
+        </div>
+        <?php
+    }
+    else {
+        ?>
+        <div class="alert alert-primary">
+            <?php echo sprintf(
+                $this->_('To generate your license activation key, please <a href="%s" target="_blank">click here</a> and use the data below:'),
+                'https://www.phpprobid.com/activate-license');
+            ?>
+        </div>
+
+        <div class="alert alert-secondary">
+            <dl class="dl-indented">
+                <dt><?php echo $this->_('HTTP Host'); ?></dt>
+                <dd><?php echo $httpHost; ?></dd>
+                <dt><?php echo $this->_('Document Root'); ?></dt>
+                <dd><?php echo $documentRoot; ?></dd>
+            </dl>
+        </div>
+    <?php } ?>
+
+    <?php echo $this->form; ?>
+<?php } ?>

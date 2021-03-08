@@ -1,0 +1,19 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.02]
+ */
+
+/** @var \Ppb\Db\Table\Row\Advert $advert */
+$advert = $this->adverts->getRow(0);
+?>
+
+<?php if ($advert['type'] == 'image') { ?>
+    <a href="<?php echo $this->advert()->url($advert); ?>"
+       target="<?php echo ($advert->getData('new_tab')) ? '_blank' : '_self'; ?>">
+        <img src="<?php echo $this->thumbnail()->generateImagePath($advert['content']); ?>"
+             class="img-fluid" alt="<?php echo $advert->imageTitle(); ?>">
+    </a>
+<?php }
+else { ?>
+    <?php echo $advert['content']; ?>
+<?php } ?>

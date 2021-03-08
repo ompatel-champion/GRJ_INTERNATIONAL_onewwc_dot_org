@@ -1,0 +1,161 @@
+<?php
+/**
+ * @version 8.2 [rev.8.2.01]
+ */
+/** @var \Ppb\Db\Table\Row\Sale $sale */
+/** @var \Ppb\Db\Table\Row\User $buyer */
+$buyer = $sale->findParentRow('\Ppb\Db\Table\Users', 'Buyer');
+/** @var \Ppb\Db\Table\Row\User $seller */
+$seller = $sale->findParentRow('\Ppb\Db\Table\Users', 'Seller');
+
+$logoPath = $seller->getGlobalSettings('invoice_logo_path');
+$invoiceHeader = $seller->getGlobalSettings('invoice_header');
+$invoiceFooter = $seller->getGlobalSettings('invoice_footer');
+$invoiceAddress = $seller->getGlobalSettings('invoice_address');
+?>
+<div class="container px-0 ml-0 mb-4">
+    <div class="row">
+        <div class="col mb-5 text-right">
+            <?php
+            $printButtonValue = '<span data-feather="printer"></span>' . ' '
+                . $this->_('Print');
+
+            echo $this->formElement('\Ppb\Form\Element\PrintButton', 'printButton', $this->_($printButtonValue))
+                ->setAttributes(array(
+                    'class' => 'print-button btn btn-outline-secondary',
+                    'rel'   => 'print-area',
+                ))
+                ->render();
+            ?>
+        </div>
+    </div>
+    <div id="print-area">
+        <?php if (!empty($invoiceHeader)) { ?>
+            <div class="row mb-4">
+                <div class="col">
+                    <?php echo $this->renderHtml($invoiceHeader); ?>
+                </div>
+            </div>
+        <?php } ?>
+
+        <div class="row mb-4">
+            <div class="col-4">
+                <?php if ($logoPath) { ?>
+                    <div class="invoice-billing-logo">
+                        <img src="<?php echo $this->thumbnail()->generateImagePath($logoPath); ?>"
+                             alt="<?php echo $seller->storeName(); ?>" class="img-fluid">
+                    </div>
+                <?php } ?>
+            </div>
+            <div class="col-6 offset-2">
+                <table class="table">
+                    <caption>
+                        <h2><?php echo $this->_('Invoice'); ?></h2>
+                    </caption>
+                    <tbody>
+                    <tr class="table-primary">
+                        <td class="size-small size-min-small"><strong><?php echo $this->_('Invoice #'); ?></strong></td>
+                        <td><?php echo $sale['id']; ?></td>
+                    </tr>
+                    <tr class="table-light">
+                        <td><strong><?php echo $this->_('Invoice Date'); ?></strong></td>
+                        <td><?php echo $this->date(max(array($sale['created_at'], $sale['updated_at'])), true); ?></td>
+                    </tr>
+                    <tr>
+                        <td><strong><?php echo $this->_('Payment Status'); ?></strong></td>
+                        <td><?php echo $this->_($sale->getPaymentStatusDescription()); ?></td>
+                    </tr>
+
+                    <?php if ($transaction = $sale->getSaleTransaction()) { ?>
+                        <tr>
+                            <td><strong><?php echo $this->_('Payment Method'); ?></strong></td>
+                            <td><?php echo $transaction->findParentRow('\Ppb\Db\Table\PaymentGateways')->getData('name'); ?></td>
+                        </tr>
+                        <tr>
+                            <td><strong><?php echo $this->_('Transaction ID'); ?></strong></td>
+                            <td><?php echo $transaction['gateway_transaction_code']; ?></td>
+                        </tr>
+                        <tr class="table-light">
+                            <td><strong><?php echo $this->_('Payment Date'); ?></strong></td>
+                            <td><?php echo $this->date(max(array($transaction['created_at'], $transaction['updated_at'])),
+                                    true); ?></td>
+                        </tr>
+
+                    <?php } ?>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-4">
+                <div class="invoice-billing-headline">
+                    <?php echo $this->_('Billed By:'); ?>
+                </div>
+                <div class="invoice-billing-content">
+                    <?php echo (!empty($invoiceAddress)) ? nl2br($invoiceAddress) : $this->userDetails($seller)->displayFullAddress(); ?>
+                </div>
+                <?php if (!empty($seller['sale_invoices_content'])) { ?>
+                    <div class="invoice-billing-content pt-0">
+                        <?php echo $this->renderText($seller['sale_invoices_content'], true); ?>
+                    </div>
+                <?php } ?>
+            </div>
+
+            <div class="col-4 offset-2">
+                <div class="invoice-billing-headline">
+                    <?php echo $this->_('Billed To:'); ?>
+                </div>
+                <div class="invoice-billing-content">
+                    <?php echo $this->userDetails($buyer)->setAddress($sale['billing_address_id'])->displayFullAddress(); ?>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col">
+                <?php echo $this->partial('partials/sale.phtml', array(
+                    'sale'    => $sale,
+                    'invoice' => true)); ?>
+
+            </div>
+        </div>
+
+        <?php if ($sale->hasPostage()) { ?>
+            <div class="row mt-3 justify-content-between">
+                <?php if (!$sale->isPickup()) { ?>
+                    <div class="col-4">
+                        <div class="invoice-billing-headline">
+                            <?php echo $this->_('Delivery Address:'); ?>
+                        </div>
+                        <div class="invoice-billing-content">
+                            <?php echo $this->userDetails($buyer)->setAddress($sale['shipping_address_id'])->displayFullAddress(', '); ?>
+                        </div>
+                    </div>
+                <?php } ?>
+                <div class="col-4">
+                    <div class="invoice-billing-headline">
+                        <?php echo $this->_('Delivery Method:'); ?>
+                    </div>
+                    <div class="invoice-billing-content">
+                        <strong><?php echo $sale->getPostageMethod(); ?></strong>
+                    </div>
+                </div>
+            </div>
+        <?php } ?>
+
+        <?php if (!empty($invoiceFooter)) { ?>
+            <div class="row mt-4">
+                <div class="col">
+                    <?php echo $this->renderHtml($invoiceFooter); ?>
+                </div>
+            </div>
+        <?php } ?>
+    </div>
+</div>
+
+
+
+

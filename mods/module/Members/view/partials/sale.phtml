@@ -1,0 +1,416 @@
+<?php
+/**
+ * @version 8.2 [rev.8.2.01]
+ */
+/**
+ * MOD:- ESCROW PAYMENTS
+ * MOD:- PICKUP LOCATIONS
+ */
+ 
+/** @var \Ppb\Db\Table\Row\Sale $sale */
+
+use Ppb\View\Helper\Icon as IconHelper;
+
+/** @var \Ppb\Db\Table\Rowset\SalesListings $salesListings */
+$salesListings = $sale->findDependentRowset('\Ppb\Db\Table\SalesListings');
+/** @var \Ppb\Db\Table\Row\User $buyer */
+$buyer = $sale->findParentRow('\Ppb\Db\Table\Users', 'Buyer');
+
+$postageDesc = (isset($postageDesc)) ? $postageDesc : false;
+$directPaymentButton = (isset($directPaymentButton)) ? $directPaymentButton : false;
+$inAdmin = (isset($inAdmin)) ? $inAdmin : false;
+$type = (isset($type) && !$inAdmin) ? $type : '';
+$caption = (isset($caption)) ? $caption : false;
+$displayDownloads = (isset($displayDownloads)) ? $displayDownloads : false;
+$invoice = (isset($invoice)) ? $invoice : false;
+$headingButtons = (isset($headingButtons)) ? $headingButtons : true;
+$email = (isset($email)) ? $email : false;
+$isBuyer = (isset($isBuyer)) ? $isBuyer : (($email) ? false : $sale->isBuyer());
+$isSeller = (isset($isSeller)) ? $isSeller : (($email) ? false : ($sale->isSeller() || $inAdmin));
+
+$this->icon($email, IconHelper::TYPE_FEATHER_IMG);
+
+/** @var \Ppb\Db\Table\Row\User $seller */
+if ($type != 'sold') {
+    $seller = $sale->findParentRow('\Ppb\Db\Table\Users', 'Seller');
+}
+
+$insuranceAmount = $sale->getInsuranceAmount();
+$taxAmount = $sale->getTaxAmount();
+
+$rowspan = 1;
+if ($insuranceAmount) {
+    $rowspan++;
+}
+
+if ($taxAmount) {
+    $rowspan++;
+}
+?>
+
+<table class="table <?php echo ($invoice) ? '' : 'table-sale'; ?>">
+    <?php if ($caption === true) { ?>
+        <caption>
+            <div class="d-flex justify-content-between">
+                <div>
+                    <strong><?php echo $this->_('Invoice #'); ?><?php echo $sale['id']; ?></strong>
+                    <?php echo $this->_('from'); ?>
+                    <strong><?php echo $this->date(max(array($sale['created_at'], $sale['updated_at'])),
+                            true); ?></strong>
+                    -
+                    <?php if ($type != 'sold') { ?>
+                        <strong><?php echo $this->_('Seller'); ?></strong>:
+                        <?php echo $this->userDetails()->setUser($seller)->display(); ?>
+                    <?php } ?>
+
+                    <?php if ($type != 'bought') { ?>
+                        <strong><?php echo $this->_('Buyer'); ?></strong>:
+                        <?php echo $this->userDetails()->setUser($buyer)->display(); ?>
+                    <?php } ?>
+                </div>
+
+                <div class="ml-3 nowrap">
+                    <?php echo $this->saleOptions($sale, $email)->paymentStatus(); ?>
+                    <?php echo $this->saleOptions()->shippingStatus(); ?>
+                </div>
+            </div>
+            <?php if ($headingButtons) { ?>
+                <div class="mt-1">
+                    <?php $btnClass = 'btn btn-sm btn-default' . (($sale->isActive()) ? '' : ' ' . 'disabled'); ?>
+                    <a class="<?php echo $btnClass; ?>"
+                       href="<?php echo $this->url($sale->invoiceLink($inAdmin, array('type' => $type))); ?>"
+                       title="<?php echo $this->_('View & Print Invoice'); ?>">
+                        <?php echo $this->icon()->render('printer'); ?>
+                        <?php echo $this->_('View & Print Invoice'); ?>
+                    </a>
+
+                    <?php if ($sale->messagingEnabled()) { ?>
+                        <a class="<?php echo $btnClass; ?>"
+                           href="<?php echo $this->url($sale->messagingLink($inAdmin)); ?>"
+                           title="<?php echo $this->_('Message Board'); ?>">
+                            <?php echo $this->icon()->render('message-circle'); ?>
+                            <?php echo $this->_('Message Board'); ?>
+                        </a>
+                    <?php } ?>
+                    <?php
+                    if ($this->settings['enable_reputation'] && !$inAdmin) {
+                        if (!empty($this->loggedInUser['id'])) {
+                            $reputationLink = $sale->reputationLink($this->loggedInUser['id']);
+                            if ($reputationLink) { ?>
+                                <a class="<?php echo $btnClass; ?>"
+                                   href="<?php echo $this->url($reputationLink); ?>"
+                                   title="<?php echo $this->_('Leave Feedback'); ?>">
+                                    <?php echo $this->icon()->render('award'); ?>
+                                    <?php echo $this->_('Leave Feedback'); ?>
+                                </a>
+                            <?php } ?>
+                        <?php } ?>
+                    <?php } ?>
+                </div>
+            <?php } ?>
+        </caption>
+        <?php
+    }
+    else if (!empty($caption)) {
+        ?>
+        <caption><?php echo $caption; ?></caption>
+    <?php } ?>
+    <thead>
+    <tr class="<?php echo ($invoice) ? 'table-light' : ''; ?>">
+        <th><?php echo $this->_('Listing'); ?></th>
+        <th class="size-mini"><?php echo $this->_('Quantity'); ?></th>
+        <th class="size-mini"><?php echo $this->_('Price'); ?></th>
+        <th class="size-mini"><?php echo $this->_('Subtotal'); ?></th>
+    </tr>
+    </thead>
+    <tbody>
+    <?php
+    /** @var \Ppb\Db\Table\Row\SaleListing $saleListing */
+    foreach ($salesListings as $saleListing) {
+        /** @var \Ppb\Db\Table\Row\Listing $listing */
+        $listing = $saleListing->findParentRow('\Ppb\Db\Table\Listings');
+        ?>
+        <tr>
+            <td>
+                <?php if ($listing) { ?>
+                    <div>
+                        <a href="<?php echo $this->url($listing->link()); ?>"><?php echo $listing['name']; ?></a>
+                        <small>(#<?php echo $listing['id']; ?>)</small>
+                    </div>
+                    <?php if (!empty($saleListing['product_attributes'])) { ?>
+                        <div>
+                            <small><?php echo $this->productAttributes($saleListing['product_attributes'])->display(); ?></small>
+                        </div>
+                    <?php } ?>
+                    <?php
+                }
+                else {
+                    ?>
+                    <em><?php echo $this->_('Listing Deleted'); ?></em>
+                <?php } ?>
+            </td>
+            <td><?php echo $saleListing['quantity']; ?></td>
+            <td><?php echo $this->amount($saleListing->price(), $sale['currency']); ?></td>
+            <td><?php echo $this->amount(($saleListing->price() * $saleListing['quantity']), $sale['currency']); ?></td>
+        </tr>
+        <?php if (($digitalDownloads = $saleListing->getDigitalDownloads()) !== false && $displayDownloads === true) {
+            ?>
+            <tr>
+                <td colspan="4">
+                    <?php
+                    /** @var \Ppb\Db\Table\Row\ListingMedia $digitalDownload */
+                    foreach ($digitalDownloads as $digitalDownload) {
+                        ?>
+                        <div class="download-box">
+                            <div class="mb-1">
+                                <?php echo $digitalDownload['value']; ?> <br>
+                                <?php if ($digitalDownload['active']) { ?>
+                                    <small class="text-success"><?php echo $this->_('Download Active'); ?></small>
+                                    <?php
+                                }
+                                else {
+                                    ?>
+                                    <small class="text-danger"><?php echo $this->_('Download Inactive'); ?></small>
+                                <?php } ?>
+                                &middot;
+                                <small class="text-dark">
+                                    <?php echo sprintf(
+                                        $this->_('Downloaded %s times'),
+                                        intval($digitalDownload['nb_downloads'])); ?>
+                                </small>
+                                &middot;
+                                <small class="text-primary">
+                                    <?php echo sprintf(
+                                        $this->_('Added on %s'),
+                                        $this->date($digitalDownload['created_at'], true)); ?>
+                                </small>
+                            </div>
+                            <?php if ($isBuyer) { ?>
+                                <div class="mb-1">
+                                    <a href="<?php echo $this->url($digitalDownload['download_link'], null, false, null,
+                                        true, false); ?>"
+                                       class="btn btn-sm btn-primary<?php echo ($digitalDownload['active']) ? '' : ' disabled'; ?>">
+                                        <?php echo $this->icon()->render('download'); ?>
+                                        <?php echo $this->_('Download'); ?></a>
+                                </div>
+                            <?php } ?>
+                        </div>
+                    <?php } ?>
+                    <?php if ($isSeller) { ?>
+                        <a class="btn btn-sm btn-secondary confirm-box mb-1"
+                           href="<?php echo $this->url($saleListing->updateDownloadLink($inAdmin)); ?>"
+                           data-message="<?php echo $this->_('Update the status of the download links for this listing?'); ?>">
+                            <?php if ($saleListing->getData('downloads_active')) { ?>
+                                <?php echo $this->icon()->render('x'); ?>
+                                <?php echo $this->_('Deactivate Downloads'); ?>
+                                <?php
+                            }
+                            else {
+                                ?>
+                                <?php echo $this->icon()->render('check'); ?>
+                                <?php echo $this->_('Activate Downloads'); ?>
+                            <?php } ?>
+                        </a>
+                    <?php } ?>
+                </td>
+            </tr>
+        <?php } ?>
+    <?php } ?>
+
+    <?php if ($hasPostage = $sale->hasPostage()) { ?>
+        <tr>
+            <td>
+                <?php if ($postageDesc) {
+                    $postageMethod = $sale->getPostageMethod();
+                    ?>
+                    <dl class="dl-variable dl-condensed">
+                        <dt><span><?php echo $this->_('Postage Method'); ?></span></dt>
+                        <dd><?php echo $this->_($postageMethod); ?></dd>
+
+                        <?php if ($sale->isActive()) { ?>
+                            <?php if ($buyer) {
+                                $this->userDetails()->setUser($buyer);
+                                if (!$sale->isPickup()) {
+                                    $this->userDetails()->setAddress($sale['shipping_address_id']);
+                                    ?>
+                                    <dt><span><?php echo $this->_('Delivery Address'); ?></span></dt>
+                                    <dd>
+                                        <?php echo $this->userDetails()->displayFullName() . ', '; ?>
+                                        <?php echo $this->userDetails()->displayAddress(', '); ?>
+                                    </dd>
+                                <?php }
+                                ## -- START :: ADD -- [ MOD:- PICKUP LOCATIONS ]
+                                else if ($sale['store_pickup_location_id']) {
+                                    /** @var \Ppb\Db\Table\Row\StorePickupLocation $pickupLocation */
+                                    $pickupLocation = $sale->findParentRow('\Ppb\Db\Table\StorePickupLocations');
+
+                                    if (count($pickupLocation) > 0) {
+                                        ?>
+                                        <button type="button" class="btn btn-sm btn-default" data-toggle="popover"
+                                                title="Pickup Location"
+                                                data-html="true"
+                                                data-placement="bottom"
+                                                data-content='<?php echo $this->renderHtml(
+                                                    $pickupLocation->display()); ?>'>
+                                            <?php echo $this->_('Pickup Location'); ?>
+                                        </button>
+                                        <?php
+                                    }
+                                }
+                                ## -- END :: ADD -- [ MOD:- PICKUP LOCATIONS ]
+                                else { ?>
+                                    <dt><span><?php echo $this->_('Name'); ?></span></dt>
+                                    <dd>
+                                        <?php echo $this->userDetails()->displayFullName(); ?>
+                                    </dd>
+                                <?php } ?>
+
+                                <dt><span><?php echo $this->_('Email'); ?></span></dt>
+                                <dd>
+                                    <?php echo $buyer['email']; ?>
+                                </dd>
+                                <?php if ($this->settings['sale_phone_numbers']) { ?>
+                                    <dt><span><?php echo $this->_('Phone'); ?></span></dt>
+                                    <dd>
+                                        <?php echo $buyer['phone']; ?>
+                                    </dd>
+                                <?php } ?>
+                            <?php } ?>
+
+                            <?php if (!empty($sale['shipping_comments'])) { ?>
+                                <dt><span><?php echo $this->_('Comments'); ?></span></dt>
+                                <dd>
+                                    <?php echo $sale['shipping_comments']; ?>
+                                </dd>
+                            <?php } ?>
+
+                            <?php if (!empty($sale['tracking_link']) && !$email) { ?>
+                                <dd class="pl-0 mt-1">
+                                    <a class="btn btn-sm btn-info" href="<?php echo $sale['tracking_link']; ?>"
+                                       target="_blank">
+                                        <?php echo $this->icon()->render('map-pin'); ?>
+                                        <?php echo $this->_('Track Package'); ?>
+                                    </a>
+                                </dd>
+                            <?php } ?>
+                        <?php } ?>
+                    </dl>
+                <?php } ?>
+            </td>
+            <td></td>
+            <td>
+                <small><?php echo $this->_('Postage'); ?></small>
+            </td>
+            <td><?php echo $this->amount($sale['postage_amount'], $sale['currency'], null, true); ?></td>
+        </tr>
+
+        <?php if ($insuranceAmount) { ?>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>
+                    <small><?php echo $this->_('Insurance'); ?></small>
+                </td>
+                <td><?php echo $this->amount($insuranceAmount, $sale['currency'], null, true); ?></td>
+            </tr>
+        <?php } ?>
+    <?php } ?>
+
+    <?php if ($taxAmount) { ?>
+        <tr>
+            <td></td>
+            <td></td>
+            <td>
+                <small><?php echo $this->_('Tax'); ?></small>
+            </td>
+            <td><?php echo $this->amount($taxAmount, $sale['currency'], null, true); ?></td>
+        </tr>
+    <?php } ?>
+
+    <tr>
+        <td>
+            <?php if (!$sale->isActive(false)) { ?>
+                <?php if ($sale->canPayFee($isBuyer, $isSeller) && $directPaymentButton) { ?>
+                    <a class="btn btn-warning"
+                       href="<?php echo $this->url(array('module' => 'app', 'controller' => 'payment', 'action' => 'sale-transaction', 'id' => $sale['id'])); ?>"
+                       title="<?php echo $this->_('Make Transaction Sale Fee Payment'); ?>">
+                        <?php echo $this->_('Make Sale Transaction Fee Payment'); ?>
+                    </a>
+                <?php }
+                else { ?>
+                    <span class="badge badge-warning"><?php echo $this->_('Sale Transaction Fee Not Paid'); ?></span>
+                <?php } ?>
+            <?php } ?>
+
+            <?php if ($inAdmin) { ?>
+                <?php if ($sale->isMarkedDeleted('seller')) { ?>
+                    <span class="badge badge-danger"><?php echo $this->_('Seller Deleted'); ?></span>
+                <?php } ?>
+                <?php if ($sale->isMarkedDeleted('buyer')) { ?>
+                    <span class="badge badge-danger"><?php echo $this->_('Buyer Deleted'); ?></span>
+                <?php } ?>
+            <?php } ?>
+
+            <?php if ($sale->canPayDirectPayment() !== false && $directPaymentButton && $isBuyer) { ?>
+                <!-- ## -- ADD -- [ MOD:- ESCROW PAYMENTS ] -->
+                <?php if ($inAdmin) {
+                    $transaction = $sale->findDependentRowset('\Ppb\Db\Table\Transactions', null, $sale->getTable()->getAdapter()->select()->where('paid = ?', 1))->getRow(0);
+                    if (!empty($transaction['id'])) {
+                        ?>
+                        <a class="btn btn-success confirm-box"
+                           href="<?php echo $this->url(array('module' => 'admin', 'controller' => 'tools', 'action' => 'pay-escrow', 'id' => $transaction['id']),
+                               null, true); ?>"
+                           data-message="<?php echo $this->_('Are you sure that you wish to pay the seller the money currently in escrow for this transaction?'); ?>">
+                            <?php echo $this->_('Pay Seller'); ?>
+                        </a>
+                        <?php
+                    }
+                }
+                else {
+                    ?>
+                    <!-- ## -- ./ADD -- [ MOD:- ESCROW PAYMENTS ] -->
+                    <a href="<?php echo $this->url(array('module' => 'app', 'controller' => 'payment', 'action' => 'direct-payment', 'id' => $sale['id'])); ?>"
+                       class="btn btn-success"><?php echo $this->_('Make Payment'); ?></a>
+                <?php } ?>
+
+                <!-- ## -- ADD -- [ MOD:- ESCROW PAYMENTS ] -->
+                <?php if ($sale->adminCanMarkAsPaidToSeller($inAdmin)) { ?>
+                    <a class="btn btn-secondary confirm-box"
+                       href="<?php echo $this->url(array('option' => 'mark-as-paid', 'sale_id' => $sale['id']),
+                           null, true); ?>"
+                       data-message="<?php echo $this->_('Are you sure that you wish to mark this transaction as paid to seller through an offline method?'); ?>">
+                        <?php echo $this->_('Mark as Paid Offline to Seller'); ?>
+                    </a>
+                <?php } ?>
+                <!-- ## -- ./ADD -- [ MOD:- ESCROW PAYMENTS ] -->
+            <?php } ?>
+            <?php if ($sale['expires_at']) { ?>
+                <div>
+                    <small class="text-danger">
+                        <?php echo sprintf(
+                            $this->_('The sale will be cancelled if not paid until %s'),
+                            $this->date($sale['expires_at'])); ?>
+                    </small>
+                </div>
+            <?php } ?>
+
+        </td>
+        <td></td>
+        <td>
+            <small><strong><?php echo $this->_('Total'); ?></strong></small>
+        </td>
+        <td><strong><?php echo $this->amount($sale->calculateTotal(), $sale['currency']); ?></strong></td>
+    </tr>
+    </tbody>
+</table>
+<?php
+## -- START :: ADD -- [ MOD:- PICKUP LOCATIONS ]
+$this->script()->addBodyCode('
+<script type="text/javascript">
+    $(function(){
+        $("[data-toggle=popover]").popover();
+    });
+</script>');
+## -- END :: ADD -- [ MOD:- PICKUP LOCATIONS ]
+?>
+

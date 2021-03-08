@@ -1,0 +1,82 @@
+/* version 8.0 [rev.8.0.01] */
+header {
+  /* desktop */ }
+  header .desktop-navbar .helper {
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle; }
+  header .desktop-navbar .navbar-brand {
+    max-width: 225px;
+    margin-right: .5rem;
+    vertical-align: middle; }
+  header .desktop-navbar .navbar-header {
+    -webkit-align-items: start;
+    -moz-align-items: start;
+    -ms-align-items: start;
+    align-items: start; }
+  header .desktop-navbar .navbar-nav.nav-links-desktop .nav-link {
+    font-size: 85%;
+    padding: 0; }
+  header .desktop-navbar .navbar-nav.nav-links-desktop .nav-item {
+    padding-right: .5rem; }
+  header .desktop-navbar .navbar-nav.nav-links-desktop .nav-item + .nav-item {
+    padding-left: .5rem;
+    border-left: 1px dotted #e0e0e0; }
+  header .desktop-navbar .navbar-nav.nav-main-menu .nav-link {
+    font-weight: 700;
+    padding-left: 0;
+    padding-right: 0; }
+  header .desktop-navbar .navbar-nav.nav-main-menu .active .nav-link {
+    color: #0056b3; }
+  header .desktop-navbar .navbar-nav.nav-main-menu .nav-item {
+    padding-left: .75rem;
+    padding-right: .75rem; }
+    header .desktop-navbar .navbar-nav.nav-main-menu .nav-item:first-child {
+      padding-left: 0; }
+    header .desktop-navbar .navbar-nav.nav-main-menu .nav-item:last-child {
+      padding-right: 0; }
+  header .desktop-navbar .user-dropdown {
+    display: none !important; }
+  header .desktop-navbar .nav-search {
+    padding-top: 0;
+    padding-bottom: 0; }
+  header .desktop-navbar .fs-dropdown:hover > .dropdown-menu {
+    display: block; }
+
+.navbar-categories > li {
+  padding: .75rem 1.5rem; }
+.navbar-categories > li + li {
+  border-left: 1px solid rgba(0, 0, 0, 0.05); }
+.navbar-categories .dropdown-toggle::after {
+  display: none; }
+
+.fs-dropdown {
+  position: static !important; }
+
+.fs-dropdown-menu {
+  margin-top: .05rem;
+  padding-top: 20px;
+  width: 100%; }
+
+.masonry-layout {
+  column-count: 3;
+  column-gap: 0; }
+
+.masonry-layout__panel {
+  -webkit-column-break-inside: avoid;
+  /* Chrome, Safari, Opera */
+  page-break-inside: avoid;
+  /* Firefox */
+  break-inside: avoid;
+  /* IE 10+ */
+  padding-left: 1rem; }
+
+.subcategory-header {
+  color: #343a40;
+  font-weight: 500;
+  font-size: 1.1rem; }
+  .subcategory-header a {
+    color: #343a40;
+    text-shadow: none; }
+
+/*# sourceMappingURL=header.two.css.map */

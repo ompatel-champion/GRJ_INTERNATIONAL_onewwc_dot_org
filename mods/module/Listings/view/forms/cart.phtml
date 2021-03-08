@@ -1,0 +1,203 @@
+<?php
+/**
+ * @version 8.1 [rev.8.1.01]
+ */
+/**
+ * MOD:- DISCOUNT RULES
+ * MOD:- CURRENCY SELECTOR
+ */
+
+/** @var \Listings\Form\Cart $form */
+$sale = $form->getSale();
+$seller = $form->getSeller();
+$salesListings = $form->getSalesListings();
+$shippingDetails = $form->getShippingDetails();
+
+if (count($salesListings)) {
+    ?>
+    <form action="" method="post">
+        <?php echo $form->hiddenElements; ?>
+
+        <div class="row">
+            <div class="col-lg-8 mb-3 mb-lg-0">
+                <div class="bg-light p-3">
+                    <?php
+                    /** @var \Ppb\Db\Table\Row\SaleListing $saleListing */
+                    foreach ($salesListings as $saleListing) {
+                        /** @var \Ppb\Db\Table\Row\Listing $listing */
+                        $listing = $saleListing->findParentRow('\Ppb\Db\Table\Listings');
+
+                        if ($listing instanceof \Ppb\Db\Table\Row\Listing) {
+                            $listingLink = $this->url($listing->link());
+                            $listingImage = $listing->getMainImage();
+                            $listingName = $listing['name'];
+
+                            ## -- ADD -- [ MOD:- DISCOUNT RULES ]
+                            $discountedPrice = $listing->discountedPrice($saleListing['product_attributes']);
+                            if ($discountedPrice > 0) {
+                                $saleListing['price'] = $discountedPrice;
+                            }
+                            ## -- ./ADD -- [ MOD:- DISCOUNT RULES ]
+                        }
+                        else {
+                            $listingLink = '#';
+                            $listingImage = null;
+                            $listingName = $this->_('Listing Deleted');
+                        }
+
+                        $quantities[] = $saleListing['quantity'];
+                        $listingIds[] = $listing['id'];
+                        ?>
+                        <div class="media cart-item p-3 bg-white mb-3">
+                            <?php echo $this->thumbnail($listingImage, 192, true,
+                                array('alt' => $listingName, 'class' => 'mr-3 img-md')); ?>
+
+                            <div class="media-body">
+                                <h6 class="m-0 d-flex justify-content-between">
+                                    <a href="<?php echo $this->url($listing->link()); ?>">
+                                        <?php echo $listing['name']; ?>
+                                    </a>
+
+                                    <a class="text-black confirm-box"
+                                       href="<?php echo
+                                       $this->url(array('action' => 'delete', 'item_id' => $saleListing['id']),
+                                           null, true); ?>"
+                                       title="<?php echo $this->_('Remove Product from Cart'); ?>"
+                                       data-message="<?php echo $this->_('Are you sure you want to remove this product from the shopping cart?'); ?>">
+                                        <span data-feather="x" class="feather-lg"></span>
+                                    </a>
+                                </h6>
+
+                                <?php if (!empty($saleListing['product_attributes'])) { ?>
+                                    <div>
+                                        <?php echo $this->productAttributes($saleListing['product_attributes'])->display(); ?>
+                                    </div>
+                                <?php } ?>
+
+                                <div class="mt-3">
+                                    <?php echo $form->getElement('quantity')
+                                        ->setData($saleListing['quantity'])
+                                        ->addAttribute('placeholder', 'Qty')
+                                        ->setBrackets('[' . $saleListing['id'] . ']')
+                                        ->render();
+                                    ?>
+                                    x
+                                    <!-- ## -- CHANGE -- [ MOD:- DISCOUNT RULES ] -->
+                                    <span class="text-lg text-bold"><?php echo $this->amount($saleListing->price(true), $sale['currency']); ?></span>
+                                    <!-- ## -- ./CHANGE -- [ MOD:- DISCOUNT RULES ] -->
+                                </div>
+                                
+                                <div class="mt-2">
+                                    <a href="<?php echo $this->url(array('module' => 'listings', 'controller' => 'cart', 'action' => 'move-wish-list', 'item_id' => $saleListing['id'])); ?>"
+                                       class="btn btn-sm btn-default"
+                                       title="<?php echo $this->_('Move to Wish List'); ?>">
+                                        <span data-feather="heart"></span>
+                                        <?php echo $this->_('Move to Wish List'); ?>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    <?php } ?>
+
+
+                    <div class="d-flex justify-content-between mt-3">
+                        <a class="btn btn-secondary d-none d-lg-block"
+                           href="<?php echo $this->url($seller->storeLink()); ?>">
+                            <?php echo $this->_('Continue Shopping'); ?>
+                        </a>
+
+                        <div>
+                            <a class="btn btn-secondary"
+                               href="<?php echo $this->url(array('action' => 'empty-cart')); ?>">
+                                <?php echo $this->_('Empty Cart'); ?>
+                            </a>
+                            <?php echo $form->getElement(\Listings\Form\Cart::BTN_UPDATE_CART)->render(); ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="bg-light p-3">
+                    <?php
+                    ## -- ADD 1L -- [ MOD:- CURRENCY SELECTOR ]
+                    $this->amount(false)->setConvert(true);
+                    ?>
+
+                    <h4 class="subtitle">
+                        <?php echo $this->_('Cart Summary'); ?>
+                    </h4>
+
+                    <dl class="row dl-cart-totals">
+                        <dt class="col-4"><?php echo $this->_('Subtotal'); ?></dt>
+                        <dd class="col-8"><?php echo $this->amount($sale->calculateTotal(true, false), $sale['currency']); ?></dd>
+
+                        <?php if ($this->settings['enable_shipping']) {
+                            $getQuoteText = $this->_('Get Quote');
+                            ?>
+                            <dt class="col-4"><?php echo $this->_('Postage'); ?></dt>
+                            <dd class="col-8">
+                                <?php if (!empty($shippingDetails['method'])) { ?>
+                                    <div class="mb-1">
+                                        <?php echo $this->amount($shippingDetails['price'], $shippingDetails['currency']); ?>
+                                        <br>
+                                        <em><?php echo $this->_($shippingDetails['method']); ?></em>
+                                    </div>
+                                <?php } ?>
+
+                                <a data-toggle="collapse" href="#calculateShippingForm"
+                                   role="button" aria-expanded="false" aria-controls="calculateShippingForm">
+                                    <?php echo (!empty($shippingDetails['method'])) ? $this->_('Get New Quote') : $this->_('Get Quote'); ?>
+                                    <span data-feather="chevron-down"></span>
+                                </a>
+                            </dd>
+                            <dd class="collapse col-12 calculate-shipping" id="calculateShippingForm">
+                                <?php if ($seller->getShipping()->getShippableLocations()) { ?>
+                                    <?php echo $this->partial('partials/shipping-calculator.phtml', array(
+                                        'enableSelection' => 1,
+                                        'quantity'        => $quantities,
+                                        'listingId'       => $listingIds,
+                                        'locationId'      => $form->getData('locationId'),
+                                        'postCode'        => $form->getData('postCode'),
+                                        'user'            => $seller)); ?>
+                                    <?php
+                                }
+                                else {
+                                    ?>
+                                    <div class="text-danger"><?php echo $this->_('No shipping available.'); ?></div>
+                                <?php } ?>
+                            </dd>
+                        <?php } ?>
+
+                        <?php if (($taxAmount = $sale->getTaxAmount(true)) > 0) { ?>
+                            <dt class="col-4"><?php echo $this->_('Tax'); ?></dt>
+                            <dd class="col-8"><?php echo $this->amount($taxAmount, $sale['currency']); ?></dd>
+                        <?php } ?>
+
+                        <dt class="col-4 col-total"><?php echo $this->_('Total'); ?></dt>
+                        <dd class="col-8 col-total"><?php echo $this->amount($sale->calculateTotal(false, false), $sale['currency']); ?></dd>
+                    </dl>
+
+                    <?php echo $form->getElement(\Listings\Form\Cart::BTN_CHECKOUT)->addAttribute('class', 'btn-block')->render(); ?>
+                    <?php if ($this->settings['pending_sales_listings_expire_hours']) { ?>
+                        <small>
+                            <?php echo sprintf($this->_('*Stock is reserved for %s minute(s).'),
+                                $this->settings['pending_sales_listings_expire_hours']); ?>
+                        </small>
+                    <?php } ?>
+
+                    <?php
+                    ## -- ADD 1L -- [ MOD:- CURRENCY SELECTOR ]
+                    $this->amount(false)->setConvert(false);
+                    ?>
+                </div>
+            </div>
+        </div>
+    </form>
+    <?php
+}
+else {
+    ?>
+    <p class="text-center">
+        <?php echo $this->_('The shopping cart is empty.'); ?>
+    </p>
+<?php } ?>

@@ -1,0 +1,59 @@
+<?php
+/**
+ * @version 8.1 [rev.8.1.01]
+ */
+
+$collapseId = 0;
+?>
+
+<nav class="sidebar-menu sidebar-search">
+    <div class="h5 sidebar-heading pb-2 border-bottom">
+        <a data-toggle="collapse" href="#searchFilterForm"
+           role="button" aria-expanded="false" aria-controls="searchFilterForm">
+            <?php echo $this->_('Filter Results'); ?>
+            <span class="glyphicon glyphicon-triangle-bottom"></span>
+        </a>
+    </div>
+
+    <div class="collapse" id="searchFilterForm">
+        <form action="<?php echo $this->form->getAction(); ?>" method="<?php echo $this->form->getMethod(); ?>">
+            <?php echo $this->form->hiddenElements; ?>
+            <ul>
+                <?php
+                /** @var \Cube\Form\Element $element */
+                foreach ($this->form->getElements() as $element) {
+                    if (!$element->isHidden() && $element->render()) { ?>
+                        <li class="nav-item nav-dropdown">
+                            <a class="nav-dropdown-toggle open"
+                               data-toggle="collapse" href="#collapse<?php echo $collapseId; ?>">
+                                <?php echo $element->getLabel(); ?>
+                            </a>
+
+                            <ul class="collapse show <?php echo ($element->getType() == 'checkbox') ? 'overflow-y' : ''; ?>" id="collapse<?php echo $collapseId++; ?>">
+                                <li class="nav-item">
+                                    <?php if ($element->getName() == 'keywords') { ?>
+                                        <div class="has-icons">
+                                            <?php echo $element->setAttributes(array(
+                                                'placeholder' => $this->_('Search...'),
+                                                'class'       => 'has-icon-right'
+                                            ))->render(); ?>
+                                            <span class="glyphicon glyphicon-search btn-icon-search icon-right"></span>
+                                        </div>
+                                    <?php }
+                                    else if ($element->getName() == \Listings\Form\Search::SUBMIT_SEARCH) { ?>
+                                        <?php echo $element->addAttribute('class', 'btn btn-lg btn-block btn-primary')->render(); ?>
+
+                                    <?php }
+                                    else { ?>
+                                        <?php echo $element->render(); ?>
+                                    <?php } ?>
+                                </li>
+                            </ul>
+                        </li>
+                    <?php }
+                } ?>
+            </ul>
+        </form>
+    </div>
+</nav>
+

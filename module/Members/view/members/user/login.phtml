@@ -1,0 +1,44 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.04]
+ */
+?>
+<?php
+if ($this->form->isAsync()) {
+    if ($this->form->isRedirectParent()) {
+        echo json_encode(array(
+            'redirectUrl' => $this->form->getRedirectUrl()
+        ));
+    }
+    else { ?>
+        <div class="p-3 mx-auto">
+            <?php echo $this->form; ?>
+
+            <div class="mt-4 text-center">
+                <?php echo $this->_('No Account?'); ?>
+                <a href="<?php echo $this->url(array('module' => 'members', 'controller' => 'user', 'action' => 'register')); ?>">
+                    <?php echo $this->_('Create one'); ?></a>.
+            </div>
+        </div>
+    <?php }
+}
+else { ?>
+    <div class="row">
+        <div class="col-sm">
+            <?php echo $this->form; ?>
+        </div>
+        <div class="col-sm offset-sm-1">
+            <?php
+            echo $this->navigation()->setPartial('navigation/subtitle.phtml')->headline(array(
+                'headline' => $this->_('New Users'),
+            ));
+            ?>
+
+            <div class="mb-5"><?php echo $this->_("Don't have an account? Click below to sign up."); ?></div>
+
+            <a href="<?php echo $this->url(null, 'members-register'); ?>"
+               class="btn btn-lg btn-default btn-block">
+                <?php echo $this->_('Create Account'); ?></a>
+        </div>
+    </div>
+<?php } ?>

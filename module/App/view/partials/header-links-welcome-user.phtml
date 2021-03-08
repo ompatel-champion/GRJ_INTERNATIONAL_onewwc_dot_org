@@ -1,0 +1,9 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.01]
+ */
+
+echo sprintf(
+    $this->_('Welcome, <strong>%s</strong>'),
+    isset($this->loggedInUser['id']) ? $this->userDetails($this->loggedInUser['id'])->display() : $this->_('Guest')
+); ?>

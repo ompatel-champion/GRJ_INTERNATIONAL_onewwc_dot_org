@@ -1,0 +1,163 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.02]
+ */
+
+use Ppb\Model\Elements\User\CartCheckout;
+
+/** @var \Listings\Form\Checkout $checkoutForm */
+
+$shippingDetails = $checkoutForm->getShippingDetails();
+
+if (!empty($this->loggedInUser['id'])) {
+    $this->userDetails($this->loggedInUser['id']);
+}
+else {
+    $this->userDetails()->setGuestUser();
+}
+
+if ($checkoutForm->getData(CartCheckout::PRF_BLG . 'address_id') > 0) {
+    $billingAddress = $this->userDetails()
+        ->setAddress($checkoutForm->getData(CartCheckout::PRF_BLG . 'address_id'))
+        ->displayFullAddress();
+}
+else {
+    $billingAddress = $this->userDetails()->setAddressFromArray(array(
+        'name'     => $checkoutForm->getData(CartCheckout::PRF_BLG . 'name'),
+        'address'  => $checkoutForm->getData(CartCheckout::PRF_BLG . 'address'),
+        'city'     => $checkoutForm->getData(CartCheckout::PRF_BLG . 'city'),
+        'country'  => $checkoutForm->getData(CartCheckout::PRF_BLG . 'country'),
+        'state'    => $checkoutForm->getData(CartCheckout::PRF_BLG . 'state'),
+        'zip_code' => $checkoutForm->getData(CartCheckout::PRF_BLG . 'zip_code'),
+        'phone'    => $checkoutForm->getData(CartCheckout::PRF_BLG . 'phone'),
+    ))->displayFullAddress();
+}
+
+if ($checkoutForm->getData('alt_ship')) {
+    if ($checkoutForm->getData(\Ppb\Model\Elements\User\CartCheckout::PRF_SHP . 'address_id') > 0) {
+        $shippingAddress = $this->userDetails()
+            ->setAddress($checkoutForm->getData(\Ppb\Model\Elements\User\CartCheckout::PRF_SHP . 'address_id'))
+            ->displayFullAddress();
+    }
+    else {
+        $shippingAddress = $this->userDetails()->setAddressFromArray(array(
+            'name'     => $checkoutForm->getData(\Ppb\Model\Elements\User\CartCheckout::PRF_SHP . 'name'),
+            'address'  => $checkoutForm->getData(\Ppb\Model\Elements\User\CartCheckout::PRF_SHP . 'address'),
+            'city'     => $checkoutForm->getData(\Ppb\Model\Elements\User\CartCheckout::PRF_SHP . 'city'),
+            'country'  => $checkoutForm->getData(\Ppb\Model\Elements\User\CartCheckout::PRF_SHP . 'country'),
+            'state'    => $checkoutForm->getData(\Ppb\Model\Elements\User\CartCheckout::PRF_SHP . 'state'),
+            'zip_code' => $checkoutForm->getData(\Ppb\Model\Elements\User\CartCheckout::PRF_SHP . 'zip_code'),
+            'phone'    => $checkoutForm->getData(\Ppb\Model\Elements\User\CartCheckout::PRF_SHP . 'phone'),
+        ))->displayFullAddress();
+    }
+}
+else {
+    $shippingAddress = $this->_('Same as billing address');
+}
+
+$paymentMethod = null;
+if ($paymentMethodId = $checkoutForm->getData('payment_method_id')) {
+    $paymentMethodMultiOptions = $checkoutForm->getElement('payment_method_id')->getMultiOptions();
+    $paymentMethod = $this->_($paymentMethodMultiOptions[$paymentMethodId]);
+}
+?>
+
+<div class="d-none d-sm-block">
+    <div class="bg-light p-3 mb-3">
+        <h5 class="subtitle">
+            <?php echo $this->_('Billing Address'); ?>
+        </h5>
+
+        <div>
+            <?php echo (!empty($billingAddress)) ? $billingAddress : $this->_('Enter billing address'); ?>
+        </div>
+    </div>
+
+    <?php if ($this->settings['enable_shipping']) { ?>
+        <div class="bg-light p-3 mb-3">
+            <h5 class="subtitle">
+                <?php echo $this->_('Delivery Address'); ?>
+            </h5>
+
+            <div>
+                <?php echo (!empty($shippingAddress)) ? $shippingAddress : $this->_('Enter delivery address'); ?>
+            </div>
+        </div>
+
+        <div class="bg-light p-3 mb-3">
+            <h5 class="subtitle">
+                <?php echo $this->_('Shipping Method'); ?>
+            </h5>
+
+            <div>
+                <?php
+                echo (!empty($shippingDetails['method']) && $checkoutForm->getElement('postage_id')->getValue() !== null) ?
+                    $this->amount($shippingDetails['price'], $shippingDetails['currency']) . '<br>' . '<em>' . $shippingDetails['method'] . '</em>' : $this->_('Not selected');
+                ?>
+            </div>
+        </div>
+    <?php } ?>
+
+    <div class="bg-light p-3 mb-3">
+        <h5 class="subtitle">
+            <?php echo $this->_('Payment Method'); ?>
+        </h5>
+
+        <div>
+            <?php echo (!empty($paymentMethod)) ? $paymentMethod : $this->_('Not selected'); ?>
+        </div>
+    </div>
+</div>
+
+<div class="bg-light p-3 mb-3">
+    <h5 class="subtitle d-flex justify-content-between">
+        <span><?php echo $this->_('Review Order'); ?></span>
+        <small>
+            <a href="<?php echo $this->url(array('action' => 'index', 'id' => $sale['id'])); ?>"
+               title="<?php echo $this->_('Edit'); ?>">
+                <span data-feather="edit"></span>
+            </a>
+        </small>
+    </h5>
+
+    <div class="cart-dropdown">
+        <?php echo $this->cart()->setPartial('partials/cart-box.phtml')->box(); ?>
+    </div>
+
+
+    <dl class="row dl-cart-totals">
+        <dt class="col-4"><?php echo $this->_('Subtotal'); ?></dt>
+        <dd class="col-8"><?php echo $this->amount($sale->calculateTotal(true), $sale['currency']); ?></dd>
+
+        <?php if ($this->settings['enable_shipping']) { ?>
+            <dt class="col-4"><?php echo $this->_('Postage'); ?></dt>
+            <dd class="col-8">
+                <?php
+                if (!empty($shippingDetails['method']) && $checkoutForm->getElement('postage_id')->getValue() !== null) {
+                    echo $this->amount($shippingDetails['price'], $shippingDetails['currency']);
+                }
+                else {
+                    echo $this->_('Get Quote');
+                } ?>
+            </dd>
+
+            <?php
+            if ($checkoutForm->getData('apply_insurance')) {
+                $insuranceAmount = $checkoutForm->getElement('insurance_amount')->getValue();
+                ?>
+                <dt class="col-4"><?php echo $this->_('Insurance'); ?></dt>
+                <dd class="col-8">
+                    <?php echo $this->amount($insuranceAmount, $sale['currency']); ?>
+                </dd>
+            <?php } ?>
+        <?php } ?>
+
+        <?php if (($taxAmount = $sale->getTaxAmount(true)) > 0) { ?>
+            <dt class="col-4"><?php echo $this->_('Tax'); ?></dt>
+            <dd class="col-8"><?php echo $this->amount($taxAmount, $sale['currency']); ?></dd>
+        <?php } ?>
+
+        <dt class="col-4 col-total"><?php echo $this->_('Total'); ?></dt>
+        <dd class="col-8 col-total"><?php echo $this->amount($sale->calculateTotal(), $sale['currency']); ?></dd>
+    </dl>
+</div>

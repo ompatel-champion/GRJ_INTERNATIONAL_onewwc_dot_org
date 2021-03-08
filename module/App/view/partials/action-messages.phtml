@@ -1,0 +1,24 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.01]
+ */
+?>
+
+<?php
+foreach ((array)$this->messages as $message) { ?>
+    <div class="alert alert-dismissable <?php echo $message['class']; ?>">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">
+            &times;
+        </button>
+        <?php if (is_array($message['msg'])) { ?>
+            <?php foreach ((array)$message['msg'] as $msg) { ?>
+                <div><?php echo $this->_($msg); ?></div>
+            <?php } ?>
+            <?php
+        }
+        else {
+            ?>
+            <?php echo $this->_($message['msg']); ?>
+        <?php } ?>
+    </div>
+<?php } ?>

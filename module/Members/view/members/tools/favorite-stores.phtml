@@ -1,0 +1,80 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.02]
+ */
+?>
+
+<div class="table-responsive">
+    <table class="table table-hover">
+        <caption>
+            <?php echo sprintf(
+                $this->pluralize(
+                    $count = $this->paginator->getPages()->totalItemCount,
+                    $this->_('<strong>%s</strong> result found.'),
+                    $this->_('<strong>%s</strong> results found.')
+                ), $count); ?>
+
+            <?php if ($this->paginator->getPages()->totalItemCount > 1) { ?>
+                <?php echo sprintf(
+                    $this->_('Showing results <strong>%s</strong> to <strong>%s</strong>'),
+                    $this->paginator->getPages()->firstItemNumber,
+                    $this->paginator->getPages()->lastItemNumber); ?>
+            <?php } ?>
+        </caption>
+        <?php if ($this->paginator->getPages()->totalItemCount) { ?>
+            <thead class="thead-light">
+            <tr>
+                <th class="size-mini"></th>
+                <th><?php echo $this->_('Name'); ?></th>
+                <th class="size-small"><?php echo $this->_('Owner'); ?></th>
+                <th class="size-mini"><?php echo $this->_('Added'); ?></th>
+                <th class="size-actions"><?php echo $this->_('Actions'); ?></th>
+            </tr>
+            </thead>
+        <?php } ?>
+        <tbody>
+        <?php
+        /** @var \Cube\Db\Table\Row $favoriteStore */
+        foreach ($this->paginator as $favoriteStore) {
+            /** @var \Ppb\Db\Table\Row\User $store */
+            $store = $favoriteStore->findParentRow('\Ppb\Db\Table\Users', 'Store');
+
+            $storeSettings = $store->getStoreSettings();
+            $logo = (!empty($storeSettings['store_logo_path'])) ? $storeSettings['store_logo_path'] : null;
+            ?>
+            <tr>
+                <td>
+                    <a href="<?php echo $this->url($store->storeLink()); ?>">
+                        <?php echo $this->thumbnail($logo, 80, true,
+                            array('alt' => $store->storeName())); ?>
+                    </a>
+                </td>
+                <td>
+                    <a href="<?php echo $this->url($store->storeLink()); ?>">
+                        <?php echo $store['store_name']; ?>
+                    </a>
+                </td>
+                <td>
+                    <?php echo $this->userDetails()->setUser($store)->display(); ?>
+                </td>
+                <td>
+                    <small><?php echo $this->date($favoriteStore['created_at']); ?></small>
+                </td>
+                <td>
+                    <a class="btn btn-danger mb-1 confirm-box"
+                       href="<?php echo $this->url(array('option' => 'remove', 'id' => $favoriteStore['id']),
+                           null, true); ?>"
+                       title="<?php echo $this->_('Delete User'); ?>"
+                       data-message="<?php echo $this->_('Are you sure you wish to remove this store from your favorites list?'); ?>">
+                        <span data-feather="x"></span>
+                        <?php echo $this->_('Delete'); ?>
+                    </a>
+                </td>
+            </tr>
+        <?php } ?>
+        </tbody>
+    </table>
+</div>
+
+<?php echo $this->pagination($this->paginator, 'sliding', 'partials/pagination.phtml'); ?>
+

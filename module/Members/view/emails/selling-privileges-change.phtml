@@ -1,0 +1,60 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.01]
+ */
+
+use Ppb\View\Helper\Icon as IconHelper;
+
+/** @var \Ppb\Db\Table\Row\User $user */
+$user = $this->data['user'];
+
+$this->icon(true, IconHelper::TYPE_FEATHER_IMG);
+?>
+
+<p>
+    <?php echo sprintf($this->_('The selling privileges for your account on %s have been changed.'), $this->siteName); ?>
+</p>
+
+<dl class="dl-lg dl-indented">
+    <dt>
+        <?php echo $this->_('Username:'); ?>
+    </dt>
+    <dd>
+        <?php echo $this->userDetails($user)->display(); ?>
+    </dd>
+    <dt>
+        <?php echo $this->_('Account Type:'); ?>
+    </dt>
+    <dd>
+        <?php if ($user->isSeller()) {
+            $class = 'btn-blue';
+            $icon = "award";
+            $label = $this->_('Seller');
+        }
+        else {
+            $class = 'btn-red';
+            $icon = "shopping-bag";
+            $label = $this->_('Buyer');
+        } ?>
+
+        <a class="btn btn-sm <?php echo $class; ?>"
+           href="#"
+           title="<?php echo $label; ?>">
+            <?php echo $this->icon()->render($icon); ?>
+            <?php echo $label; ?>
+        </a>
+    </dd>
+</dl>
+
+<p>
+    [ <a href="<?php echo $this->sitePath . $this->url(null, 'members-index', false, null, false); ?>">
+        <?php echo $this->_('Click here'); ?>
+    </a> ]
+    <?php echo $this->_('to access your account.'); ?>
+</p>
+
+<p>
+    <?php echo $this->_('Best regards'); ?> <br>
+    <?php echo $this->siteName; ?>
+</p>
+

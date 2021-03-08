@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- @version 7.4 -->
+<!--
+MOD:- ADVANCED CLASSIFIEDS
+@version 1.1
+-->
+<config>
+    <navigation>
+        <pages>
+            <members_menu>
+                <pages>
+                    <classifieds>
+                        <label>Classifieds</label>
+                        <module>members</module>
+                        <controller>classifieds</controller>
+                        <action>browse</action>
+                        <params>
+                            <filter>open</filter>
+                        </params>
+                        <resource>Classifieds</resource>
+                        <pages>
+                            <add_classified>
+                                <label>Add Classified</label>
+                                <module>listings</module>
+                                <controller>listing</controller>
+                                <action>create</action>
+                                <params>
+                                    <listing_type>classified</listing_type>
+                                </params>
+                            </add_classified>
+                            <open>
+                                <label>Open</label>
+                                <module>members</module>
+                                <controller>classifieds</controller>
+                                <action>browse</action>
+                                <params>
+                                    <filter>open</filter>
+                                </params>
+                            </open>
+                            <scheduled>
+                                <label>Scheduled</label>
+                                <module>members</module>
+                                <controller>classifieds</controller>
+                                <action>browse</action>
+                                <params>
+                                    <filter>scheduled</filter>
+                                </params>
+                            </scheduled>
+                            <closed>
+                                <label>Closed</label>
+                                <module>members</module>
+                                <controller>classifieds</controller>
+                                <action>browse</action>
+                                <params>
+                                    <filter>closed</filter>
+                                </params>
+                            </closed>
+                            <tools>
+                                <label>Tools</label>
+                                <module>members</module>
+                                <controller>tools</controller>
+                                <action>classified-fees-calculator</action>
+                                <resource>Tools</resource>
+                                <privilege>FeesCalculator</privilege>
+                                <pages>
+                                    <fees_calculator>
+                                        <label>Fees Calculator</label>
+                                        <module>members</module>
+                                        <controller>tools</controller>
+                                        <action>classified-fees-calculator</action>
+                                        <resource>Tools</resource>
+                                        <privilege>FeesCalculator</privilege>
+                                    </fees_calculator>
+                                </pages>
+                            </tools>
+                        </pages>
+                    </classifieds>
+                </pages>
+            </members_menu>
+            <header_menu>
+                <pages>
+                    <classifieds>
+                        <label>Classifieds</label>
+                        <module>listings</module>
+                        <controller>browse</controller>
+                        <action>index</action>
+                        <params>
+                            <listing_type>classified</listing_type>
+                        </params>
+                        <settings>
+                            <name>enable_classifieds</name>
+                            <value>1</value>
+                        </settings>
+                    </classifieds>
+                </pages>
+            </header_menu>
+        </pages>
+    </navigation>
+
+</config>

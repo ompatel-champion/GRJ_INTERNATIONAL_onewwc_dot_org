@@ -1,0 +1,182 @@
+<?php
+/**
+ * @version 8.2 [rev.8.2.01]
+ */
+
+/* @var \Ppb\Service\Table\Relational\Categories $categoriesService */
+
+$headlineButtons = null;
+
+$headlineButtons .= '<a class="btn btn-outline-secondary" '
+    . 'href="' . $this->url(array('action' => 'create-advert')) . '">'
+    . $this->_('Create Advert') . '</a>';
+
+$this->setGlobal('headlineButtons', $headlineButtons);
+?>
+
+<form method="post" action="">
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <caption>
+                <?php echo sprintf(
+                    $this->pluralize(
+                        $count = $this->paginator->getPages()->totalItemCount,
+                        $this->_('<strong>%s</strong> advert found.'),
+                        $this->_('<strong>%s</strong> adverts found.')
+                    ), $count); ?>
+
+                <?php if ($this->paginator->getPages()->totalItemCount > 1) { ?>
+                    <?php echo sprintf(
+                        $this->_('Showing results <strong>%s</strong> to <strong>%s</strong>'),
+                        $this->paginator->getPages()->firstItemNumber,
+                        $this->paginator->getPages()->lastItemNumber); ?>
+                <?php } ?>
+            </caption>
+            <?php if ($this->paginator->getPages()->totalItemCount) { ?>
+                <thead class="thead-light">
+                <tr>
+                    <th class="size-medium"><?php echo $this->_('Name'); ?></th>
+                    <th class="size-mini"><?php echo $this->_('Type'); ?></th>
+                    <th class="size-small"><?php echo $this->_('Section'); ?></th>
+                    <th><?php echo $this->_('Properties'); ?></th>
+                    <th class="size-medium"><?php echo $this->_('Statistics'); ?></th>
+                    <th class="size-mini"><?php echo $this->_('Active'); ?></th>
+                    <th class="size-medium"><?php echo $this->_('Actions'); ?></th>
+                </tr>
+                </thead>
+            <?php } ?>
+            <tbody>
+            <?php
+            $checkboxCounter = 0;
+
+            /** @var \Ppb\Db\Table\Row\Advert $advert */
+            foreach ($this->paginator as $advert) {
+                ?>
+                <tr>
+                    <td>
+                        <?php echo $advert['name']; ?>
+
+                        <div class="mt-4">
+                            <a class="btn btn-success mb-1 ajax-popup"
+                               href="<?php echo $this->url(array('action' => 'preview-advert', 'id' => $advert['id'])); ?>"
+                               title="<?php echo $this->_('Preview Advert'); ?>">
+                                <span data-feather="image"></span>
+                                <?php echo $this->_('Preview'); ?>
+
+                            </a>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge <?php echo ($advert['type'] == 'image') ? 'badge-blue' : (($advert['type'] == 'html') ? 'badge-red' : 'badge-gold'); ?>"><?php echo $advert['type']; ?></span>
+                    </td>
+                    <td>
+                        <em><?php echo (!empty($this->sections[$advert['section']])) ? $this->sections[$advert['section']] : $this->_('N/A'); ?></em>
+                    </td>
+                    <td>
+                        <dl class="dl-variable">
+                            <dt>
+                                <span><?php echo $this->_('Language'); ?></span>
+                            </dt>
+                            <dd>
+                                <?php echo $this->fieldDisplay($advert['language'], null, $this->_('All')); ?>
+                            </dd>
+                            <dt>
+                                <span><?php echo $this->_('Categories'); ?></span>
+                            </dt>
+                            <dd>
+                                <?php
+                                if ($advert['category_ids']) {
+                                    $select = $categoriesService->getTable()->select()
+                                        ->where('id IN (?)', \Ppb\Utility::unserialize($advert['category_ids']));
+                                    $multiOptions = $categoriesService->getMultiOptions($select);
+
+                                    echo implode('; ', $multiOptions);
+                                }
+                                else {
+                                    echo $this->_('All');
+                                } ?>
+                            </dd>
+                            <?php if ($advert['type'] == 'image') { ?>
+                                <dt>
+                                    <span><?php echo $this->_('Image Title'); ?></span>
+                                </dt>
+                                <dd>
+                                    <?php echo $advert->imageTitle(); ?>
+                                </dd>
+                            <?php } ?>
+                        </dl>
+                    </td>
+                    <td>
+                        <dl class="dl-variable">
+                            <dt>
+                                <span><?php echo $this->_('Added'); ?></span>
+                            </dt>
+                            <dd>
+                                <?php echo $this->date($advert['created_at'], true); ?>
+                            </dd>
+                            <dt>
+                                <span><?php echo $this->_('Views'); ?></span>
+                            </dt>
+                            <dd>
+                                <?php echo $advert['nb_views']; ?>
+                            </dd>
+                            <?php if ($advert['type'] == 'image' && !$advert['direct_link']) { ?>
+                                <dt>
+                                    <span><?php echo $this->_('Clicks'); ?></span>
+                                </dt>
+                                <dd>
+                                    <?php echo $advert['nb_clicks']; ?>
+                                </dd>
+                            <?php } ?>
+                        </dl>
+                    </td>
+                    <td>
+                        <?php echo $this->formElement('hidden', 'id')
+                            ->setBrackets('[' . $checkboxCounter . ']')
+                            ->setMultiple()
+                            ->setValue($advert['id'])
+                            ->render();
+                        ?>
+                        <?php echo $this->formElement('checkbox', 'active')
+                            ->setValue($advert['active'])
+                            ->setMultiOptions(array(1 => null))
+                            ->setBrackets('[' . $checkboxCounter . ']')
+                            ->setMultiple()
+                            ->render();
+                        ?>
+                    </td>
+                    <td>
+                        <a class="btn btn-secondary mb-1"
+                           href="<?php echo $this->url(array('action' => 'edit-advert', 'id' => $advert['id'])); ?>"
+                           title="<?php echo $this->_('Edit Advert'); ?>">
+                            <span data-feather="folder"></span>
+                            <?php echo $this->_('Edit'); ?>
+                        </a>
+                        <a class="btn btn-danger mb-1 confirm-box"
+                           href="<?php echo $this->url(array('action' => 'delete-advert', 'id' => $advert['id']),
+                               null, true); ?>"
+                           title="<?php echo $this->_('Delete Advert'); ?>"
+                           data-message="<?php echo $this->_('Are you sure you want to delete this advert?'); ?>">
+                            <span data-feather="x"></span>
+                            <?php echo $this->_('Delete'); ?>
+                        </a>
+                    </td>
+                </tr>
+                <?php $checkboxCounter++; ?>
+            <?php } ?>
+            </tbody>
+        </table>
+    </div>
+
+    <?php if ($count > 0) { ?>
+        <div class="buttons-sticky-bottom">
+            <?php echo $this->formElement('submit', 'submit', $this->_('Update'))
+                ->setAttributes(array('class' => 'btn btn-primary btn-lg'))
+                ->render();
+            ?>
+        </div>
+    <?php } ?>
+</form>
+
+<?php echo $this->pagination($this->paginator, 'sliding', 'partials/pagination.phtml'); ?>
+

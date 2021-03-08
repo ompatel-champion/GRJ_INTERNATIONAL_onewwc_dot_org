@@ -1,0 +1,53 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.02]
+ */
+?>
+
+<nav class="navbar p-0 mb-4">
+    <form class="form-inline" action="" method="post">
+        <div class="mr-1">
+            <?php echo $this->formElement('select', 'language', $this->language)
+                ->setMultiOptions(\Ppb\Utility::getLanguages())
+                ->setAttributes(array(
+                    'class' => 'form-control input-large'))
+                ->render();
+            ?>
+        </div>
+        <?php echo $this->formElement('submit', 'submit', $this->_('Proceed'))
+            ->setAttributes(array('class' => 'btn btn-secondary'))
+            ->render();
+        ?>
+    </form>
+</nav>
+
+<p>
+    <?php echo $this->_("<strong>Important</strong>: The majority of the sentences are in .mo files. They can be translated only with a gettext parser such as poedit. <br>"
+        . "For more information, please check our <a href='http://www.phpprobid.com/translation-tutorial' target='_blank'>translation tutorial</a>."); ?>
+</p>
+
+<?php if ($this->language) { ?>
+    <form action="<?php echo $this->url(null, null, true, array('title', 'save_language', 'language')); ?>"
+          method="post">
+        <?php echo $this->formElement('hidden', 'language', $this->language)->render(); ?>
+
+        <div class="form-group">
+            <?php echo $this->formElement('\Ppb\Form\Element\LinkedTextarea', 'langData')
+                ->setAttributes(array(
+                    'rows' => '32',
+                ))
+                ->setValue($this->data)
+                ->render(); ?>
+            <small class="form-text text-muted">
+                <?php echo $this->_('<strong>Important</strong>: the quote (&quot;) character is reserved, please escape it (\&quot;) instead.'); ?>
+            </small>
+        </div>
+
+        <div class="form-group">
+            <?php echo $this->formElement('submit', 'save_language', $this->_('Save'))
+                ->setAttributes(array('class' => 'btn btn-lg btn-primary'))
+                ->render();
+            ?>
+        </div>
+    </form>
+<?php } ?>

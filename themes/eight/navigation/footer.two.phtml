@@ -1,0 +1,58 @@
+<?php
+/**
+ * @version 8.1 [rev.8.1.01]
+ */
+/**
+ * MOD:- UNBRANDING
+ */
+?>
+<footer class="footer-two mt-5 py-3 py-md-4">
+    <!-- FOOTER CONTENT -->
+    <div class="footer container">
+        <div class="row">
+            <div class="col-md-2 d-none d-md-block">
+                <a class="footer-logo" href="<?php echo $this->url(null, 'app-home'); ?>"
+                   title="<?php echo $this->settings['sitename']; ?>">
+                    <img src="<?php echo $this->thumbnail()->generateImagePath($this->settings['site_logo_path']); ?>"
+                         class="img-fluid"
+                         alt="<?php echo $this->settings['sitename']; ?>">
+                </a>
+            </div>
+            <div class="col-md footer-links mx-md-5">
+                <div class="row">
+                    <div class="col-md-4 px-md-1">
+                        <?php echo $this->contentMenu('footer-menu-1')->render(); ?>
+                    </div>
+                    <div class="col-md-4 px-md-1">
+                        <?php echo $this->contentMenu('footer-menu-2')->render(); ?>
+                    </div>
+                    <div class="col-md-4 px-md-1">
+                        <?php echo $this->contentMenu('footer-menu-3')->render(); ?>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <?php if ($this->settings['newsletter_subscription_box']) { ?>
+                    <div class="mb-4">
+                        <?php echo $this->newsletterSubscription()->render(); ?>
+                    </div>
+                <?php } ?>
+
+                <div class="mb-4">
+                    <?php echo $this->social()->socialMediaLinks(); ?>
+                </div>
+
+                <div class="border-top pt-3">
+                    <?php if (!empty($this->settings['footer_branding_text'])) { ?>
+                        <?php echo $this->renderHtml($this->settings['footer_branding_text']); ?>
+                    <?php }
+                    else { ?>
+                        <small>Powered by <a href="https://www.phpprobid.com/" target="_blank">PHP Pro Bid</a>.
+                            &copy;<?php echo date('Y'); ?> Online Ventures Software</small>
+                    <?php } ?>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- FOOTER CONTENT -->
+</footer>

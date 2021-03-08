@@ -1,0 +1,44 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.03]
+ */
+
+/** @var \Cube\Paginator $paginator */
+$paginator = $this->listings()->fetchPaginator(array('filter' => array('active', 'wish-list')), Ppb\Service\Listings::SELECT_SIMPLE)->getPaginator();
+?>
+
+<?php if ($paginator->getPages()->totalItemCount) { ?>
+    <div class="mb-4">
+        <?php echo sprintf(
+            $this->pluralize(
+                $count = $paginator->getPages()->totalItemCount,
+                $this->_('<strong>%s</strong> listing found in your wish list.'),
+                $this->_('<strong>%s</strong> listings found in your wish list.')
+            ), $count); ?>
+
+        <?php if ($paginator->getPages()->totalItemCount > 1) { ?>
+            <?php echo sprintf(
+                $this->_('Showing results <strong>%s</strong> to <strong>%s</strong>'),
+                $paginator->getPages()->firstItemNumber,
+                $paginator->getPages()->lastItemNumber); ?>
+        <?php } ?>
+    </div>
+    <!-- /ORDERING / DISPLAY OPTIONS -->
+
+    <!-- DISPLAY LISTINGS -->
+    <div class="mb-4">
+        <?php echo $this->listings()->renderPaginator(); ?>
+    </div>
+    <!-- /DISPLAY LISTINGS -->
+
+    <!-- PAGINATION -->
+    <?php echo $this->pagination($paginator, 'sliding', 'partials/pagination.phtml'); ?>
+    <!-- /PAGINATION -->
+<?php }
+else { ?>
+    <div class="py-4 text-center">
+        <?php echo $this->_('Your wish list is empty.'); ?>
+    </div>
+<?php } ?>
+
+

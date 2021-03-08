@@ -1,0 +1,15 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.01]
+ */
+?>
+
+<div class="alert alert-secondary mb-4" role="alert">
+    <h5 class="alert-heading"><?php echo $this->_('User Verification'); ?></h5>
+    <?php echo $this->_("Please verify your account in order to take full advantage of our site's features."); ?>
+
+    <hr>
+    <a href="<?php echo $this->url(array('module' => 'members', 'controller' => 'user', 'action' => 'verification')); ?>"
+       class="btn btn-danger btn-lg">
+        <?php echo $this->_('Get Verified'); ?></a>
+</div>

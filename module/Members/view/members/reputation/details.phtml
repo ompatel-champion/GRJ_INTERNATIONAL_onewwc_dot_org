@@ -1,0 +1,141 @@
+<?php
+/**
+ * @version 8.2 [rev.8.2.01]
+ */
+/** @var \Ppb\Db\Table\Row\User $user */
+/** @var string $filter */
+?>
+<div class="row mb-4">
+    <div class="col-sm-6">
+        <dl class="mb-4">
+            <dd>
+                <h6><?php echo $this->userDetails()->setUser($user)->display(); ?></h6>
+            </dd>
+
+            <dd>
+                <a class="btn btn-outline-secondary"
+                   href="<?php echo $this->url(array('module' => 'members', 'controller' => 'messaging', 'action' => 'create', 'username' => $user['username'], 'topic_type' => \Ppb\Service\Messaging::ABUSE_REPORT_USER)); ?>"
+                   title="<?php echo $this->_('Report Abuse'); ?>"><?php echo $this->_('Report User'); ?></a>
+            </dd>
+            <dd>
+                <span data-feather="globe"></span>
+                <?php echo $this->userDetails()->location(); ?>
+            </dd>
+
+            <dt><?php echo $this->_('Feedback'); ?></dt>
+            <dd>
+                <?php echo $user->getReputationPercentage(); ?>
+            </dd>
+
+            <dt><?php echo $this->_('Member Since'); ?></dt>
+            <dd><?php echo $this->date($user->getData('created_at'), true); ?></dd>
+
+            <dd class="mb-3">
+                <a class="btn btn-secondary"
+                   href="<?php echo $this->url($user->otherItemsLink()); ?>">
+                    <?php echo $this->_('View Items for Sale'); ?>
+                </a>
+            </dd>
+            <?php if ($user->storeStatus(true)) { ?>
+                <dt><?php echo $this->_('Store'); ?></dt>
+                <dd>
+                    <a href="<?php echo $this->url($user->storeLink()); ?>">
+                        <?php echo $user->storeName(); ?>
+                    </a>
+                </dd>
+            <?php } ?>
+
+            <dd>
+                <?php echo $this->social()->socialMediaLinks($user); ?>
+            </dd>
+        </dl>
+
+    </div>
+    <div class="col-sm-6">
+        <table class="table table-bordered table-condensed">
+            <thead>
+            <tr>
+                <th><?php echo $this->_('Feedback'); ?></th>
+                <th class="size-mini">
+                    <span data-feather="plus-circle" class="text-success"></span>
+                </th>
+                <th class="size-mini">
+                    <span data-feather="disc" class="text-muted"></span>
+                </th>
+                <th class="size-mini">
+                    <span data-feather="minus-circle" class="text-danger"></span>
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><?php echo $this->_('Last Month'); ?></td>
+                <td><?php echo $user->calculateReputationScore(\Ppb\Service\Reputation::POSITIVE_THRESHOLD, '>', null,
+                        \Ppb\Service\Reputation::INTERVAL_ONE_MONTH); ?></td>
+                <td><?php echo $user->calculateReputationScore(\Ppb\Service\Reputation::POSITIVE_THRESHOLD, '=', null,
+                        \Ppb\Service\Reputation::INTERVAL_ONE_MONTH); ?></td>
+                <td><?php echo $user->calculateReputationScore(\Ppb\Service\Reputation::POSITIVE_THRESHOLD, '<', null,
+                        \Ppb\Service\Reputation::INTERVAL_ONE_MONTH); ?></td>
+            </tr>
+            <tr>
+                <td><?php echo $this->_('Last 6 Months'); ?></td>
+                <td><?php echo $user->calculateReputationScore(\Ppb\Service\Reputation::POSITIVE_THRESHOLD, '>', null,
+                        \Ppb\Service\Reputation::INTERVAL_SIX_MONTHS); ?></td>
+                <td><?php echo $user->calculateReputationScore(\Ppb\Service\Reputation::POSITIVE_THRESHOLD, '=', null,
+                        \Ppb\Service\Reputation::INTERVAL_SIX_MONTHS); ?></td>
+                <td><?php echo $user->calculateReputationScore(\Ppb\Service\Reputation::POSITIVE_THRESHOLD, '<', null,
+                        \Ppb\Service\Reputation::INTERVAL_SIX_MONTHS); ?></td>
+            </tr>
+            <tr>
+                <td><?php echo $this->_('Last 12 Months'); ?></td>
+                <td><?php echo $user->calculateReputationScore(\Ppb\Service\Reputation::POSITIVE_THRESHOLD, '>', null,
+                        \Ppb\Service\Reputation::INTERVAL_TWELVE_MONTHS); ?></td>
+                <td><?php echo $user->calculateReputationScore(\Ppb\Service\Reputation::POSITIVE_THRESHOLD, '=', null,
+                        \Ppb\Service\Reputation::INTERVAL_TWELVE_MONTHS); ?></td>
+                <td><?php echo $user->calculateReputationScore(\Ppb\Service\Reputation::POSITIVE_THRESHOLD, '<', null,
+                        \Ppb\Service\Reputation::INTERVAL_TWELVE_MONTHS); ?></td>
+            </tr>
+            <tr>
+                <td><?php echo $this->_('As Seller'); ?></td>
+                <td><?php echo $user->calculateReputationScore(\Ppb\Service\Reputation::POSITIVE_THRESHOLD, '>',
+                        \Ppb\Service\Reputation::SALE); ?></td>
+                <td><?php echo $user->calculateReputationScore(\Ppb\Service\Reputation::POSITIVE_THRESHOLD, '=',
+                        \Ppb\Service\Reputation::SALE); ?></td>
+                <td><?php echo $user->calculateReputationScore(\Ppb\Service\Reputation::POSITIVE_THRESHOLD, '<',
+                        \Ppb\Service\Reputation::SALE); ?></td>
+            </tr>
+            <tr>
+                <td><?php echo $this->_('As Buyer'); ?></td>
+                <td><?php echo $user->calculateReputationScore(\Ppb\Service\Reputation::POSITIVE_THRESHOLD, '>',
+                        \Ppb\Service\Reputation::PURCHASE); ?></td>
+                <td><?php echo $user->calculateReputationScore(\Ppb\Service\Reputation::POSITIVE_THRESHOLD, '=',
+                        \Ppb\Service\Reputation::PURCHASE); ?></td>
+                <td><?php echo $user->calculateReputationScore(\Ppb\Service\Reputation::POSITIVE_THRESHOLD, '<',
+                        \Ppb\Service\Reputation::PURCHASE); ?></td>
+            </tr>
+            <tr>
+                <td><?php echo $this->_('Total'); ?></td>
+                <td><?php echo $user->calculateReputationScore(\Ppb\Service\Reputation::POSITIVE_THRESHOLD,
+                        '>'); ?></td>
+                <td><?php echo $user->calculateReputationScore(\Ppb\Service\Reputation::POSITIVE_THRESHOLD,
+                        '='); ?></td>
+                <td><?php echo $user->calculateReputationScore(\Ppb\Service\Reputation::POSITIVE_THRESHOLD,
+                        '<'); ?></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<ul class="nav nav-pills pb-2 mb-4 border-bottom">
+    <?php foreach ($tabs as $key => $value) { ?>
+        <li class="nav-item">
+            <a class="nav-link  <?php echo ($filter == $key) ? 'active' : ''; ?>"
+               href="<?php echo $this->url(array_merge($user->reputationLink(), array('filter' => $key))); ?>"><?php echo $value; ?></a>
+        </li>
+    <?php } ?>
+</ul>
+
+<?php echo $this->action('browse', 'reputation', null, $this->request()->getRequest()->getParams() + array('filter' => $filter, 'userId' => $user['id'])); ?>
+
+        

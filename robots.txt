@@ -1,0 +1,69 @@
+User-agent: *
+#Crawl-delay: 10
+#Sitemap: %SITE_PATH%/sitemap.xml
+
+## Do not crawl application folders
+Disallow: /cache/
+Disallow: /config/
+Disallow: /library/
+Disallow: /module/
+Disallow: /SQL/
+
+## Do not crawl root files
+Disallow: /cron.php
+Disallow: /install.php
+Disallow: /error_log
+
+## Do not crawl links with session ids
+Disallow: /*?SID=
+
+## Do not crawl the admin module
+Disallow: /admin/
+Disallow: /administration/
+
+## Do not crawl the install module
+Disallow: /install/
+
+## Do not crawl selected app module pages
+## - rss pages
+Disallow: /rss/
+
+## - advert related pages
+Disallow: /advert/
+
+## - play video action
+Disallow: /play-video/
+
+## async controller
+Disallow: /app/async*
+
+## Do not crawl selected members module pages
+Disallow: /members-area/
+Disallow: /members/
+Disallow: /sign-in-modal/
+Disallow: /sign-up-modal/
+Disallow: /forgot-username/
+Disallow: /forgot-password/
+
+## Do not crawl selected listings module pages
+## - bid/purchase/cart related pages
+Disallow: /bid/
+Disallow: /buy/
+Disallow: /offer/
+Disallow: /cart/
+Disallow: /listings/cart/
+
+## - search pages
+Disallow: /advanced-search/
+
+## - sell pages
+Disallow: /sell/
+
+## Uncomment if you do not wish to allow Google and Bing to index your images
+# User-agent: Googlebot-Image
+# Disallow: /
+# User-agent: msnbot-media
+# Disallow: /
+
+#Disallow: /*.php$
+

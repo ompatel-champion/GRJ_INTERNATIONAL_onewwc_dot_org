@@ -1,0 +1,66 @@
+<?php
+/**
+ * @version 8.0 [rev.8.0.01]
+ */
+
+$this->setGlobal('themeFolder', $this->baseUrl . '/' . $this->themesFolder . '/' . 'admin');
+?>
+<!DOCTYPE html>
+
+<html lang="<?php echo $this->htmlLang(); ?>" dir="<?php echo $htmlDir = $this->htmlDir(); ?>">
+<head>
+    <?php echo $this->headTitle(); ?>
+
+    <?php
+    $this->headMeta()
+        ->appendName('viewport', 'width=device-width, initial-scale=1, shrink-to-fit=no')
+        ->appendHttpEquiv('X-UA-Compatible', 'IE=edge');
+    echo $this->headMeta();
+
+    /** add rtl bootstrap css if the case */
+    if ($htmlDir == \Cube\View\Helper\HtmlDir::RTL) {
+        $this->script()
+            ->addHeaderCode('<link href="' . $this->baseUrl . '/css/bootstrap-rtl.min.css" rel="stylesheet" type="text/css">')
+            ->addHeaderCode('<link href="' . $this->baseUrl . '/css/style.rtl.css" media="all" rel="stylesheet" type="text/css"');
+    }
+
+    $this->script()->addHeaderCode('<link href="' . $this->themeFolder . '/css/theme.css" media="all" rel="stylesheet" type="text/css">');
+    ?>
+
+    <?php echo $this->script()->displayHeaderCode(); ?>
+</head>
+
+<body class="login-page">
+<!-- CONTAINER -->
+<div class="login-container">
+    <header>
+        <h1>
+            <img src="<?php echo $this->baseUrl; ?>/<?php echo $this->themesFolder; ?>/admin/images/logo.png"
+                 alt="Logo">
+        </h1>
+    </header>
+
+
+    <?php echo $this->getContent(); ?>
+    <hr/>
+
+    <footer>
+        <small>
+            v<?php echo \Ppb\Utility::VERSION; ?>
+            &copy;<?php echo date('Y'); ?> Worldwide Classifieds Inc. <br>
+            All rights reserved.
+        </small>
+
+    </footer>
+
+</div>
+<!-- /CONTAINER -->
+
+<?php
+$this->script()
+    ->removeBodyCode($this->settings['google_analytics_code']);
+
+echo $this->script()->displayBodyCode();
+?>
+</body>
+</html>
